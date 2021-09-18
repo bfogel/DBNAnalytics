@@ -7,7 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_shortcode( 'dbnScoringCalculator', 'dbnScoringCalculator_Create' );
 
 function dbnScoringCalculator_Create() {
-    $ret = "HI<div id = 'ScoringCalculator'></div>";
+    $ret = "<link rel = 'stylesheet' src = 'https://diplobn.com/wp-content/plugins/DBNAnalytics/css/ScoringCalculator.css'></script>";
+    $ret .= "<script src = 'https://diplobn.com/wp-content/plugins/DBNAnalytics/js/ScoringFunctions.js'></script>";
+    $ret .= "<script src = 'https://diplobn.com/wp-content/plugins/DBNAnalytics/js/ScoringCalculator.js'></script>";
+    $ret .= "<div id = 'ScoringCalculator'></div>";
     $ret .= "<script>CreateCalculator('ScoringCalculator');</script>";
 
     return $ret;
