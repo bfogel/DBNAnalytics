@@ -377,8 +377,8 @@ function SetScoreColumnWidths(){
 }
 
 function CreateCalculator(containerid){
-    var container = docu.getElementById(containerid);
-    
+    var container = document.getElementById(containerid);
+
     var div = document.createElement("div");
     div.id ="divAddSystems";
     div.className = "bfAddRemove bfAdd"
