@@ -1,0 +1,190 @@
+
+.bfcard {
+    border: solid 0px;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 1px 8px 0px rgb(0 0 0 / 32%);
+    margin-bottom: 10px;
+}
+
+.bfcard h2{
+    margin-top: 20px;
+}
+.bfcard hr{
+    color:#AAAAAA;
+    margin:10px;
+    border:solid 3px;
+}
+
+.bftable {
+    border-radius: 10px !important;
+    box-shadow: 0 1px 8px 0px rgb(0 0 0 / 32%);
+    padding: 0px;
+    margin: 0px 10px 10px 0px;
+    border-spacing: 0px !important;
+    border: solid 8px #AAAAAA;
+    width: fit-content;
+    display: inline-block;
+    overflow-x:auto;
+}
+
+.bftableTitleRow {
+    background-color: #AAAAAA !important;
+    padding: 40px;
+}
+
+    .bftableTitleRow th {
+        border: 0px;
+        padding: 4px;
+        font-size: 150%;
+        font-weight: 700;
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    .bftableHeaderRow th {
+        border: 0px;
+        padding: 4px;
+        font-weight: 700;
+        border-bottom: solid 1px #aaaaaa60;
+        background-color: #aaaaaa60;
+        vertical-align: middle;
+    }
+
+.bftable td {
+    border: 0px;
+    color: black;
+    font-family: Arial;
+    font-size: medium;
+    white-space: nowrap;
+    padding: 0px 8px;
+    border-bottom: solid 1px #aaaaaa60;
+}
+
+.bftable tr:nth-child(even) {background-color: #f2f2f2;}
+
+.bftableClickable tr:hover{
+    background-color: rgba(255, 0, 0, 0.5);
+    cursor: pointer;
+}
+.bftableClickable tr:nth-child(even):hover{
+    background-color: rgba(255, 0, 0, 0.5);
+    cursor: pointer;
+}
+
+.bfnumcolumn {
+    text-align: right;
+}
+.bftableRowHighlight td {
+	font-weight: bold;
+}
+
+.bfAustriaBack {
+    background-color: rgba(220,20,60,0.70) !important;
+}
+
+.bfEnglandBack {
+    background-color: rgba(0,0,255,0.60) !important;
+}
+
+.bfFranceBack {
+    background-color: rgba(0,191,255,0.50) !important;
+}
+
+.bfGermanyBack {
+    background-color: rgba(0,0,0,0.5) !important;
+}
+
+.bfItalyBack {
+    background-color: rgba(25,180,25,0.60) !important;
+}
+
+.bfRussiaBack {
+    background-color: rgba(128,128,128,0.15) !important;
+}
+
+.bfTurkeyBack {
+    background-color: rgba(255,215,0,0.60) !important;
+}
+
+.bfAustriaBack td { border-bottom: 0px;}
+.bfEnglandBack td { border-bottom: 0px;}
+.bfFranceBack td { border-bottom: 0px;}
+.bfGermanyBack td { border-bottom: 0px;}
+.bfItalyBack td { border-bottom: 0px;}
+.bfRussiaBack td { border-bottom: 0px;}
+.bfTurkeyBack td { border-bottom: 0px;}
+
+.bftab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #ccc;
+    border-radius: 50px;
+}
+
+    .bftab button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        margin: 5px;
+        transition: 0.3s;
+        font-size: 17px;
+    }
+
+        .bftab button:hover {
+            background-color: #ddd;
+            border-radius: 50px;
+        }
+
+        .bftab button.active {
+            color: red;
+            border-radius: 50px;
+            box-shadow: 0 1px 8px 0px rgb(0 0 0 / 32%);
+            background-color: white;
+        }
+
+.bftabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: none;
+    overflow-x: auto;
+}
+
+.bfnavbar {
+    width: 100%;
+    background-color: #555;
+    overflow: auto;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 1px 8px 0px rgb(0 0 0 / 32%);
+}
+
+    .bfnavbar a {
+        float: left;
+        padding: 12px;
+        color: white;
+        text-decoration: none;
+        font-size: 17px;
+        width: 31%;
+        text-align: center;
+    }
+        .bfnavbar a:hover {
+            background-color: #000;
+        }
+
+        .bfnavbar a.active {
+            background-color: #04AA6D;
+        }
+
+    .bfnavbar1 a {
+        width: 99%;
+    }
+    .bfnavbar2 a {
+        width: 49%;
+    }
+    .bfnavbar3 a {
+        width: 33%;
+    }
