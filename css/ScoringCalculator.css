@@ -1,0 +1,89 @@
+table.score {font-size: 20px; border: 1px solid black; width: 0;color: black; border-spacing:0;}
+td {border-bottom: 0 !important; text-align:center !important;padding:0px !important; vertical-align:middle !important;
+    /*border-left: 1px solid !important;*/
+}
+
+body{
+    color: black;    
+    font-size: 20px;
+}
+
+button {
+    background-color: lightgray !important; 
+    /*font-weight: bold;*/
+}
+
+button.bf {
+    border-radius:50%;
+    background-color: transparent !important; 
+    border: 1px solid black;
+    color: black;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    margin: 0px 2px ;
+    cursor: pointer;
+  }
+button.bf:hover{
+    background-color: darkgray !important;        
+}
+
+button.bfRemoveSystem:hover {
+    text-decoration: line-through;
+}
+
+button.ToggleShowType {
+    font-size: 0.8em;
+    background-color: lightgray !important;
+}
+
+/*button.bf:hover {      
+  font-weight: bold;
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}*/
+
+.bfAustria {background-color:rgba(220,20,60,0.80)}
+.bfEngland {background-color:rgba(0,0,255,0.70)}
+.bfFrance {background-color:rgba(0,191,255,0.70)}
+.bfGermany {background-color:rgba(0,0,0,0.5)}
+.bfItaly {background-color:rgba(25,180,25,0.70)}
+.bfRussia {background-color:rgba(128,128,128,0.15)}
+.bfTurkey {background-color:rgba(255,215,0,0.80)}
+
+td.bfTribCalcRow {white-space: nowrap;}
+@media only screen and (max-width: 600px) {
+  td.bfTribCalcRow-s {white-space: normal;}
+}
+
+.bfColHeader {font-size:24px; font-weight:bold;}
+.bfRowHeader {display: inline-block; width:100px; font-size:20px; font-weight: bold; border:0px solid;}
+.bfCenterSpan {display: inline-block; width:110px; text-align: center;  border:0px solid; margin: 0;padding:0;}
+.bfCenterCount {display: inline-block; margin: 5px; width:25px;  text-align: center; font-size: 24px; font-weight:bold;white-space:nowrap;}
+
+.bfElim {display: inline-block; margin: 5px; width:30px;  text-align: center; font-size: 16px; font-weight:bold;white-space:nowrap;}
+
+.bfCalculation {display: inline-block;white-space:nowrap; border:0px solid;}
+
+.bfCalcPart {display: inline-block; width:80px; text-align: center; font-size: 20px}
+
+.bfScore {display: inline-block; 
+           /*width:90px; */
+           text-align: center; 
+           font-size: 24px; 
+           font-weight:bold; 
+           white-space:nowrap; 
+           border:0px solid;
+           margin-left: 5px;
+           margin-right: 5px;
+}
+
+.bfScoreHeader {
+            font-size: 20px;
+}
+
+.bfAddRemove {margin: 10px; border: 1px solid; padding: 5px;}
+.bfAdd {background-color: lavender;}
+.bfRemove {background-color: LavenderBlush;}
+
+div.bfSystemGroup {margin-top: 5px;margin-bottom: 5px;}
