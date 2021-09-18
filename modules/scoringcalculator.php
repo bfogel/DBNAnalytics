@@ -7,8 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_shortcode( 'dbnScoringCalculator', 'dbnScoringCalculator_Create' );
 
 function dbnScoringCalculator_Create() {
-    $ret = "<div id = 'ScoringCalculator'></div>";
-    $ret .= "<script>CreateCalculator('ScoringCalculator')</script>";
+    $ret = "HI<div id = 'ScoringCalculator'></div>";
+    $ret .= "<script>CreateCalculator('ScoringCalculator');</script>";
 
     return $ret;
 }
