@@ -382,26 +382,26 @@ function CreateCalculator(containerid){
     var div = document.createElement("div");
     div.id ="divAddSystems";
     div.className = "bfAddRemove bfAdd"
-    container.addChildElement(div);
+    container.appendChild(div);
 
     div = document.createElement("div");
     div.id ="divRemoveSystems";
     div.className = "bfAddRemove bfRemove"
-    container.addChildElement(div);
+    container.appendChild(div);
 
     div = document.createElement("div");
     div.id ="debug";
-    container.addChildElement(div);
+    container.appendChild(div);
 
     div = document.createElement("div");
     div.id ="scoretable";
     div.style = "display: inline-block"
-    container.addChildElement(div);
+    container.appendChild(div);
 
     div = document.createElement("div");
     div.id ="sampleboards";
     div.style = "margin: -40px 0px 10px 10px"
-    container.addChildElement(div);
+    container.appendChild(div);
 
     SetUpSystems();
 
