@@ -168,8 +168,6 @@ function CalculateDixie(){
       }
     });
 
-//document.getElementById("debug").innerHTML += "<BR>"+JSON.stringify(ranks);
-
 	var lastrank=0;
     ranks.forEach(x=>{
         var start = lastrank+1;
@@ -295,7 +293,7 @@ function CalculateMindTheGap(){
     var nontoppers = mCenterCounts.filter(x=>x!=topcenters);
     var survivors = mCenterCounts.filter(x=>x>0);
     
-    var survB=49/survivors.length;
+    var survB = 49/survivors.length;
     var secondcenters = toppers.length>1 ? topcenters : Math.max(...nontoppers);
     var tribute = Math.min(topcenters - secondcenters, survB);
     
@@ -345,6 +343,47 @@ function CalculateOpenTribute(pC, pShareType, pSpoilVanquished){
     }
     tribute /= toppers.length;
     toppers.forEach(i => ret[i]+=tribute);
+
+    return ret;
+}
+
+function CalculateOpenMindTheGap(){
+    var soli=FindSoloist();
+    if(soli!=0) return mCenterCounts.map(x=> (x==soli) ? 100 : 0);
+
+	var topcenters = Math.max(...mCenterCounts);
+    var rankgroups = GetRankGroups();
+
+    var iTotalBeaten = 7;
+    var iTotalBeatenBy = 0;
+    var iTributeTarget = 0;
+    var dbTotalTribute = 0.0;
+    var toppers = null;
+
+    var ret = mCenterCounts.map(x => 0);
+
+    rankgroups.forEach(x=>{
+        var rank = x[0];
+        var players = x[1];
+        var centercount = mCenterCounts[players[0]];
+
+        iTotalBeaten -= players.length;
+        if(rank == 1) toppers = players;
+        if(rank == 2 && toppers.length == 1) iTributeTarget = topcenters - centercount;
+
+        players.forEach(pp => {
+            ret[pp] = 1.5 * centercount + (centercount > 0 ? 9 : 0) + Math.max(0, 0.75 * (iTotalBeaten - iTotalBeatenBy));
+            if(rank > 1){
+                var dbTribute = Math.min(iTributeTarget, 0.5 * ret[pp]);
+                ret[pp] -= dbTribute;
+                dbTotalTribute += dbTribute;
+            }
+        });
+
+        iTotalBeatenBy += players.length;
+    });
+
+    if(toppers.length == 1) ret[toppers[0]] += dbTotalTribute;
 
     return ret;
 }

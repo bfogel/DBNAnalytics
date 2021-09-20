@@ -42,6 +42,7 @@ function SetUpSystems(){
     group.push(ot);
     mSystemGroups.push(["Tributary",group]);
     group.push(["MindTheGap", 100/7, CalculateMindTheGap]);
+    group.push(["OpenMindTheGap", 100/7, CalculateOpenMindTheGap]);
 
     mSystemGroups.forEach(gg=>{
        gg[1].forEach(x=>mFixedSystems.push(x)) 
