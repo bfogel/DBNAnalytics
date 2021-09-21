@@ -59,8 +59,8 @@ function bfStyleTableCountryRows(table, countries){
 }
 
 function bfMakeTableClickable(table, urls){
-  table.body.className = "bfTableClickable"; 
   var tbody = table.tBodies[0];
+  tbody.className = "bfTableClickable"; 
   for( var i = 0; i < countries.length; i++){
     if(i < tbody.rows.length) tbody.rows[i].setAttribute("onclick", " document.location = '" + urls[i] + "'Back'");
    }
