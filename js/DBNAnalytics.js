@@ -62,7 +62,7 @@ function bfMakeTableClickable(table, urls){
   var tbody = table.tBodies[0];
   tbody.className = "bfTableClickable"; 
   for( var i = 0; i < urls.length; i++){
-    if(i < tbody.rows.length) tbody.rows[i].setAttribute("onclick", " document.location = '" + urls[i] + "'Back'");
+    if(i < tbody.rows.length) tbody.rows[i].setAttribute("onclick", " document.location = '" + urls[i] + "'");
    }
 }
 
