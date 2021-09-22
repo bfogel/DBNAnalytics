@@ -51,6 +51,24 @@ function bfStyleTableNumberColumns(table, columns){
   }
 }
 
+function bfStyleTableAddClassToColumn(table, classname, columnindex){ 
+  var tbody = table.tBodies[0];
+  for (const row of tbody.rows) {
+    if(columnindex < row.children.length) row.children[columnindex].className += " " + classname;
+  }
+}
+
+function bfStyleTableCountryColumns(table, columncountries){ 
+  for(var columnindex in columncountries){
+    var country = columncountries[columnindex];
+    bfStyleTableAddClassToColumn(table, "bf" + country + "Back", columnindex);
+  }
+  // var tbody = table.tBodies[0];
+  // for( var i = 0; i < countries.length; i++){
+  //   if(i < tbody.rows.length) tbody.rows[i].className += " bf" + countries[i] + "Back";
+  //  }
+}
+
 function bfStyleTableCountryRows(table, countries){ 
   var tbody = table.tBodies[0];
   for( var i = 0; i < countries.length; i++){
