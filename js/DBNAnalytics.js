@@ -191,7 +191,7 @@ class dbnTable {
     
     this.EnsureRows();
 
-    table = this.#tag;
+    var table = this.#tag;
     table.innerHTML = null;
     table.className = "bftable";
 
