@@ -276,31 +276,15 @@ class dbnTable {
 
     var sgn = this.#lastSortAscending ? 1 : -1;
 
-    // if(this.NumberColumns != null && this.NumberColumns.includes(bycolumnindex)){
-    //   this.#rows.sort(function(a, b){
-    //     return sgn*(a.Values[bycolumnindex] - b.Values[bycolumnindex])
-    //   });
-    // }else{
-    //   this.#rows.sort(function(a, b){
-    //     let x = (a.Values[bycolumnindex]??"").toLowerCase();
-    //     let y = (b.Values[bycolumnindex]??"").toLowerCase();
-    //     if (x < y) {return sgn*-1;}
-    //     if (x > y) {return sgn*1;}
-    //     return 0;
-    //   });    
-    // }
-    
     this.#rows.sort(function(a, b){
       var va = a.Values[bycolumnindex]??"";
       var vb = b.Values[bycolumnindex]??"";
 
       if(isNaN(va) || isNaN(vb)){
-        console.log(va + " \ " + vb + " -- " + va.substring(va.length-1,va.length));
         
         if(va.substring(va.length-1,va.length) == "%"){
           var aa = va.substring(0,va.length-1);
           var bb = vb.substring(0,vb.length-1);
-          console.log("reduced: " + aa + " \ " + bb);
           return sgn*( Number(aa) - Number(bb));
         }
         let x = va.toLowerCase();
