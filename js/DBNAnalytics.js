@@ -138,3 +138,161 @@ function bfTabsOpenContent(evt, divcasename, divname) {
 function bfTabsOpenContentByIndex(divcasename, index) {
     document.getElementById(divcasename + 'Button' + index).click();
 }
+
+
+class dbnRow {
+    Values = null;
+    Country = null;
+    Url = null;    
+}
+
+class dbnTable {
+
+  Data = null;
+  Headers = null;
+  Title = null;
+  NumberColumns = null;
+  CountryColumns = null;
+  CountryRows = null;
+  RowUrls = null;
+  ClickHeaderToSort = false;
+  
+  #tag = null;
+  #rows = null;
+  #variableName = null;
+  #lastSortIndex = null;
+  #lastSortAscending = false;
+
+  constructor(variablename){
+    this.#variableName = variablename;
+    var scripttag = document.currentScript;
+    this.#tag = scripttag.parentElement.insertBefore(document.createElement("table"),scripttag);
+  }
+
+  EnsureRows(){
+    if(this.#rows == null) {
+      var rows = [];
+      var iRow = 0;
+      for (var rr of this.Data) {  
+        var row = new dbnRow();
+        row.Values = rr;
+
+        if(this.CountryRows != null && this.CountryRows[iRow] != null) row.Country = this.CountryRows[iRow];
+        if(this.RowUrls != null && this.RowUrls[iRow] != null) row.Url = this.RowUrls[iRow];
+        
+        iRow++;
+        rows.push(row);
+      }
+      this.#rows = rows;
+    }
+  }
+
+  Generate(){
+    
+    this.EnsureRows();
+
+    table = this.#tag;
+    table.innerHTML = null;
+    table.className = "bftable";
+
+    var thead = table.createTHead();
+    var tbody = table.createTBody();
+
+    var titleCell = null;
+    if(this.Title != null){
+      var row = thead.insertRow();
+      row.className = "bftableTitleRow";
+      titleCell = document.createElement("th");
+      titleCell.innerHTML = this.Title;
+      row.appendChild(titleCell);
+    }
+
+    var colcount = 0;
+
+    if(this.Headers != null){
+      row = thead.insertRow();
+      row.className = "bftableHeaderRow";
+      var iCol=0;
+      for (var hh of this.Headers) {  
+        var cell = document.createElement("th");
+        row.appendChild(cell);
+        cell.innerHTML = hh;
+        if(this.ClickHeaderToSort) {
+          cell.setAttribute("onclick", this.#variableName + ".SortAndGenerate(" + iCol + ")");
+          cell.className += " clickable";
+          if(iCol == (this.#lastSortIndex??-1)){
+            //cell.innerHTML += this.#lastSortAscending ? "&uarr;" : "&darr;";
+            cell.innerHTML += this.#lastSortAscending ? "&#9650;" : "&#9660;";
+          }
+        }
+        iCol++;
+      }
+      if(row.childElementCount > colcount) colcount = row.childElementCount;
+    }
+
+    for (var rr of this.#rows) {  
+      row = tbody.insertRow();
+
+      for (var cc of rr.Values) {  
+        var cell = row.insertCell();
+        cell.innerHTML = cc;
+      }
+      if(row.childElementCount > colcount) colcount = row.childElementCount;
+
+      if(this.NumberColumns != null){
+        for(const i of this.NumberColumns){
+          if(i < row.children.length) row.children[i].className += " bfnumcolumn";
+        }
+      }
+
+      if(this.CountryColumns != null){
+        for(var i in this.CountryColumns){
+          if(i < row.children.length) row.children[i].className += " bf" + this.CountryColumns[i] + "Back";
+        }
+      }
+    
+      if(rr.Country != null) row.className += " bf" + rr.Country + "Back";
+      
+      if(rr.Url != null){
+        row.className += " bfTest";
+        row.setAttribute("onclick", " document.location = '" + rr.Url + "'");
+      }
+
+    }
+
+    if(titleCell != null) titleCell.colSpan = colcount;
+
+  }
+  
+  Sort(bycolumnindex){
+    this.EnsureRows();
+
+    if( (this.#lastSortIndex ?? -1) == bycolumnindex) {
+      this.#lastSortAscending = !this.#lastSortAscending;
+    }else{
+      this.#lastSortIndex = bycolumnindex;
+      this.#lastSortAscending = true;
+    }
+
+    var sgn = this.#lastSortAscending ? 1 : -1;
+
+    if(this.NumberColumns != null && this.NumberColumns.includes(bycolumnindex)){
+      this.#rows.sort(function(a, b){return sgn*(a.Values[bycolumnindex] - b.Values[bycolumnindex])});
+    }else{
+      this.#rows.sort(function(a, b){
+        let x = (a.Values[bycolumnindex]??"").toLowerCase();
+        let y = (b.Values[bycolumnindex]??"").toLowerCase();
+        if (x < y) {return sgn*-1;}
+        if (x > y) {return sgn*1;}
+        return 0;
+      });    
+    }
+
+  }
+
+  SortAndGenerate(bycolumnindex){
+    this.Sort(bycolumnindex);
+    this.Generate();
+  }
+
+}
