@@ -276,18 +276,37 @@ class dbnTable {
 
     var sgn = this.#lastSortAscending ? 1 : -1;
 
-    if(this.NumberColumns != null && this.NumberColumns.includes(bycolumnindex)){
-      this.#rows.sort(function(a, b){return sgn*(a.Values[bycolumnindex] - b.Values[bycolumnindex])});
-    }else{
-      this.#rows.sort(function(a, b){
+    // if(this.NumberColumns != null && this.NumberColumns.includes(bycolumnindex)){
+    //   this.#rows.sort(function(a, b){
+    //     return sgn*(a.Values[bycolumnindex] - b.Values[bycolumnindex])
+    //   });
+    // }else{
+    //   this.#rows.sort(function(a, b){
+    //     let x = (a.Values[bycolumnindex]??"").toLowerCase();
+    //     let y = (b.Values[bycolumnindex]??"").toLowerCase();
+    //     if (x < y) {return sgn*-1;}
+    //     if (x > y) {return sgn*1;}
+    //     return 0;
+    //   });    
+    // }
+
+    this.#rows.sort(function(a, b){
+      if(typeof a == "string" || typeof b == "string"){
+
+        if(a.substring(a.length-1,1) == "%"){
+          var aa = a.substring(a.length-1);
+          var bb = a.substring(b.length-1);
+          return sgn*(aa.Values[bycolumnindex] - bb.Values[bycolumnindex]);
+        }
         let x = (a.Values[bycolumnindex]??"").toLowerCase();
         let y = (b.Values[bycolumnindex]??"").toLowerCase();
-        if (x < y) {return sgn*-1;}
-        if (x > y) {return sgn*1;}
+        if (x < y) return sgn * -1;
+        if (x > y) return sgn * 1;
         return 0;
-      });    
-    }
-
+      }else{
+        return sgn*(a.Values[bycolumnindex] - b.Values[bycolumnindex]);
+      }
+    });
   }
 
   SortAndGenerate(bycolumnindex){
