@@ -289,22 +289,27 @@ class dbnTable {
     //     return 0;
     //   });    
     // }
-
+    
     this.#rows.sort(function(a, b){
-      if(typeof a == "string" || typeof b == "string"){
+      var va = a.Values[bycolumnindex]??"";
+      var vb = b.Values[bycolumnindex]??"";
 
-        if(a.substring(a.length-1,1) == "%"){
-          var aa = a.substring(a.length-1);
-          var bb = a.substring(b.length-1);
-          return sgn*(aa.Values[bycolumnindex] - bb.Values[bycolumnindex]);
+      if(isNaN(va) || isNaN(vb)){
+        console.log(va + " \ " + vb + " -- " + va.substring(va.length-1,va.length));
+        
+        if(va.substring(va.length-1,va.length) == "%"){
+          var aa = va.substring(0,va.length-1);
+          var bb = vb.substring(0,vb.length-1);
+          console.log("reduced: " + aa + " \ " + bb);
+          return sgn*( Number(aa) - Number(bb));
         }
-        let x = (a.Values[bycolumnindex]??"").toLowerCase();
-        let y = (b.Values[bycolumnindex]??"").toLowerCase();
+        let x = va.toLowerCase();
+        let y = vb.toLowerCase();
         if (x < y) return sgn * -1;
         if (x > y) return sgn * 1;
         return 0;
       }else{
-        return sgn*(a.Values[bycolumnindex] - b.Values[bycolumnindex]);
+        return sgn*(va - vb);
       }
     });
   }
