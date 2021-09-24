@@ -143,7 +143,9 @@ function bfTabsOpenContentByIndex(divcasename, index) {
 class dbnRow {
     Values = null;
     Country = null;
-    Url = null;    
+    Url = null;
+    Highlighted = false;
+    CellCountries = null;
 }
 
 class dbnTable {
@@ -151,11 +153,16 @@ class dbnTable {
   Data = null;
   Headers = null;
   Title = null;
+  ClickHeaderToSort = false;
+
   NumberColumns = null;
+  HighlightedRows = null;
+
   CountryColumns = null;
   CountryRows = null;
+  CountryCells = null;
+
   RowUrls = null;
-  ClickHeaderToSort = false;
   
   #tag = null;
   #rows = null;
@@ -179,10 +186,23 @@ class dbnTable {
 
         if(this.CountryRows != null && this.CountryRows[iRow] != null) row.Country = this.CountryRows[iRow];
         if(this.RowUrls != null && this.RowUrls[iRow] != null) row.Url = this.RowUrls[iRow];
+        if(this.HighlightedRows != null && this.HighlightedRows.includes(iRow)) row.Highlighted = true;
         
         iRow++;
         rows.push(row);
       }
+
+      if(this.CountryCells != null){
+        this.CountryCells.forEach(rcc => {
+          if(rcc.length>=3){
+            var row = rows[rcc[0]];
+            if(row.CellCountries == null) row.CellCountries = {};
+            row.CellCountries[rcc[1]] = rcc[2];
+            console.log(JSON.stringify(row.CellCountries));
+          }
+        });
+      }
+
       this.#rows = rows;
     }
   }
@@ -251,11 +271,21 @@ class dbnTable {
         }
       }
     
+      if(rr.CellCountries != null){
+        for( iCol in rr.CellCountries){
+          if(iCol < row.children.length) row.children[iCol].className += " bf" + rr.CellCountries[iCol] + "Back";
+        }
+      }
+    
       if(rr.Country != null) row.className += " bf" + rr.Country + "Back";
       
       if(rr.Url != null){
         row.className += " bfTest";
         row.setAttribute("onclick", " document.location = '" + rr.Url + "'");
+      }
+
+      if( rr.Highlighted){
+        row.className += " bftableRowHighlight";
       }
 
     }
