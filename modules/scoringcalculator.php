@@ -8,6 +8,7 @@ add_shortcode( 'dbnScoringCalculator', 'dbnScoringCalculator_Create' );
 
 function dbnScoringCalculator_Create() {
     $ret = "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/ScoringCalculator.css'>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/GameScraper.js'></script>";
     $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/ScoringFunctions.js'></script>";
     $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/ScoringCalculator.js'></script>";
     $ret .= "<div id = 'ScoringCalculator'></div>";

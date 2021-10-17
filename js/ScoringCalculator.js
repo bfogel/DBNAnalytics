@@ -274,8 +274,19 @@ function makeScoreTable(){
 	
     var s ='';
     
+    // Add game URL form
+    s += '<div id="game-url-form">'
+    s += '<form name="gameUrlForm" onsubmit="return false"><fieldset>'
+    s += '<legend>Paste a game URL to see its scores:</legend><label>'
+    s += '<input id="gameUrlInput" type="URL" placeholder="Only supports WebDip, vDip, and Backstabbr URLs at the moment" onclick="this.select()">'
+    s += '</label><div class="submit-button-div">'
+    s += '<button id="submitButton" onclick="scrapeGameScores()">Submit</button></div>'
+    s += '</fieldset></form></div>'
+    
+    // Add toggle average button
     s += '<button class="bf ToggleShowType" id="btnToggleAverage" onclick="ChangeShowType()">xxx</button><span style="font-size: 12px;  float: right" id="spnLegend"></span>';
     
+    // Add scores
     s += '<table class = "score">';
 
 	s += '<tr class = "row">';

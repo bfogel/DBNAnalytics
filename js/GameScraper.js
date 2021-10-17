@@ -75,3 +75,23 @@ async function scrapeGameScores() {
 	// Turned off clearing the URL because maybe people would want to refresh the same game?
 	// document.getElementById("gameUrlInput").value = null;
 }
+
+// Set the scores from a given dictionary of {countryName: centerCount}
+function setCenterCounts(countryCountDict) {
+	var i = 1;
+	var totalCenters = 0;
+
+	// Assumes that country order is consistently A,E,F,G,I,R,T
+	Object.entries(countryCountDict).forEach(([country, count]) => {
+		var countElement = document.getElementById("cc" + i.toString());
+		countElement.innerHTML = count;
+		totalCenters += count;
+		++i;
+	});
+
+	document.getElementById("ccT").innerHTML = totalCenters;
+}
+
+function updateScores() {
+	// Empty for now, testing things
+}
