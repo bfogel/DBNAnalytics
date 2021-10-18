@@ -9,15 +9,30 @@ async function scrapeGameScores() {
 
 	// TODO: separate different websites into different functions
 	try {
-		// This cors-anywhere server is run via Heroku app and can be found here:
-		// https://gitlab.com/diplomacy-things/cors-anywhere-fork
-		let response = await fetch("https://cors-anywhere-diplomacy-things.herokuapp.com/" + url);
+		// Get the site from the URL
+		// src: b for backstabbr, w for webdip
+		let src = ""
+		let gameId = ""
+		if (url.includes("webdiplomacy.")) {
+			src = "w"
+			gameId = url.split("gameID=")[1]
+		} else if (url.includes("backstabbr.")) {
+			src = "b"
+			splitUrl = url.split("/")[1]
+			gameId = splitUrl[splitUrl.length - 1]
+		}
+
+		console.log(src, gameId);
+
+		// Hardcoded server URL for fetching games
+		let response = await fetch(
+			"http://diplobn.com/wp-content/plugins/DBNAnalytics/external/retrieve.php?src=" + src + "&id=" + gameId);
 		let data = await response.text();
 
 		var webpage = document.createElement("html");
 		webpage.innerHTML = data;
 		
-		// webdip and vdip
+		// webdip (and theoretically vdip if the diplobn /retrieve.php supports it)
 		// test URLs
 		// drawn game: https://webdiplomacy.net/board.php?gameID=340030
 		// won game: https://webdiplomacy.net/board.php?gameID=334382
@@ -27,7 +42,7 @@ async function scrapeGameScores() {
     		let rows = table.getElementsByClassName("member");
 
     		// Go through each country to get the name and center count
-    		for (var i = rows.length - 1; i >= 0; i--) {
+    		for (let i = rows.length - 1; i >= 0; i--) {
     			let span = rows[i].getElementsByClassName("memberCountryName")[0];
     			let countryName = span.textContent.trim().toLowerCase();
 
@@ -52,7 +67,7 @@ async function scrapeGameScores() {
 			// won game - https://www.backstabbr.com/game/SB-Game-143/5154168504582144
 			let legend = webpage.getElementsByClassName("legend")[0];
 			let spans = legend.getElementsByTagName("span");
-			for (var i = spans.length - 1; i >= 0; i--) {
+			for (let i = spans.length - 1; i >= 0; i--) {
 				let strings = spans[i].textContent.trim().split(" ");
 				if (strings.length === 2) {
 					scrapedCenterCounts[strings[0].toLowerCase()] = Number(strings[1]);
