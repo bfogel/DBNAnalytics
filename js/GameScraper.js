@@ -18,7 +18,7 @@ async function scrapeGameScores() {
 			gameId = url.split("gameID=")[1]
 		} else if (url.includes("backstabbr.")) {
 			src = "b"
-			splitUrl = url.split("/")[1]
+			splitUrl = url.split("/")
 			gameId = splitUrl[splitUrl.length - 1]
 		}
 
