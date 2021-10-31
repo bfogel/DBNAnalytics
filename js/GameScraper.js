@@ -26,7 +26,7 @@ async function scrapeGameScores() {
 
 		// Hardcoded server URL for fetching games
 		let response = await fetch(
-			"http://diplobn.com/wp-content/plugins/DBNAnalytics/external/retrieve.php?src=" + src + "&id=" + gameId);
+			"https://diplobn.com/wp-content/plugins/DBNAnalytics/external/retrieve.php?src=" + src + "&id=" + gameId);
 		let data = await response.text();
 
 		var webpage = document.createElement("html");
