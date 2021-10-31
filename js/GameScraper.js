@@ -22,7 +22,8 @@ async function scrapeGameScores() {
 			gameId = splitUrl[splitUrl.length - 1]
 		}
 
-		console.log(src, gameId);
+		// For debugging URL parsing
+		// console.log(src, gameId);
 
 		// Hardcoded server URL for fetching games
 		let response = await fetch(
@@ -102,8 +103,4 @@ function setCenterCounts(countryCountDict) {
 	});
 
 	UpdateDisplay();
-}
-
-function updateScores() {
-	// Empty for now, testing things
 }
