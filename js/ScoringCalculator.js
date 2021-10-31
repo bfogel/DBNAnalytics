@@ -78,8 +78,8 @@ function UpdateDisplay(){
         }
     }
 
-    var maxdecs=0;
-    var suffix="";
+    var maxdecs = 0;
+    var suffix = "";
 
     switch(mShowScoreType){
         case 0: //Show as multiples of A
@@ -208,7 +208,7 @@ function MakeSampleBoards(){
     var s="Samples: ";
     for (i = 0; i < boards.length; i++){
         var ccs=boards[i];
-        s += '<button style="margin-right: 5px" onclick="SetBoard(['+ccs+'])">'+ccs+'</button>';
+        s += '<button class="bfOtherButton" style="margin-right: 5px" onclick="SetBoard(['+ccs+'])">'+ccs+'</button>';
     }
     document.getElementById('sampleboards').innerHTML=s;
 } 
@@ -231,39 +231,40 @@ function RemoveSystem(pLabel){
 function makeSystemControls(){
     var s='';
     
-    //mSystemLabelAverages.forEach(x=>
-    //    s += '<button onclick="RemoveSystem(\''+ x[0] + '\')">' + x[0] + '</button> '
-    //);
-    //if(s=='') s='(none)';
-    //document.getElementById('divRemoveSystems').innerHTML='Remove: ' + s;
-    //document.getElementById('divRemoveSystems').innerHTML='Click the header to remove.';
-    document.getElementById('divRemoveSystems').style.display="none";
-
     var notselected=[];
     var selected=[];
     mSystemLabelAverages.forEach(x=>selected.push(x[0]));
     mFixedSystems.forEach(x=>{if(!selected.includes(x[0])) notselected.push(x[0]);});
     
     s='';
-    mFixedSystems.forEach(x=>{
-        if(notselected.includes(x[0])) s += '<button onclick="AddSystem(\''+ x[0] + '\')">' + x[0] + '</button> '
-    });
-    if(s=='') s='(none)';
-
-    s='';
     mSystemGroups.forEach(group=>{
         var sg = '';
         group[1].forEach(x=>{
-            if(notselected.includes(x[0])) sg += '<button onclick="AddSystem(\''+ x[0] + '\')">' + x[0] + '</button> ';
+            if(notselected.includes(x[0])) sg += '<button class="bfAddSystem" onclick="AddSystem(\''+ x[0] + '\')">' + x[0] + '</button> ';
         });
             
-        if(sg == '') sg = '(none)';
-        sg = '<div class="bfSystemGroup">' + group[0] + ": " + sg +'<br></div>';
-        s += sg;
+        if(sg != '') {
+
+            var sgroup = '<div class="btn-group">';
+            sgroup += '<div class="btn-group-title">' + group[0] + '</div>';
+            sgroup += '<div class="btn-group-buttons">' + sg + '</div>';
+            sgroup += '</div>';
+            s += sgroup;
+        }
+        
     });
 
     document.getElementById('divAddSystems').innerHTML=s;
 
+    // Add game URL form
+    s = '';
+    s += '<div id="game-url-form">'
+    s += 'Import center counts:'
+    s += '<input style="width:350px" id="gameUrlInput" type="URL" placeholder="WebDip, vDip, or Backstabbr URL" onclick="this.select()">'
+    s += '<button class="bfOtherButton" id="submitButton" onclick="scrapeGameScores()">Import</button>'
+    s += '</div>'
+    document.getElementById('divImportCenterCounts').innerHTML=s;
+    
     makeScoreTable();
     UpdateDisplay();
 }
@@ -274,17 +275,8 @@ function makeScoreTable(){
 	
     var s ='';
     
-    // Add game URL form
-    s += '<div id="game-url-form">'
-    s += '<form name="gameUrlForm" onsubmit="return false"><fieldset>'
-    s += '<legend>Paste a game URL to see its scores:</legend><label>'
-    s += '<input id="gameUrlInput" type="URL" placeholder="Only supports WebDip, vDip, and Backstabbr URLs at the moment" onclick="this.select()">'
-    s += '</label><div class="submit-button-div">'
-    s += '<button id="submitButton" onclick="scrapeGameScores()">Submit</button></div>'
-    s += '</fieldset></form></div>'
-    
     // Add toggle average button
-    s += '<button class="bf ToggleShowType" id="btnToggleAverage" onclick="ChangeShowType()">xxx</button><span style="font-size: 12px;  float: right" id="spnLegend"></span>';
+    s += '<button class="bfOtherButton" id="btnToggleAverage" onclick="ChangeShowType()">xxx</button><span style="font-size: 12px;  float: right" id="spnLegend"></span>';
     
     // Add scores
     s += '<table class = "score">';
@@ -303,7 +295,7 @@ function makeScoreTable(){
     
     mSystemLabelAverages.forEach((x,si)=>{
         s += '<span class="bfScore bfScoreHeader" id="s'+si+'0">';
-        s += '<button class="bfRemoveSystem" onclick = "RemoveSystem(\''+ x[0] + '\')">';
+        s += '<button class="bfRemoveSystem bfOtherButton" onclick = "RemoveSystem(\''+ x[0] + '\')">';
         s += x[0] + '</button></span>';
     });
     s += '	</td>';
@@ -393,12 +385,12 @@ function CreateCalculator(containerid){
 
     var div = document.createElement("div");
     div.id ="divAddSystems";
-    div.className = "bfAddRemove bfAdd"
+    div.className = "bfAdmin"
     container.appendChild(div);
 
     div = document.createElement("div");
-    div.id ="divRemoveSystems";
-    div.className = "bfAddRemove bfRemove"
+    div.id ="divImportCenterCounts";
+    div.className = "bfAdmin"
     container.appendChild(div);
 
     div = document.createElement("div");
