@@ -81,12 +81,15 @@ function UpdateDisplay(){
     var maxdecs = 0;
     var suffix = "";
 
+    for (let i = 0; i < 3; i++) {
+        document.getElementById("btnShowType" + i).className = "bfAddSystem" + (i==mShowScoreType ? " bfSelected" : "");
+    }
     switch(mShowScoreType){
         case 0: //Show as multiples of A
             maxdecs=2;
             suffix=" A";
-            document.getElementById("btnToggleAverage").innerHTML='Show absolute scores';
-            document.getElementById("spnLegend").innerHTML='Scores shown in terms of the overall average (A)';            
+            // document.getElementById("btnToggleAverage").innerHTML='Show absolute scores';
+            // document.getElementById("spnLegend").innerHTML='Scores shown in terms of the overall average (A)';            
 
             for (si = 0; si<displayscores.length; si++){
                 for (i = 0; i < mCenterCounts.length; i++) { 
@@ -98,15 +101,15 @@ function UpdateDisplay(){
         case 1: //Show absolute
             maxdecs=1;
             suffix="";
-            document.getElementById("btnToggleAverage").innerHTML='Show as percentage of avg total';
-            document.getElementById("spnLegend").innerHTML='';
+            // document.getElementById("btnToggleAverage").innerHTML='Show as percentage of avg total';
+            // document.getElementById("spnLegend").innerHTML='';
             break;
 
         case 2: //Show as a percentage of 7*A
             maxdecs=1;
             suffix="%";
-            document.getElementById("btnToggleAverage").innerHTML='Show scores relative to average';
-            document.getElementById("spnLegend").innerHTML='Scores shown as percentages of the average total';            
+            // document.getElementById("btnToggleAverage").innerHTML='Show scores relative to average';
+            // document.getElementById("spnLegend").innerHTML='Scores shown as percentages of the average total';            
 
             for (si = 0; si<displayscores.length; si++){
                 for (i = 0; i < mCenterCounts.length; i++) { 
@@ -192,6 +195,11 @@ function ChangeShowType(){
     UpdateDisplay();
 }
 
+function SetShowType(pType){
+    mShowScoreType=pType;
+    UpdateDisplay();
+}
+
 function SetBoard(pCenters){
     mCenterCounts=pCenters;
     UpdateDisplay();
@@ -263,6 +271,15 @@ function makeSystemControls(){
     s += '<input style="width:350px" id="gameUrlInput" type="URL" placeholder="WebDip, vDip, or Backstabbr URL" onclick="this.select()">'
     s += '<button class="bfOtherButton" id="submitButton" onclick="scrapeGameScores()">Import</button>'
     s += '</div>'
+    
+    s += '<div class="btn-group">';
+    s += '<div class="btn-group-title">Show scores as</div>';
+    s += '<div class="btn-group-buttons">';
+    s += '<button id="btnShowType1" class="bfAddSystem" onclick="SetShowType(1)">Absolutes</button>';
+    s += '<button id="btnShowType0" class="bfAddSystem" onclick="SetShowType(0)">Multiples of average</button>';
+    s += '<button id="btnShowType2" class="bfAddSystem" onclick="SetShowType(2)">Percentanges of average total</button>';
+    s += '</div></div>';
+   
     document.getElementById('divImportCenterCounts').innerHTML=s;
     
     makeScoreTable();
@@ -276,7 +293,7 @@ function makeScoreTable(){
     var s ='';
     
     // Add toggle average button
-    s += '<button class="bfOtherButton" id="btnToggleAverage" onclick="ChangeShowType()">xxx</button><span style="font-size: 12px;  float: right" id="spnLegend"></span>';
+    //s += '<button class="bfOtherButton" id="btnToggleAverage" onclick="ChangeShowType()">xxx</button><span style="font-size: 12px;  float: right" id="spnLegend"></span>';
     
     // Add scores
     s += '<table class = "score">';

@@ -107,6 +107,11 @@ td.bfTribCalcRow {white-space: nowrap;}
     background-color: transparent ;
   }
   
+  button.bfSelected{
+    background-color: rgb(130,130,250);
+    color:white;
+  }
+
   button.bfAddSystem:last-child {
     border-bottom-right-radius: 10px;
   
