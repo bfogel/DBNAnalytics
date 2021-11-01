@@ -10,11 +10,14 @@ async function scrapeGameScores() {
 	// TODO: separate different websites into different functions
 	try {
 		// Get the site from the URL
-		// src: b for backstabbr, w for webdip
+		// src: b for backstabbr, w for webdip, v for vdip
 		let src = ""
 		let gameId = ""
 		if (url.includes("webdiplomacy.")) {
 			src = "w"
+			gameId = url.split("gameID=")[1]
+		} else if (url.includes("vdiplomacy.")) {
+			src = "v"
 			gameId = url.split("gameID=")[1]
 		} else if (url.includes("backstabbr.")) {
 			src = "b"
@@ -33,7 +36,7 @@ async function scrapeGameScores() {
 		var webpage = document.createElement("html");
 		webpage.innerHTML = data;
 		
-		// webdip (and theoretically vdip if the diplobn /retrieve.php supports it)
+		// webdip and vdip
 		// test URLs
 		// drawn game: https://webdiplomacy.net/board.php?gameID=340030
 		// won game: https://webdiplomacy.net/board.php?gameID=334382
