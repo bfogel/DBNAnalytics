@@ -266,12 +266,14 @@ function makeSystemControls(){
 
     // Add game URL form
     s = '';
-    s += '<div id="game-url-form">'
-    s += 'Import center counts:'
+    s += '<div class="btn-group">';
+    s += '<div class="btn-group-title">Import center counts</div>';
+    s += '<div class="btn-group-buttons" style="padding: 5px">';
     s += '<input style="width:350px" id="gameUrlInput" type="URL" placeholder="WebDip or Backstabbr URL" onclick="this.select()">'
     s += '<button class="bfOtherButton" id="submitButton" onclick="scrapeGameScores()">Import</button>'
-    s += '</div>'
-    
+    s += '</div></div>';
+    s += "</br>";
+
     s += '<div class="btn-group">';
     s += '<div class="btn-group-title">Show scores as:</div>';
     s += '<div class="btn-group-buttons">';
