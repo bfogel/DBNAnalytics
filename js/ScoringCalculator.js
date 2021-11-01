@@ -268,12 +268,12 @@ function makeSystemControls(){
     s = '';
     s += '<div id="game-url-form">'
     s += 'Import center counts:'
-    s += '<input style="width:350px" id="gameUrlInput" type="URL" placeholder="WebDip, vDip, or Backstabbr URL" onclick="this.select()">'
+    s += '<input style="width:350px" id="gameUrlInput" type="URL" placeholder="WebDip or Backstabbr URL" onclick="this.select()">'
     s += '<button class="bfOtherButton" id="submitButton" onclick="scrapeGameScores()">Import</button>'
     s += '</div>'
     
     s += '<div class="btn-group">';
-    s += '<div class="btn-group-title">Show scores as</div>';
+    s += '<div class="btn-group-title">Show scores as:</div>';
     s += '<div class="btn-group-buttons">';
     s += '<button id="btnShowType1" class="bfAddSystem" onclick="SetShowType(1)">Absolutes</button>';
     s += '<button id="btnShowType0" class="bfAddSystem" onclick="SetShowType(0)">Multiples of average</button>';

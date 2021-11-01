@@ -82,9 +82,6 @@ async function scrapeGameScores() {
 
 	setCenterCounts(scrapedCenterCounts);
 
-	// New center counts? Need to update the scores!
-	updateScores();
-
 	// Update button text back to "Submit"
 	document.getElementById("submitButton").innerHTML = "Submit";
 
