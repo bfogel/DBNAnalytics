@@ -269,7 +269,7 @@ function makeSystemControls(){
     s += '<div class="btn-group">';
     s += '<div class="btn-group-title">Import center counts</div>';
     s += '<div class="btn-group-buttons" style="padding: 5px">';
-    s += '<input style="width:350px" id="gameUrlInput" type="URL" placeholder="WebDip or Backstabbr URL" onclick="this.select()">'
+    s += '<input style="width:350px" id="gameUrlInput" type="URL" placeholder="WebDip, vDip, or Backstabbr URL" onclick="this.select()">'
     s += '<button class="bfOtherButton" id="submitButton" onclick="scrapeGameScores()">Import</button>'
     s += '</div></div>';
     s += "</br>";
