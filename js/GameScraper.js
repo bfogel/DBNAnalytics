@@ -10,18 +10,29 @@ async function scrapeGameScores() {
 	try {
 		// Get the site from the URL
 		// src: b for backstabbr, w for webdip, v for vdip
-		let src = ""
-		let gameId = ""
+		let src = "";
+		let gameId = "";
+
 		if (url.includes("webdiplomacy.")) {
-			src = "w"
-			gameId = url.split("gameID=")[1]
+			src = "w";
+			gameId = url.split("gameID=")[1];
+
 		} else if (url.includes("vdiplomacy.")) {
-			src = "v"
-			gameId = url.split("gameID=")[1]
+			src = "v";
+			gameId = url.split("gameID=")[1];
+
 		} else if (url.includes("backstabbr.")) {
-			src = "b"
-			splitUrl = url.split("/")
-			gameId = splitUrl[splitUrl.length - 1]
+			src = "b";
+			splitUrl = url.split("/");
+			gameId = splitUrl[splitUrl.length - 1];
+
+			// Handle a trailing slash or /gameId/year/turn in the URL
+			// TODO: add a way to specify the year+turn in /retrieve.php?
+			let i = 2;
+			while (gameId.length < 7) {
+				gameId = splitUrl[splitUrl.length - i];
+				++i;
+			}
 		}
 
 		// For debugging URL parsing
