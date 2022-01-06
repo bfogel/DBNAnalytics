@@ -58,19 +58,21 @@ function bfTabsOpenContentByIndex(divcasename, index) {
 
 //#region Data hub
 
-//var myHub = new dbnHub();
-
 class dbnHub {
 
-  _players = null;
+  #players = null;
   get Players() {
-    if (this._players == null) {
-      var data = this.hubget('p');
-      data.shift(); //Field info
+    if (this.#players == null) {
+      var response = this.hubget('p');
+      var data = response.data;
       var pps = data.map(x => new dbnPlayer(x[0], x[1]));
-      this._players = pps;
+      pps.sort((a, b) => {
+        var aa = a.PlayerName.toLowerCase(); var bb = b.PlayerName.toLowerCase();
+        return aa > bb ? 1 : (aa < bb ? -1 : 0);
+      });
+      this.#players = pps;
     }
-    return this._players;
+    return this.#players;
   }
 
   hubget(src) {
@@ -88,12 +90,52 @@ class dbnHub {
     return data;
   }
 }
+var myHub = new dbnHub();
 
 class dbnPlayer {
   constructor(playerid, playername) { this.PlayerID = parseInt(playerid); this.PlayerName = playername; }
   PlayerID = null;
   PlayerName = null;
   toString() { return "{Player " + this.PlayerID + ": " + this.PlayerName + "}"; }
+}
+
+class dbnPlayerSelector {
+
+  #tag = null;
+  #variableName = null;
+
+  constructor(variablename) {
+    this.#variableName = variablename;
+    var scripttag = document.currentScript;
+    this.#tag = document.createElement("select");
+    scripttag.parentElement.insertBefore(this.#tag, scripttag);
+    this.LoadPlayers();
+  }
+
+  get onchange() { return this.#tag.onchange; }
+  set onchange(value) { this.#tag.onchange = value; }
+
+  get SelectedPlayer() {
+    var i = this.#tag.value;
+    if (i == null) return null;
+    return myHub.Players.find(x => x.PlayerID == i);
+  }
+
+  LoadPlayers() {
+    var optionNull = document.createElement("option");
+    optionNull.text = "(none)";
+    optionNull.value = null;
+    this.#tag.add(optionNull);
+
+    myHub.Players.forEach(x => {
+      var option = document.createElement("option");
+      option.text = x.PlayerName;
+      option.value = x.PlayerID;
+      this.#tag.add(option);
+    }
+    );
+  }
+
 }
 
 //#endregion
