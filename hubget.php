@@ -12,12 +12,24 @@ $season = $_GET['season'];
 
 //echo $bid;
 switch ($src) {
-  case 'p':
-    $ret = GetAndReturnJSON('SELECT PlayerID, PlayerName FROM Player');
-    break;
-  default:
-    $ret = 'nope';
-    break;
+    case 'p':
+        $ret = GetAndReturnJSON('SELECT PlayerID, PlayerName FROM Player');
+        break;
+
+    case 'pc':
+        {
+            $p1id = $_GET['p1'];
+            $p2id = $_GET['p2'];
+            $sql = 'SELECT GameID, Label';
+            $sql .= ' FROM Game as G';
+            $sql .= ' WHERE GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ' . $p1id . ')' ;
+            $sql .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ' . $p2id . ')' ;
+            $ret = GetAndReturnJSON($sql);
+            break;
+        }
+    default:
+        $ret = 'nope';
+        break;
 }
 
 echo $ret;

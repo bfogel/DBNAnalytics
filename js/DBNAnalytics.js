@@ -60,6 +60,27 @@ function bfTabsOpenContentByIndex(divcasename, index) {
 
 class dbnHub {
 
+  hubget(src, vals = null) {
+    // let responsex = await fetch("https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src);
+    // //console.log("I'm coming");
+    // //responsex.then(response => response.json()).then(data => console.log(data));
+    // let data = await responsex.text();
+
+    var data = null;
+
+    var req = new XMLHttpRequest();
+    var url = "https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src;
+    if (vals != null) {
+      for (const key in vals) {
+        url += "&" + key + "=" + vals[key];
+      }
+    }
+    req.open('GET', url, false);
+    req.send(null);
+    if (req.status == 200 && req.responseText != "nope") data = JSON.parse(req.responseText);
+    return data;
+  }
+
   #players = null;
   get Players() {
     if (this.#players == null) {
@@ -75,19 +96,12 @@ class dbnHub {
     return this.#players;
   }
 
-  hubget(src) {
-    // let responsex = await fetch("https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src);
-    // //console.log("I'm coming");
-    // //responsex.then(response => response.json()).then(data => console.log(data));
-    // let data = await responsex.text();
+  GetGamesForPlayers(player1id, player2id = null) {
+    var vals = { "p1": player1id };
+    if (player2id != null) vals["p2"] = player2id;
+    var response = this.hubget("pc", vals);
 
-    var data = null;
 
-    var req = new XMLHttpRequest();
-    req.open('GET', "https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src, false);
-    req.send(null);
-    if (req.status == 200) data = JSON.parse(req.responseText);
-    return data;
   }
 }
 var myHub = new dbnHub();
@@ -101,22 +115,26 @@ class dbnPlayer {
 
 class dbnPlayerSelector {
 
-  #tag = null;
+  element = null;
   #variableName = null;
 
-  constructor(variablename) {
+  constructor(variablename, parent = null) {
     this.#variableName = variablename;
-    var scripttag = document.currentScript;
-    this.#tag = document.createElement("select");
-    scripttag.parentElement.insertBefore(this.#tag, scripttag);
+    this.element = document.createElement("select");
+    if (parent == null) {
+      var scripttag = document.currentScript;
+      scripttag.parentElement.insertBefore(this.element, scripttag);
+    } else {
+      parent.appendChild(this.element);
+    }
     this.LoadPlayers();
   }
 
-  get onchange() { return this.#tag.onchange; }
-  set onchange(value) { this.#tag.onchange = value; }
+  get onchange() { return this.element.onchange; }
+  set onchange(value) { this.element.onchange = value; }
 
   get SelectedPlayer() {
-    var i = this.#tag.value;
+    var i = this.element.value;
     if (i == null) return null;
     return myHub.Players.find(x => x.PlayerID == i);
   }
@@ -125,13 +143,13 @@ class dbnPlayerSelector {
     var optionNull = document.createElement("option");
     optionNull.text = "(none)";
     optionNull.value = null;
-    this.#tag.add(optionNull);
+    this.element.add(optionNull);
 
     myHub.Players.forEach(x => {
       var option = document.createElement("option");
       option.text = x.PlayerName;
       option.value = x.PlayerID;
-      this.#tag.add(option);
+      this.element.add(option);
     }
     );
   }
