@@ -65,24 +65,35 @@ class dbnHub {
   _players = null;
   get Players() {
     if (this._players == null) {
-      console.log("come on");
       var data = this.hubget('p');
-      this._players = data;
+      data.shift(); //Field info
+      var pps = data.map(x => new dbnPlayer(x[0], x[1]));
+      this._players = pps;
     }
     return this._players;
   }
 
-  async hubget(src) {
-    let responsex = await fetch("https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src);
-    //responsex.then(response => response.json()).then(data => console.log(data))
-    let data = await responsex.text();
+  hubget(src) {
+    // let responsex = await fetch("https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src);
+    // //console.log("I'm coming");
+    // //responsex.then(response => response.json()).then(data => console.log(data));
+    // let data = await responsex.text();
+
+    var data = null;
+
+    var req = new XMLHttpRequest();
+    req.open('GET', "https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src, false);
+    req.send(null);
+    if (req.status == 200) data = JSON.parse(req.responseText);
     return data;
   }
 }
 
 class dbnPlayer {
+  constructor(playerid, playername) { this.PlayerID = parseInt(playerid); this.PlayerName = playername; }
   PlayerID = null;
   PlayerName = null;
+  toString() { return "{Player " + this.PlayerID + ": " + this.PlayerName + "}"; }
 }
 
 //#endregion

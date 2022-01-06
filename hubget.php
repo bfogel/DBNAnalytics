@@ -2,6 +2,8 @@
 
 include("modules/dataaccess.php");
 
+header("Access-Control-Allow-Origin: *");
+
 $id = $_GET['id'];
 $src = $_GET['src'];
 
