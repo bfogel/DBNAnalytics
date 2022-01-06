@@ -30,8 +30,19 @@ function GetAndReturnJSON($sql){
     } elseif ($result -> num_rows == 0) {
         return null;
     } else {
-        $row = $result -> fetch_assoc();
-        return $row["PlayerName"];
+        $fields = [];
+        foreach ($result -> fetch_fields() as &$field) {
+            $ff = [];
+            $ff["name"] = $field->name;
+            array_push($fields,$ff);
+        }
+        unset($field);
+
+        $arr = [$fields];
+        while($row = $result->fetch_assoc()) {
+            array_push($arr, array_values($row));
+        }
+        return json_encode($arr);
     }
 }
 

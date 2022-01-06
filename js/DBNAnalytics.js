@@ -65,9 +65,18 @@ class dbnHub {
   _players = null;
   get Players() {
     if (this._players == null) {
-
+      console.log("come on");
+      var data = this.hubget('p');
+      this._players = data;
     }
     return this._players;
+  }
+
+  async hubget(src) {
+    let responsex = await fetch("https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src);
+    //responsex.then(response => response.json()).then(data => console.log(data))
+    let data = await responsex.text();
+    return data;
   }
 }
 
