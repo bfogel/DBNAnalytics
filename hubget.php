@@ -24,13 +24,13 @@ echo $ret;
 
 function GetAndReturnJSON($sql){
 
+    $ret = ["success"=>false];
+
     $conn = dbn_GetConnection();
     $result = $conn -> query($sql);
     
     if (!$result) {
-        return null;
     } elseif ($result -> num_rows == 0) {
-        return null;
     } else {
         $fields = [];
         foreach ($result -> fetch_fields() as &$field) {
@@ -40,12 +40,17 @@ function GetAndReturnJSON($sql){
         }
         unset($field);
 
-        $arr = [$fields];
+        $ret["fields"] = $fields;
+
+        $data = [];
         while($row = $result->fetch_assoc()) {
-            array_push($arr, array_values($row));
+            array_push($data, array_values($row));
         }
-        return json_encode($arr);
+
+        $ret["data"] = $data;
+        $ret["success"] = true;
     }
+    return json_encode($ret);
 }
 
 ?>
