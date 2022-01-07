@@ -49,7 +49,7 @@ function LoadComparison() {
 
         tblGames = new dbnTable2(divGames);
         tblGames.Headers = ["Date", "Competition", "Game"];
-        tblGames.Data = games.map(x => [x.EndDate, x.Competition.CompetitionName, x.Label]);
+        tblGames.Data = games.map(x => {return [x.EndDate, x.Competition.CompetitionName, x.Label];});
         tblGames.ClickHeaderToSort = true;
         tblGames.Generate();
     } else {

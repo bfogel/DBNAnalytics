@@ -92,6 +92,7 @@ function GetGames($where){
     $sql .= ' INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID';
     $sql .= ' INNER JOIN Country as CO on GCP.Country_CountryID = CO.CountryID';
     $sql .= ' WHERE ' . $where;
+    $sql .= ' ORDER BY G.GameID, CO.CountryName';
 
     $conn = dbn_GetConnection();
     $result = $conn -> query($sql);
