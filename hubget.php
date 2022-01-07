@@ -42,13 +42,15 @@ echo $ret;
 
 function GetAndReturnJSON($sql){
 
-    $ret = ["success"=>false];
+    $ret = ["success" => false];
 
     $conn = dbn_GetConnection();
     $result = $conn -> query($sql);
     
     if (!$result) {
+        $ret["message"] = $result->error;
     } elseif ($result -> num_rows == 0) {
+        $ret["zero"] = true;
     } else {
         $fields = [];
         foreach ($result -> fetch_fields() as &$field) {
