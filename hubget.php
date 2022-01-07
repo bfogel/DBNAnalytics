@@ -125,7 +125,9 @@ function GetGames($where){
                     , "TopShare" => $row["TopShare"]
                     ];
             
-            array_push($game["ResultLines"], $line);
+            $lines = $game["ResultLines"];
+            array_push($lines, $line);
+            $game["ResultLines"] = $lines;
         }
 
         return json_encode(array_values($games));
