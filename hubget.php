@@ -110,9 +110,24 @@ function GetGames($where){
                         , "EndDate" => $row["EndDate"]
                         , "DrawSize" => $row["DrawSize"]
                         , "GameYearsCompleted" => $row["GameYearsCompleted"]
-                        , "URL" => $row["GamePlatformIdentifier"]
                         , "Competition" => ["CompetitionID" => $row["CompetitionID"], "CompetitionName" => $row["CompetitionName"]]
                         ];
+
+                switch ($row["GamePlatform_GamePlatformID"]) {
+                    case 0:
+                        $game["Platform"] = "In person";
+                        break;
+    
+                    case 1:
+                        $game["Platform"] = "Backstabbr";
+                        $game["URL"] = 'https://www.backstabbr.com/game/' . $row["GamePlatformIdentifier"];
+                        break;
+                    
+                    default:
+                        $game["Platform"] = "Unknown";
+                        break;
+                }
+                
                 $games[$gamekey] = $game;
                 $lines = [];
             }
@@ -120,7 +135,7 @@ function GetGames($where){
             $line = ["Player" => ["PlayerID" => $row["PlayerID"], "PlayerName" => $row["PlayerName"]]
                     , "Country" => $row["CountryName"]
                     , "Note" => $row["Note"]
-                    , "InGameAtEnd" => $row["LaInGameAtEndbel"]
+                    , "InGameAtEnd" => $row["InGameAtEnd"]
                     , "UnexcusedResignation" => $row["UnexcusedResignation"]
                     , "Score" => $row["Score"]
                     , "Rank" => $row["Rank"]
