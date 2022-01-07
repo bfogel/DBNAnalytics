@@ -30,7 +30,7 @@ switch ($src) {
         }
 
     case 'g':
-        $ret = GetGames('GameID = 11765');
+        $ret = GetGames('GameID in (11764,11765)');
         break;
 
     default:
@@ -102,9 +102,30 @@ function GetGames($where){
         while($row = $result->fetch_assoc()) {
             $gamekey = "game" . $row["GameID"];
             if(!array_key_exists($gamekey,$games)){
-                $game = ["GameID"=>$row["GameID"]];
+                $game = ["GameID" => $row["GameID"]
+                        , "Label" => $row["Label"]
+                        , "EndDate" => $row["EndDate"]
+                        , "DrawSize" => $row["DrawSize"]
+                        , "GameYearsCompleted" => $row["GameYearsCompleted"]
+                        , "URL" => $row["GamePlatformIdentifier"]
+                        , "Competition" => ["CompetitionID" => $row["CompetitionID"], "CompetitionName" => $row["CompetitionName"]]
+                        , "ResultLines" => []
+                        ];
                 $games[$gamekey] = $game;
             }
+
+            $line = ["Player" => ["PlayerID" => $row["PlayerID"], "PlayerName" => $row["PlayerName"]]
+                    , "Country" => $row["Country_CountryID"]
+                    , "Note" => $row["Note"]
+                    , "InGameAtEnd" => $row["LaInGameAtEndbel"]
+                    , "UnexcusedResignation" => $row["UnexcusedResignation"]
+                    , "Score" => $row["Score"]
+                    , "Rank" => $row["Rank"]
+                    , "RankScore" => $row["RankScore"]
+                    , "TopShare" => $row["TopShare"]
+                    ];
+            
+            array_push($game["ResultLines"], $line);
         }
 
         return json_encode(array_values($games));
