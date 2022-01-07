@@ -114,7 +114,7 @@ function GetGames($where){
                         , "Competition" => ["CompetitionID" => $row["CompetitionID"], "CompetitionName" => $row["CompetitionName"]]
                         ];
                 $games[$gamekey] = $game;
-                $lines = null;
+                $lines = [];
             }
 
             $line = ["Player" => ["PlayerID" => $row["PlayerID"], "PlayerName" => $row["PlayerName"]]
