@@ -77,7 +77,7 @@ function GetGames($where){
     $sql = 'SELECT G.GameID, G.Label, G.EndDate, G.DrawSize, G.GameYearsCompleted, G.GamePlatform_GamePlatformID, G.GamePlatformIdentifier';
     $sql .= ', C.CompetitionID, C.CompetitionName';
     $sql .= ', P.PlayerID, P.PlayerName';
-    $sql .= ', GCP.Country_CountryID, GCP.Note';
+    $sql .= ', CO.CountryName, GCP.Note';
     $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, GCR.UnexcusedResignation';
     $sql .= ', GCC.Score, GCC.Rank, GCC.RankScore, GCC.TopShare';
 
@@ -87,6 +87,7 @@ function GetGames($where){
     $sql .= ' INNER JOIN GameCountryResult as GCR on GCR.Game_GameID = G.GameID AND GCP.Country_CountryID = GCR.Country_CountryID';
     $sql .= ' INNER JOIN GameCountryComputations as GCC on GCC.Game_GameID = G.GameID AND GCP.Country_CountryID = GCC.Country_CountryID';
     $sql .= ' INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID';
+    $sql .= ' INNER JOIN Country as CO on GCP.Country_CountryID = CO.CountryID';
     $sql .= ' WHERE ' . $where;
 
     $conn = dbn_GetConnection();
@@ -99,6 +100,7 @@ function GetGames($where){
         $games = [];
         $game = null;
         $gamekey = null;
+        $lines = null;
 
         while($row = $result->fetch_assoc()) {
             $gamekey = "game" . $row["GameID"];
@@ -110,13 +112,13 @@ function GetGames($where){
                         , "GameYearsCompleted" => $row["GameYearsCompleted"]
                         , "URL" => $row["GamePlatformIdentifier"]
                         , "Competition" => ["CompetitionID" => $row["CompetitionID"], "CompetitionName" => $row["CompetitionName"]]
-                        , "ResultLines" => []
                         ];
                 $games[$gamekey] = $game;
+                $lines = null;
             }
 
             $line = ["Player" => ["PlayerID" => $row["PlayerID"], "PlayerName" => $row["PlayerName"]]
-                    , "Country" => $row["Country_CountryID"]
+                    , "Country" => $row["CountryName"]
                     , "Note" => $row["Note"]
                     , "InGameAtEnd" => $row["LaInGameAtEndbel"]
                     , "UnexcusedResignation" => $row["UnexcusedResignation"]
@@ -126,10 +128,8 @@ function GetGames($where){
                     , "TopShare" => $row["TopShare"]
                     ];
             
-            $lines = $game["ResultLines"];
             array_push($lines, $line);
             $game["ResultLines"] = $lines;
-
             $games[$gamekey] = $game;
         }
 
