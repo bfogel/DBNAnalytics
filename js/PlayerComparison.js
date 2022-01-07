@@ -10,7 +10,7 @@ var tblGames = null;
 function MakePlayerComparison() {
 
     var titlecard = new dbnCard();
-    var title=titlecard.createAndAppendElement("h1");
+    var title = titlecard.createAndAppendElement("h1");
     title.createAndAppendText("Player vs. Player History");
     titlecard.createAndAppendText("DBNI qualifying events and exhibitions covered by DBN");
 
@@ -63,16 +63,16 @@ function LoadComparison() {
         var cellcountries = [];
         var cellurls = [];
 
-        tblGames.Headers = ["Date", "Competition", "Game", "Length", p1.PlayerName, p2.PlayerName, "Platform", "Others"];
+        tblGames.Headers = ["Date", "Game", "Length", p1.PlayerName, p2.PlayerName, "Platform", "Others"];
 
         tblGames.Data = games.map((game, iRow) => {
             var line1 = game.GetResultLineForPlayer(p1.PlayerID);
             var line2 = game.GetResultLineForPlayer(p2.PlayerID);
 
-            cellcountries.push([iRow, 4, line1.Country]);
-            cellcountries.push([iRow, 5, line2.Country]);
+            cellcountries.push([iRow, 3, line1.Country]);
+            cellcountries.push([iRow, 4, line2.Country]);
 
-            if (game.URL != null) cellurls.push([iRow, 6, game.URL]);
+            if (game.URL != null) cellurls.push([iRow, 5, game.URL]);
 
             // var fRes = (line) => line.CenterCount + "c (" + line.Rank + (line.Rank == line.RankScore ? "" : "T") + ") " + line.Country;
             var fRes = (line) => line.CenterCount + "c " + line.Country + " (" + line.Rank + (line.Rank == line.RankScore ? "" : "T") + ")";
@@ -86,7 +86,7 @@ function LoadComparison() {
             }
 
             return [
-                game.EndDate, game.Competition.CompetitionName, game.Label
+                game.EndDate, game.Competition.CompetitionName + "<br>" + game.Label
                 , game.GameYearsCompleted + 1900
                 , fRes(line1), fRes(line2)
                 , game.Platform
