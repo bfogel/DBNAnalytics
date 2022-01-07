@@ -89,7 +89,27 @@ function GetGames($where){
     $sql .= ' INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID';
     $sql .= ' WHERE ' . $where;
 
-    $ret = GetAndReturnJSON($sql);
+    $conn = dbn_GetConnection();
+    $result = $conn -> query($sql);
+
+    if (!$result) {
+        return $conn->error;
+    } else {
+
+        $games = [];
+        $game = null;
+
+        while($row = $result->fetch_assoc()) {
+            $gamekey = "game" . $row["GameID"];
+            if(!array_key_exists($gamekey,$games)){
+                $game = ["GameID"=>$row["GameID"]];
+                $games[$gamekey] = $game;
+            }
+        }
+
+        return json_encode(array_values($games));
+    }
+
     return $ret;
 }
 
