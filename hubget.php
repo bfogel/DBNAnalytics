@@ -28,6 +28,11 @@ switch ($src) {
             $ret = GetAndReturnJSON($sql);
             break;
         }
+
+    case 'g':
+        $ret = GetGames('GameID = 11765');
+        break;
+
     default:
         $ret = 'nope';
         break;
@@ -64,6 +69,26 @@ function GetAndReturnJSON($sql){
         $ret["success"] = true;
     }
     return json_encode($ret);
+}
+
+function GetGames($where){
+    $sql = 'SELECT G.GameID, G.Label, G.EndDate, G.DrawSize, G.GameYearsCompleted, G.GamePlatform_GamePlatformID, G.GamePlatformIdentifier';
+    $sql .= ', C.CompetitionID, C.CompetitionName';
+    $sql .= ', P.PlayerID, P.PlayerName';
+    $sql .= ', GCP.Country_CountryID, GCP.Note';
+    $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, C.UnexcusedResignation';
+    $sql .= ', GCC.Score, GCC.Rank, GCC.RankScore, GCC.TopShare';
+
+    $sql .= ' FROM Game as G';
+    $sql .= ' INNER JOIN Competition as C on G.Competition_CompetitionID = C.CompetitionID';
+    $sql .= ' INNER JOIN GameCountryPlayer as GCP on GCP.Game_GameID = G.GameID';
+    $sql .= ' INNER JOIN GameCountryResult as GCR on GCR.Game_GameID = G.GameID AND GCP.Country_CountryID = GCR.Country_CountryID';
+    $sql .= ' INNER JOIN GameCountryComputations as GCC on GCC.Game_GameID = G.GameID AND GCP.Country_CountryID = GCC.Country_CountryID';
+    $sql .= ' INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID';
+    $sql .= ' WHERE ' . $where;
+
+    $ret = GetAndReturnJSON($sql);
+    return $ret;
 }
 
 ?>
