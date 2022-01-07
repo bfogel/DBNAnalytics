@@ -1,3 +1,6 @@
+//To Do:
+//Replace dbnTable with dbnTable2 
+//Move tabs to a class
 
 //#region Common
 
@@ -17,6 +20,133 @@ class dbnElement {
 
   get onchange() { return this.element.onchange; }
   set onchange(value) { this.element.onchange = value; }
+}
+
+//#endregion
+
+//#region Data hub
+
+class dbnHub {
+
+  hubget(src, vals = null) {
+    // let responsex = await fetch("https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src);
+    // //console.log("I'm coming");
+    // //responsex.then(response => response.json()).then(data => console.log(data));
+    // let data = await responsex.text();
+
+    var data = null;
+
+    var req = new XMLHttpRequest();
+    var url = "https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src;
+    if (vals != null) {
+      for (const key in vals) {
+        url += "&" + key + "=" + vals[key];
+      }
+    }
+    req.open('GET', url, false);
+    req.send(null);
+    if (req.status == 200 && req.responseText != "nope") data = JSON.parse(req.responseText);
+    return data;
+  }
+
+  #players = null;
+  get Players() {
+    if (this.#players == null) {
+      var response = this.hubget('p');
+      var data = response.data;
+      var pps = data.map(x => new dbnPlayer(x[0], x[1]));
+      pps.sort((a, b) => {
+        var aa = a.PlayerName.toLowerCase(); var bb = b.PlayerName.toLowerCase();
+        return aa > bb ? 1 : (aa < bb ? -1 : 0);
+      });
+      this.#players = pps;
+    }
+    return this.#players;
+  }
+
+  GetGamesForPlayers(player1id, player2id = null) {
+    var vals = { "p1": player1id };
+    if (player2id != null) vals["p2"] = player2id;
+    var response = this.hubget("pc", vals);
+
+    if (response == null) return null;
+
+    var games = response.map(x => new dbnGame(x));
+
+    return games;
+  }
+}
+var myHub = new dbnHub();
+
+//#endregion
+
+//#region Player
+
+class dbnPlayer {
+  constructor(playerid, playername) { this.PlayerID = parseInt(playerid); this.PlayerName = playername; }
+  PlayerID = null;
+  PlayerName = null;
+  toString() { return "{Player " + this.PlayerID + ": " + this.PlayerName + "}"; }
+}
+
+class dbnPlayerSelector extends dbnElement {
+
+  constructor(parent = null) {
+    super(document.createElement("select"), parent);
+    this.LoadPlayers();
+  }
+
+  get SelectedPlayer() {
+    var i = this.element.value;
+    if (i == null) return null;
+    return myHub.Players.find(x => x.PlayerID == i);
+  }
+
+  LoadPlayers() {
+    var optionNull = document.createElement("option");
+    optionNull.text = "(none)";
+    optionNull.value = null;
+    this.element.add(optionNull);
+
+    myHub.Players.forEach(x => {
+      var option = document.createElement("option");
+      option.text = x.PlayerName;
+      option.value = x.PlayerID;
+      this.element.add(option);
+    }
+    );
+  }
+
+}
+
+//#endregion
+
+//#region Game
+
+class dbnGame {
+
+  GameID = null;
+  Label = null;
+  EndDate = null;
+  DrawSize = null;
+  GameYearsCompleted = null;
+  Platform = null;
+  URL = null;
+  Competition = null;
+
+  //constructor(gameid) { this.GameID = parseInt(gameid); }
+  constructor(json) {
+    this.GameID = json.GameID;
+    this.Label = json.Label;
+    this.EndDate = json.EndDate;
+    this.DrawSize = json.DrawSize;
+    this.GameYearsCompleted = json.GameYearsCompleted;
+    this.Platform = json.Platform;
+    this.URL = json.URL;
+    this.Competition = json.Competition;
+  }
+
+  toString() { return "{Game " + this.GameID + ": " + this.Label + "}"; }
 }
 
 //#endregion
@@ -74,122 +204,6 @@ function bfTabsOpenContent(evt, divcasename, divname) {
 
 function bfTabsOpenContentByIndex(divcasename, index) {
   document.getElementById(divcasename + 'Button' + index).click();
-}
-
-//#endregion
-
-//#region Data hub
-
-class dbnHub {
-
-  hubget(src, vals = null) {
-    // let responsex = await fetch("https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src);
-    // //console.log("I'm coming");
-    // //responsex.then(response => response.json()).then(data => console.log(data));
-    // let data = await responsex.text();
-
-    var data = null;
-
-    var req = new XMLHttpRequest();
-    var url = "https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src;
-    if (vals != null) {
-      for (const key in vals) {
-        url += "&" + key + "=" + vals[key];
-      }
-    }
-    req.open('GET', url, false);
-    req.send(null);
-    if (req.status == 200 && req.responseText != "nope") data = JSON.parse(req.responseText);
-    return data;
-  }
-
-  #players = null;
-  get Players() {
-    if (this.#players == null) {
-      var response = this.hubget('p');
-      var data = response.data;
-      var pps = data.map(x => new dbnPlayer(x[0], x[1]));
-      pps.sort((a, b) => {
-        var aa = a.PlayerName.toLowerCase(); var bb = b.PlayerName.toLowerCase();
-        return aa > bb ? 1 : (aa < bb ? -1 : 0);
-      });
-      this.#players = pps;
-    }
-    return this.#players;
-  }
-
-  GetGamesForPlayers(player1id, player2id = null) {
-    var vals = { "p1": player1id };
-    if (player2id != null) vals["p2"] = player2id;
-    var response = this.hubget("pc", vals);
-
-    if (response == null || response.success == false) return null;
-
-    var games = response.data.map(x => {
-      var game = new dbnGame(x[0]);
-      game.Label = x[1];
-      game.EndDate = x[2];
-      game.CompetitionName = x[3];
-      return game;
-    });
-
-    return games;
-  }
-}
-var myHub = new dbnHub();
-
-//#endregion
-
-//#region Player
-
-class dbnPlayer {
-  constructor(playerid, playername) { this.PlayerID = parseInt(playerid); this.PlayerName = playername; }
-  PlayerID = null;
-  PlayerName = null;
-  toString() { return "{Player " + this.PlayerID + ": " + this.PlayerName + "}"; }
-}
-
-class dbnPlayerSelector extends dbnElement {
-
-  constructor(parent = null) {
-    super(document.createElement("select"), parent);
-    this.LoadPlayers();
-  }
-
-  get SelectedPlayer() {
-    var i = this.element.value;
-    if (i == null) return null;
-    return myHub.Players.find(x => x.PlayerID == i);
-  }
-
-  LoadPlayers() {
-    var optionNull = document.createElement("option");
-    optionNull.text = "(none)";
-    optionNull.value = null;
-    this.element.add(optionNull);
-
-    myHub.Players.forEach(x => {
-      var option = document.createElement("option");
-      option.text = x.PlayerName;
-      option.value = x.PlayerID;
-      this.element.add(option);
-    }
-    );
-  }
-
-}
-
-//#endregion
-
-//#region Game
-
-class dbnGame {
-  constructor(gameid) { this.GameID = parseInt(gameid); }
-  GameID = null;
-  Label = null;
-  EndDate = null;
-  CompetitionName = null;
-  toString() { return "{Game " + this.GameID + ": " + this.Label + "}"; }
 }
 
 //#endregion
