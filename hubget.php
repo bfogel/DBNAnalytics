@@ -81,7 +81,7 @@ function GetGames($where){
     $sql .= ', C.CompetitionID, C.CompetitionName';
     $sql .= ', P.PlayerID, P.PlayerName';
     $sql .= ', CO.CountryName, GCP.Note';
-    $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, GCR.UnexcusedResignation';
+    $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, GCR.YearOfElimination, GCR.UnexcusedResignation';
     $sql .= ', GCC.Score, GCC.Rank, GCC.RankScore, GCC.TopShare';
 
     $sql .= ' FROM Game as G';
@@ -139,7 +139,9 @@ function GetGames($where){
             $line = ["Player" => ["PlayerID" => $row["PlayerID"], "PlayerName" => $row["PlayerName"]]
                     , "Country" => $row["CountryName"]
                     , "Note" => $row["Note"]
+                    , "CenterCount" => $row["CenterCount"]
                     , "InGameAtEnd" => $row["InGameAtEnd"]
+                    , "YearOfElimination" => $row["YearOfElimination"]
                     , "UnexcusedResignation" => $row["UnexcusedResignation"]
                     , "Score" => $row["Score"]
                     , "Rank" => $row["Rank"]

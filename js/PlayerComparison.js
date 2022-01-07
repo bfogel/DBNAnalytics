@@ -48,8 +48,14 @@ function LoadComparison() {
         divGamesStatus.innerHTML = "";
 
         tblGames = new dbnTable2(divGames);
-        tblGames.Headers = ["Date", "Competition", "Game"];
-        tblGames.Data = games.map(x => {return [x.EndDate, x.Competition.CompetitionName, x.Label];});
+        tblGames.Headers = ["Date", "Competition", "Game", "Length", p1.PlayerName, p2.PlayerName];
+        tblGames.Data = games.map(x => {
+            line1 = 
+            return [
+                x.EndDate, x.Competition.CompetitionName, x.Label
+                , x.GameYearsCompleted + 1900
+            ]
+        });
         tblGames.ClickHeaderToSort = true;
         tblGames.Generate();
     } else {

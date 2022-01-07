@@ -133,6 +133,7 @@ class dbnGame {
   Platform = null;
   URL = null;
   Competition = null;
+  ResultLines = {};
 
   //constructor(gameid) { this.GameID = parseInt(gameid); }
   constructor(json) {
@@ -144,9 +145,50 @@ class dbnGame {
     this.Platform = json.Platform;
     this.URL = json.URL;
     this.Competition = json.Competition;
+
+    if(json.ResultLines != null){
+      for (const key in json.ResultLines) {
+        var line = new dbnGameResultLine(json.ResultLines[key]);
+        this.ResultLines[line.Country] = line;
+      }
+    }
   }
 
   toString() { return "{Game " + this.GameID + ": " + this.Label + "}"; }
+
+  GetResultLineForPlayer(playerid) {
+
+  }
+
+}
+
+class dbnGameResultLine {
+
+  Country = null;
+  Player = null;
+  Note = null;
+  CenterCount = null;
+  InGameAtEnd = null;
+  YearOfElimination = null;
+  UnexcusedResignation = null;
+  Score = null;
+  Rank = null;
+  RankScore = null;
+  TopShare = null;
+
+  constructor(json) {
+    this.Country = json.Country;
+    this.Player = json.Player;
+    this.Note = json.Note;
+    this.CenterCount = json.CenterCount;
+    this.YearOfElimination = json.YearOfElimination;
+    this.InGameAtEnd = json.InGameAtEnd;
+    this.UnexcusedResignation = json.UnexcusedResignation;
+    this.Score = json.Score;
+    this.Rank = json.Rank;
+    this.RankScore = json.RankScore;
+    this.TopShare = json.TopShare;
+  }
 }
 
 //#endregion
