@@ -98,6 +98,7 @@ function GetGames($where){
 
         $games = [];
         $game = null;
+        $gamekey = null;
 
         while($row = $result->fetch_assoc()) {
             $gamekey = "game" . $row["GameID"];
@@ -128,6 +129,8 @@ function GetGames($where){
             $lines = $game["ResultLines"];
             array_push($lines, $line);
             $game["ResultLines"] = $lines;
+
+            $games[$gamekey] = $game;
         }
 
         return json_encode(array_values($games));
