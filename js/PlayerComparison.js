@@ -10,16 +10,18 @@ var tblGames = null;
 function MakePlayerComparison() {
 
     var titlecard = new dbnCard();
-    titlecard.element.innerHTML = "<H1>Player vs. Player History</H1>"
+    var title=titlecard.createAndAppendElement("h1");
+    title.createAndAppendText("Player vs. Player History");
+    titlecard.createAndAppendText("DBNI qualifying events and exhibitions covered by DBN");
 
     cardPlayerComparison = new dbnCard();
 
-    cardPlayerComparison.element.appendChild(document.createTextNode("Player 1: "));
+    cardPlayerComparison.createAndAppendText("Player 1: ");
     selPlayer1 = new dbnPlayerSelector(cardPlayerComparison);
 
-    cardPlayerComparison.element.appendChild(document.createElement("br"));
+    cardPlayerComparison.createAndAppendElement("br");
 
-    cardPlayerComparison.element.appendChild(document.createTextNode("Player 2: "));
+    cardPlayerComparison.createAndAppendText("Player 2: ");
     selPlayer2 = new dbnPlayerSelector(cardPlayerComparison);
 
     selPlayer1.onchange = LoadComparison;
@@ -29,11 +31,9 @@ function MakePlayerComparison() {
     selPlayer1.element.style = style;
     selPlayer2.element.style = style;
 
-    divGames = document.createElement("div");
-    cardPlayerComparison.element.appendChild(divGames);
+    divGames = new dbnDiv(cardPlayerComparison);
 
-    divGamesStatus = document.createElement("div");
-    divGames.appendChild(divGamesStatus);
+    divGamesStatus = new dbnDiv(cardPlayerComparison);
 
     // selPlayer1.element.value = 203;
     // selPlayer2.element.value = 222;

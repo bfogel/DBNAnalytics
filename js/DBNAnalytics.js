@@ -24,13 +24,36 @@ class dbnElement {
 
   get onchange() { return this.element.onchange; }
   set onchange(value) { this.element.onchange = value; }
+
+  get class() { return this.element.class; }
+  set class(value) { this.element.class = value; }
+
+  get style() { return this.element.style; }
+  set style(value) { this.element.style = value; }
+
+  appendChild(element) { this.element.appendChild(element instanceof dbnElement ? element.element : element); }
+  createAndAppendElement(tagname) { var ret = new dbnElement(document.createElement(tagname)); this.appendChild(ret); return ret; }
+  createAndAppendText(text) { var ret = new dbnText(text, this); return ret; }
 }
 
-class dbnCard extends dbnElement {
+class dbnDiv extends dbnElement {
   constructor(parent = null) {
     super(document.createElement("div"), parent);
+  }
+}
+
+class dbnCard extends dbnDiv {
+  constructor(parent = null) {
+    super(parent);
     this.element.className = "bfcard";
   }
+}
+
+class dbnText extends dbnElement {
+  constructor(text, parent = null) {
+    super(document.createTextNode(text), parent);
+  }
+
 }
 
 //#endregion
