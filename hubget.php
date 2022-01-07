@@ -147,7 +147,8 @@ function GetGames($where){
                     , "TopShare" => $row["TopShare"]
                     ];
             
-            array_push($lines, $line);
+            $lines[$line["Country"]] = $line;
+            // array_push($lines, $line);
             $game["ResultLines"] = $lines;
             $games[$gamekey] = $game;
         }
