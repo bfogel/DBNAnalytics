@@ -20,8 +20,9 @@ switch ($src) {
         {
             $p1id = $_GET['p1'];
             $p2id = $_GET['p2'];
-            $sql = 'SELECT GameID, Label';
+            $sql = 'SELECT GameID, G.Label, G.EndDate, C.CompetitionName';
             $sql .= ' FROM Game as G';
+            $sql .= ' INNER JOIN Competition as C on G.Competition_CompetitionID = C.CompetitionID';
             $sql .= ' WHERE GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ' . $p1id . ')' ;
             $sql .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ' . $p2id . ')' ;
             $ret = GetAndReturnJSON($sql);

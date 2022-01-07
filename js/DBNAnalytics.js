@@ -1,4 +1,26 @@
 
+//#region Common
+
+class dbnElement {
+
+  element = null;
+
+  constructor(pElement, parent = null) {
+    this.element = pElement;
+    if (parent == null) {
+      var scripttag = document.currentScript;
+      scripttag.parentElement.insertBefore(this.element, scripttag);
+    } else {
+      parent.appendChild(this.element);
+    }
+  }
+
+  get onchange() { return this.element.onchange; }
+  set onchange(value) { this.element.onchange = value; }
+}
+
+//#endregion
+
 //#region Tabs
 
 function bfTabsSetup(divcase, tabs) {
@@ -101,10 +123,24 @@ class dbnHub {
     if (player2id != null) vals["p2"] = player2id;
     var response = this.hubget("pc", vals);
 
+    if (response == null || response.success == false) return null;
 
+    var games = response.data.map(x => {
+      var game = new dbnGame(x[0]);
+      game.Label = x[1];
+      game.EndDate = x[2];
+      game.CompetitionName = x[3];
+      return game;
+    });
+
+    return games;
   }
 }
 var myHub = new dbnHub();
+
+//#endregion
+
+//#region Player
 
 class dbnPlayer {
   constructor(playerid, playername) { this.PlayerID = parseInt(playerid); this.PlayerName = playername; }
@@ -113,25 +149,12 @@ class dbnPlayer {
   toString() { return "{Player " + this.PlayerID + ": " + this.PlayerName + "}"; }
 }
 
-class dbnPlayerSelector {
+class dbnPlayerSelector extends dbnElement {
 
-  element = null;
-  #variableName = null;
-
-  constructor(variablename, parent = null) {
-    this.#variableName = variablename;
-    this.element = document.createElement("select");
-    if (parent == null) {
-      var scripttag = document.currentScript;
-      scripttag.parentElement.insertBefore(this.element, scripttag);
-    } else {
-      parent.appendChild(this.element);
-    }
+  constructor(parent = null) {
+    super(document.createElement("select"), parent);
     this.LoadPlayers();
   }
-
-  get onchange() { return this.element.onchange; }
-  set onchange(value) { this.element.onchange = value; }
 
   get SelectedPlayer() {
     var i = this.element.value;
@@ -154,6 +177,19 @@ class dbnPlayerSelector {
     );
   }
 
+}
+
+//#endregion
+
+//#region Game
+
+class dbnGame {
+  constructor(gameid) { this.GameID = parseInt(gameid); }
+  GameID = null;
+  Label = null;
+  EndDate = null;
+  CompetitionName = null;
+  toString() { return "{Game " + this.GameID + ": " + this.Label + "}"; }
 }
 
 //#endregion
@@ -259,6 +295,192 @@ class dbnTable {
         cell.innerHTML = hh;
         if (this.ClickHeaderToSort) {
           cell.setAttribute("onclick", this.#variableName + ".SortAndGenerate(" + iCol + ")");
+          cell.className += " clickable";
+          if (iCol == (this.#lastSortIndex ?? -1)) {
+            //cell.innerHTML += this.#lastSortAscending ? "&uarr;" : "&darr;";
+            cell.innerHTML += this.#lastSortAscending ? "&#9650;" : "&#9660;";
+          }
+        }
+        iCol++;
+      }
+      if (row.childElementCount > colcount) colcount = row.childElementCount;
+    }
+
+    for (var rr of this.#rows) {
+      row = tbody.insertRow();
+
+      for (var cc of rr.Values) {
+        var cell = row.insertCell();
+        cell.innerHTML = cc;
+      }
+      if (row.childElementCount > colcount) colcount = row.childElementCount;
+
+      if (this.NumberColumns != null) {
+        for (const i of this.NumberColumns) {
+          if (i < row.children.length) row.children[i].className += " bfnumcolumn";
+        }
+      }
+
+      if (this.CountryColumns != null) {
+        for (var i in this.CountryColumns) {
+          if (i < row.children.length) row.children[i].className += " bf" + this.CountryColumns[i] + "Back";
+        }
+      }
+
+      if (rr.CellCountries != null) {
+        for (iCol in rr.CellCountries) {
+          if (iCol < row.children.length) row.children[iCol].className += " bf" + rr.CellCountries[iCol] + "Back";
+        }
+      }
+
+      if (rr.Country != null) row.className += " bf" + rr.Country + "Back";
+
+      if (rr.Url != null) {
+        row.className += " bfTest";
+        row.setAttribute("onclick", " document.location = '" + rr.Url + "'");
+      }
+
+      if (rr.Highlighted) {
+        row.className += " bftableRowHighlight";
+      }
+
+    }
+
+    if (titleCell != null) titleCell.colSpan = colcount;
+
+  }
+
+  Sort(bycolumnindex) {
+    this.EnsureRows();
+
+    if ((this.#lastSortIndex ?? -1) == bycolumnindex) {
+      this.#lastSortAscending = !this.#lastSortAscending;
+    } else {
+      this.#lastSortIndex = bycolumnindex;
+      this.#lastSortAscending = true;
+    }
+
+    var sgn = this.#lastSortAscending ? 1 : -1;
+
+    this.#rows.sort(function (a, b) {
+      var va = a.Values[bycolumnindex] ?? "";
+      var vb = b.Values[bycolumnindex] ?? "";
+
+      if (isNaN(va) || isNaN(vb)) {
+
+        if (va.substring(va.length - 1, va.length) == "%") {
+          var aa = va.substring(0, va.length - 1);
+          var bb = vb.substring(0, vb.length - 1);
+          return sgn * (Number(aa) - Number(bb));
+        }
+        let x = va.toLowerCase();
+        let y = vb.toLowerCase();
+        if (x < y) return sgn * -1;
+        if (x > y) return sgn * 1;
+        return 0;
+      } else {
+        return sgn * (va - vb);
+      }
+    });
+  }
+
+  SortAndGenerate(bycolumnindex) {
+    this.Sort(bycolumnindex);
+    this.Generate();
+  }
+
+}
+
+class dbnTable2 extends dbnElement {
+
+  Data = null;
+  Headers = null;
+  Title = null;
+  ClickHeaderToSort = false;
+
+  NumberColumns = null;
+  HighlightedRows = null;
+
+  CountryColumns = null;
+  CountryRows = null;
+  CountryCells = null;
+
+  RowUrls = null;
+
+  #rows = null;
+  #lastSortIndex = null;
+  #lastSortAscending = false;
+
+  constructor(parent = null) {
+    super(document.createElement("table"), parent);
+    this.element.dbnTable = this;
+  }
+
+  EnsureRows() {
+    if (this.#rows == null) {
+      var rows = [];
+      var iRow = 0;
+      for (var rr of this.Data) {
+        var row = new dbnRow();
+        row.Values = rr;
+
+        if (this.CountryRows != null && this.CountryRows[iRow] != null) row.Country = this.CountryRows[iRow];
+        if (this.RowUrls != null && this.RowUrls[iRow] != null) row.Url = this.RowUrls[iRow];
+        if (this.HighlightedRows != null && this.HighlightedRows.includes(iRow)) row.Highlighted = true;
+
+        iRow++;
+        rows.push(row);
+      }
+
+      if (this.CountryCells != null) {
+        this.CountryCells.forEach(rcc => {
+          if (rcc.length >= 3) {
+            var row = rows[rcc[0]];
+            if (row.CellCountries == null) row.CellCountries = {};
+            row.CellCountries[rcc[1]] = rcc[2];
+            //console.log(JSON.stringify(row.CellCountries));
+          }
+        });
+      }
+
+      this.#rows = rows;
+    }
+  }
+
+  Generate() {
+
+    this.EnsureRows();
+
+    var table = this.element;
+    table.innerHTML = null;
+    table.className = "bftable";
+
+    var thead = table.createTHead();
+    var tbody = table.createTBody();
+
+    var titleCell = null;
+    if (this.Title != null) {
+      var row = thead.insertRow();
+      row.className = "bftableTitleRow";
+      titleCell = document.createElement("th");
+      titleCell.innerHTML = this.Title;
+      row.appendChild(titleCell);
+    }
+
+    var colcount = 0;
+
+    if (this.Headers != null) {
+      row = thead.insertRow();
+      row.className = "bftableHeaderRow";
+      var iCol = 0;
+      for (var hh of this.Headers) {
+        var cell = document.createElement("th");
+        row.appendChild(cell);
+        cell.innerHTML = hh;
+        if (this.ClickHeaderToSort) {
+          cell.ColumnIndex = iCol;
+          cell.onclick = (ee) => ee.currentTarget.parentElement.parentElement.parentElement.dbnTable.SortAndGenerate(ee.currentTarget.ColumnIndex);
+          //cell.setAttribute("onclick", this.#variableName + ".SortAndGenerate(" + iCol + ")");
           cell.className += " clickable";
           if (iCol == (this.#lastSortIndex ?? -1)) {
             //cell.innerHTML += this.#lastSortAscending ? "&uarr;" : "&darr;";
