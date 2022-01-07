@@ -44,8 +44,8 @@ MakePlayerComparison();
 
 
 function LoadComparison() {
-    divGamesStatus.innerHTML = "Loading...";
-    divGames.innerHTML = "";
+    divGamesStatus.element.innerHTML = "Loading...";
+    divGames.element.innerHTML = "";
 
     var p1 = selPlayer1.SelectedPlayer;
     var p2 = selPlayer2.SelectedPlayer;
@@ -57,7 +57,7 @@ function LoadComparison() {
     }
 
     if (games != null) {
-        divGamesStatus.innerHTML = "";
+        divGamesStatus.element.innerHTML = "";
 
         tblGames = new dbnTable2(divGames);
         var cellcountries = [];
@@ -90,7 +90,7 @@ function LoadComparison() {
                 , game.GameYearsCompleted + 1900
                 , fRes(line1), fRes(line2)
                 , game.Platform
-                , others
+                , "<font style=''>" + others + "</font>"
             ]
         });
         tblGames.CellUrls = cellurls;
@@ -98,7 +98,7 @@ function LoadComparison() {
         tblGames.ClickHeaderToSort = true;
         tblGames.Generate();
     } else {
-        divGamesStatus.innerHTML = "None";
+        divGamesStatus.element.innerHTML = "None";
     }
 
 }
