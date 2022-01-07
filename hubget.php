@@ -49,8 +49,8 @@ function GetAndReturnJSON($sql){
     
     if (!$result) {
         $ret["message"] = $conn->error;
-    } elseif ($result -> num_rows == 0) {
-        $ret["zero"] = true;
+    // } elseif ($result -> num_rows == 0) {
+    //     $ret["zero"] = true;
     } else {
         $fields = [];
         foreach ($result -> fetch_fields() as &$field) {
@@ -78,7 +78,7 @@ function GetGames($where){
     $sql .= ', C.CompetitionID, C.CompetitionName';
     $sql .= ', P.PlayerID, P.PlayerName';
     $sql .= ', GCP.Country_CountryID, GCP.Note';
-    $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, C.UnexcusedResignation';
+    $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, GCR.UnexcusedResignation';
     $sql .= ', GCC.Score, GCC.Rank, GCC.RankScore, GCC.TopShare';
 
     $sql .= ' FROM Game as G';
