@@ -16,4 +16,12 @@ function dbnPlayer_MainPage() {
     return $ret;
 }
 
+add_shortcode( 'dbnPlayerVsPlayer', 'dbnPlayerVsPlayer_Create' );
+function dbnPlayerVsPlayer_Create() {
+    // $ret = "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/ScoringCalculator.css'>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/DBNAnalytics.js'></script>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/PlayerComparison.js'></script>";
+    return $ret;
+}
+
 ?>
