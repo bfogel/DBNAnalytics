@@ -14,12 +14,23 @@ class dbnElement {
       var scripttag = document.currentScript;
       scripttag.parentElement.insertBefore(this.element, scripttag);
     } else {
-      parent.appendChild(this.element);
+      if (parent instanceof dbnElement) {
+        parent.element.appendChild(this.element);
+      } else {
+        parent.appendChild(this.element);
+      }
     }
   }
 
   get onchange() { return this.element.onchange; }
   set onchange(value) { this.element.onchange = value; }
+}
+
+class dbnCard extends dbnElement {
+  constructor(parent = null) {
+    super(document.createElement("div"), parent);
+    this.element.className = "bfcard";
+  }
 }
 
 //#endregion
@@ -137,16 +148,16 @@ class dbnGame {
 
   //constructor(gameid) { this.GameID = parseInt(gameid); }
   constructor(json) {
-    this.GameID = json.GameID;
+    this.GameID = parseInt(json.GameID);
     this.Label = json.Label;
     this.EndDate = json.EndDate;
-    this.DrawSize = json.DrawSize;
-    this.GameYearsCompleted = json.GameYearsCompleted;
+    this.DrawSize = parseInt(json.DrawSize);
+    this.GameYearsCompleted = parseInt(json.GameYearsCompleted);
     this.Platform = json.Platform;
     this.URL = json.URL;
-    this.Competition = json.Competition;
+    this.Competition = { CompetitionID: parseInt(json.Competition.CompetitionID), CompetitionName: json.Competition.CompetitionName };
 
-    if(json.ResultLines != null){
+    if (json.ResultLines != null) {
       for (const key in json.ResultLines) {
         var line = new dbnGameResultLine(json.ResultLines[key]);
         this.ResultLines[line.Country] = line;
@@ -157,7 +168,11 @@ class dbnGame {
   toString() { return "{Game " + this.GameID + ": " + this.Label + "}"; }
 
   GetResultLineForPlayer(playerid) {
-
+    for (const country in this.ResultLines) {
+      var line = this.ResultLines[country];
+      if (line.Player.PlayerID == playerid) return line;
+    }
+    return null;
   }
 
 }
@@ -178,16 +193,16 @@ class dbnGameResultLine {
 
   constructor(json) {
     this.Country = json.Country;
-    this.Player = json.Player;
+    this.Player = { PlayerID: parseInt(json.Player.PlayerID), PlayerName: json.Player.PlayerName };
     this.Note = json.Note;
-    this.CenterCount = json.CenterCount;
-    this.YearOfElimination = json.YearOfElimination;
-    this.InGameAtEnd = json.InGameAtEnd;
-    this.UnexcusedResignation = json.UnexcusedResignation;
-    this.Score = json.Score;
-    this.Rank = json.Rank;
-    this.RankScore = json.RankScore;
-    this.TopShare = json.TopShare;
+    this.CenterCount = parseInt(json.CenterCount);
+    this.YearOfElimination = json.YearOfElimination != null ? parseInt(json.YearOfElimination) : null;
+    this.InGameAtEnd = json.InGameAtEnd == "1";
+    this.UnexcusedResignation = json.UnexcusedResignation == "1";
+    this.Score = parseFloat(json.Score);
+    this.Rank = parseInt(json.Rank);
+    this.RankScore = parseFloat(json.RankScore);
+    this.TopShare = parseFloat(json.TopShare);
   }
 }
 
@@ -462,6 +477,7 @@ class dbnTable2 extends dbnElement {
   CountryCells = null;
 
   RowUrls = null;
+  CellUrls = null;
 
   #rows = null;
   #lastSortIndex = null;
@@ -494,7 +510,16 @@ class dbnTable2 extends dbnElement {
             var row = rows[rcc[0]];
             if (row.CellCountries == null) row.CellCountries = {};
             row.CellCountries[rcc[1]] = rcc[2];
-            //console.log(JSON.stringify(row.CellCountries));
+          }
+        });
+      }
+
+      if (this.CellUrls != null) {
+        this.CellUrls.forEach(rcc => {
+          if (rcc.length >= 3) {
+            var row = rows[rcc[0]];
+            if (row.CellUrls == null) row.CellUrls = {};
+            row.CellUrls[rcc[1]] = rcc[2];
           }
         });
       }
@@ -576,6 +601,19 @@ class dbnTable2 extends dbnElement {
       }
 
       if (rr.Country != null) row.className += " bf" + rr.Country + "Back";
+
+      if (rr.CellUrls != null) {
+        for (iCol in rr.CellUrls) {
+          if (iCol < row.children.length) {
+            var url = rr.CellUrls[iCol];
+            var launch = url.substring(0, 4).toLowerCase() == "http" && !url.toLowerCase().includes("diplobn.com");
+            var ss = "<a href='" + url + "'" + (launch ? " target ='_blank'" : "") + ">" + row.children[iCol].innerHTML;
+            ss += launch ? ' <i class="fa fa-external-link" aria-hidden="true"></i>' : '';
+            ss += "</a>";
+            row.children[iCol].innerHTML = ss;
+          }
+        }
+      }
 
       if (rr.Url != null) {
         row.className += " bfTest";

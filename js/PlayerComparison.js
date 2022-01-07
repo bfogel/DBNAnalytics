@@ -1,5 +1,5 @@
 
-var divPlayerComparison = null;
+var cardPlayerComparison = null;
 var selPlayer1 = null;
 var selPlayer2 = null;
 
@@ -8,25 +8,37 @@ var divGamesStatus = null;
 var tblGames = null;
 
 function MakePlayerComparison() {
-    var scripttag = document.currentScript;
-    divPlayerComparison = document.createElement("div");
-    scripttag.parentElement.insertBefore(divPlayerComparison, scripttag);
 
-    selPlayer1 = new dbnPlayerSelector(divPlayerComparison);
-    selPlayer2 = new dbnPlayerSelector(divPlayerComparison);
+    var titlecard = new dbnCard();
+    titlecard.element.innerHTML = "<H1>Player vs. Player History</H1>"
+
+    cardPlayerComparison = new dbnCard();
+
+    cardPlayerComparison.element.appendChild(document.createTextNode("Player 1: "));
+    selPlayer1 = new dbnPlayerSelector(cardPlayerComparison);
+
+    cardPlayerComparison.element.appendChild(document.createElement("br"));
+
+    cardPlayerComparison.element.appendChild(document.createTextNode("Player 2: "));
+    selPlayer2 = new dbnPlayerSelector(cardPlayerComparison);
+
     selPlayer1.onchange = LoadComparison;
     selPlayer2.onchange = LoadComparison;
 
+    var style = "width: 300px; margin-bottom: 10px;";
+    selPlayer1.element.style = style;
+    selPlayer2.element.style = style;
+
     divGames = document.createElement("div");
-    divPlayerComparison.appendChild(divGames);
+    cardPlayerComparison.element.appendChild(divGames);
 
     divGamesStatus = document.createElement("div");
     divGames.appendChild(divGamesStatus);
 
-    selPlayer1.element.value = 203;
-    selPlayer2.element.value = 222;
+    // selPlayer1.element.value = 203;
+    // selPlayer2.element.value = 222;
 
-    LoadComparison();
+    // LoadComparison();
 }
 MakePlayerComparison();
 
@@ -48,14 +60,41 @@ function LoadComparison() {
         divGamesStatus.innerHTML = "";
 
         tblGames = new dbnTable2(divGames);
-        tblGames.Headers = ["Date", "Competition", "Game", "Length", p1.PlayerName, p2.PlayerName];
-        tblGames.Data = games.map(x => {
-            line1 = 
+        var cellcountries = [];
+        var cellurls = [];
+
+        tblGames.Headers = ["Date", "Competition", "Game", "Length", p1.PlayerName, p2.PlayerName, "Platform", "Others"];
+
+        tblGames.Data = games.map((game, iRow) => {
+            var line1 = game.GetResultLineForPlayer(p1.PlayerID);
+            var line2 = game.GetResultLineForPlayer(p2.PlayerID);
+
+            cellcountries.push([iRow, 4, line1.Country]);
+            cellcountries.push([iRow, 5, line2.Country]);
+
+            if (game.URL != null) cellurls.push([iRow, 6, game.URL]);
+
+            // var fRes = (line) => line.CenterCount + "c (" + line.Rank + (line.Rank == line.RankScore ? "" : "T") + ") " + line.Country;
+            var fRes = (line) => line.CenterCount + "c " + line.Country + " (" + line.Rank + (line.Rank == line.RankScore ? "" : "T") + ")";
+
+            var others = "";
+            for (const country in game.ResultLines) {
+                var line = game.ResultLines[country];
+                if (line != line1 && line != line2) {
+                    others += country.substring(0, 1) + " " + line.Player.PlayerName + " (" + line.CenterCount + "c)" + "<BR>";
+                }
+            }
+
             return [
-                x.EndDate, x.Competition.CompetitionName, x.Label
-                , x.GameYearsCompleted + 1900
+                game.EndDate, game.Competition.CompetitionName, game.Label
+                , game.GameYearsCompleted + 1900
+                , fRes(line1), fRes(line2)
+                , game.Platform
+                , others
             ]
         });
+        tblGames.CellUrls = cellurls;
+        tblGames.CountryCells = cellcountries;
         tblGames.ClickHeaderToSort = true;
         tblGames.Generate();
     } else {
