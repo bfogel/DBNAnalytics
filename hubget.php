@@ -48,7 +48,7 @@ function GetAndReturnJSON($sql){
     $result = $conn -> query($sql);
     
     if (!$result) {
-        $ret["message"] = $result->error;
+        $ret["message"] = $conn->error;
     } elseif ($result -> num_rows == 0) {
         $ret["zero"] = true;
     } else {
