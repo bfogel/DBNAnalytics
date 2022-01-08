@@ -20,9 +20,9 @@ $dbnaversion = 2;
 
 add_shortcode( 'dbnPlayerVsPlayer', 'dbnPlayerVsPlayer_Create' );
 function dbnPlayerVsPlayer_Create() {
-    $ret = "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/DBNAnalytics.css?x=" + $dbnaversion + "'>";
-    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/DBNAnalytics.js?x=" + $dbnaversion + "'></script>";
-    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/PlayerComparison.js?x=" + $dbnaversion + "'></script>";
+    $ret = "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/DBNAnalytics.css?x=" . $dbnaversion . "'>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/DBNAnalytics.js?x=" . $dbnaversion . "'></script>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/PlayerComparison.js?x=" . $dbnaversion . "'></script>";
     return $ret;
 }
 
