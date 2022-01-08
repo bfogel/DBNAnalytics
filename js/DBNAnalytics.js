@@ -507,7 +507,7 @@ class dbnTable extends dbnElement {
   #lastSortAscending = false;
 
   constructor(parent = null) {
-    super(document.createElement("table"), parent instanceof String ? null : parent);
+    super(document.createElement("table"), typeof parent == "string" ? null : parent);
     this.element.dbnTable = this;
   }
 
