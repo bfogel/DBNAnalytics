@@ -59,7 +59,7 @@ function LoadComparison() {
     if (games != null) {
         divGamesStatus.element.innerHTML = "";
 
-        tblGames = new dbnTable2(divGames);
+        tblGames = new dbnTable(divGames);
         var cellcountries = [];
         var cellurls = [];
 
