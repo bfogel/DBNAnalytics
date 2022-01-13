@@ -44,7 +44,7 @@ class dbnScriptParent extends dbnElement {
         super(document.currentScript.parentElement);
     }
 }
-var dbnHere = new dbnScriptParent();
+function dbnHere() { return new dbnScriptParent(); }
 
 class dbnDiv extends dbnElement {
     constructor(parent = null) {
@@ -70,57 +70,82 @@ class dbnText extends dbnElement {
 
 //#region Tabs
 
-function bfTabsSetup(divcase, tabs) {
-    var divbtns = document.createElement("div");
-    divcase.appendChild(divbtns);
-    divbtns.className = "bftab";
+class dbnTabs extends dbnCard {
 
-    var i = 0;
-    for (var key in tabs) {
-        var content = tabs[key];
+    divButtons = null;
+    divContent = null;
+
+    Tabs = {};
+    Buttons = {};
+
+    constructor(parent = null) {
+        super(parent);
+
+        this.divButtons = this.addDiv();
+        this.divButtons.className = "bftab";
+
+        this.divContent = this.addDiv();
+    }
+
+    addTab(key, content) {
+
         if (content == null) content = "(null)";
+
         var tab;
         if (content.tagName != null && content.tagName.toLowerCase() == "div") {
             tab = content;
         } else {
             var tab = document.createElement("div");
             tab.innerHTML = content;
-            tab.id = "bfcontent" + i;
         }
         tab.className = "bftabcontent";
-        divcase.appendChild(tab);
+        tab.style.display = 'none';
+        this.divContent.appendChild(tab);
 
         var btn = document.createElement("button");
         btn.className = "bftablinks";
         btn.innerHTML = key;
-        btn.id = divcase.id + "Button" + i;
-        btn.setAttribute("onclick", "bfTabsOpenContent(event, '" + divcase.id + "','" + tab.id + "')");
-        divbtns.appendChild(btn);
+        btn.dbnTabs = this;
+        btn.setAttribute("onclick", "this.dbnTabs.ClickOnTab('" + key + "')");
+        this.Buttons[key] = btn;
+        this.divButtons.appendChild(btn);
 
-        i++;
+        this.Tabs[key] = tab;
     }
-}
 
-function bfTabsOpenContent(evt, divcasename, divname) {
-    var i,
-        tabcontent,
-        tablinks;
-    var divcase = document.getElementById(divcasename);
-
-    tabcontent = divcase.getElementsByClassName('bftabcontent');
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = 'none';
+    addTabs(dict) {
+        for (const key in dict) {
+            if (Object.hasOwnProperty.call(dict, key)) {
+                const element = dict[key];
+                this.addTab(key, element);
+            }
+        }
     }
-    tablinks = divcase.getElementsByClassName('bftablinks');
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(' active', '');
-    }
-    document.getElementById(divname).style.display = 'block';
-    evt.currentTarget.className += ' active';
-}
 
-function bfTabsOpenContentByIndex(divcasename, index) {
-    document.getElementById(divcasename + 'Button' + index).click();
+    ClickOnTab(clickedkey) {
+        for (const key in this.Tabs) {
+            const tab = this.Tabs[key];
+            const button = this.Buttons[key];
+            if (key == clickedkey) {
+                tab.style.display = 'block';
+                button.className += ' active';
+            } else {
+                tab.style.display = 'none';
+                button.className = button.className.replace(' active', '');
+            }
+        }
+    }
+
+    ClickOnTabByIndex(index){
+        var i=0;
+        for (const key in this.Tabs) {
+            if(i==index){
+                this.ClickOnTab(key);
+                return;
+            }
+            i++;
+        }
+    }
 }
 
 //#endregion

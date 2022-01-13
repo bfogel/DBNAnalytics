@@ -9,12 +9,12 @@ var tblGames = null;
 
 function MakePlayerComparison() {
 
-    var titlecard = dbnHere.addCard();
+    var titlecard = dbnHere().addCard();
     var title = titlecard.createAndAppendElement("h1");
     title.addText("Player vs. Player History");
     titlecard.addText("DBNI qualifying events and exhibitions covered by DBN");
 
-    cardPlayerComparison = dbnHere.addCard();
+    cardPlayerComparison = dbnHere().addCard();
 
     var ss = cardPlayerComparison.createAndAppendElement("style");
     ss.addText(".dbnxx {font-size: 14px !important; line-height: 130%; }");
