@@ -38,9 +38,9 @@ function MakePlayerComparison() {
 
     divGamesStatus = cardPlayerComparison.addDiv();
 
-    selPlayer1.domelement.value = 203;
-    selPlayer2.domelement.value = 222;
-    LoadComparison();
+    // selPlayer1.domelement.value = 203;
+    // selPlayer2.domelement.value = 222;
+    // LoadComparison();
 
 }
 MakePlayerComparison();
