@@ -17,7 +17,7 @@ function MakePlayerComparison() {
     cardPlayerComparison = dbnHere().addCard();
 
     var ss = cardPlayerComparison.createAndAppendElement("style");
-    ss.addText(".dbnxx {font-size: 14px !important; line-height: 130%; }");
+    ss.addText(".otherPlayers {font-size: 15px !important; line-height: 130%; margin-bottom: 5px;}");
 
     cardPlayerComparison.addText("Player 1: ");
     selPlayer1 = new dbnPlayerSelector(cardPlayerComparison);
@@ -38,9 +38,9 @@ function MakePlayerComparison() {
 
     divGamesStatus = cardPlayerComparison.addDiv();
 
-    // selPlayer1.domelement.value = 203;
-    // selPlayer2.domelement.value = 222;
-    // LoadComparison();
+    selPlayer1.domelement.value = 203;
+    selPlayer2.domelement.value = 222;
+    LoadComparison();
 
 }
 MakePlayerComparison();
@@ -66,7 +66,7 @@ function LoadComparison() {
         var cellurls = [];
         var cellclasses = [];
 
-        tblGames.Headers = ["Date", "Game", "Length", p1.PlayerName, p2.PlayerName, "Platform", "Others"];
+        tblGames.Headers = ["Date", "Game", "Length", p1.PlayerName, p2.PlayerName, "Others"];
 
         tblGames.Data = games.map((game, iRow) => {
             var line1 = game.GetResultLineForPlayer(p1.PlayerID);
@@ -74,30 +74,40 @@ function LoadComparison() {
 
             cellcountries.push([iRow, 3, line1.Country]);
             cellcountries.push([iRow, 4, line2.Country]);
-            cellclasses.push([iRow, 6, "dbnxx"]);
-
-            if (game.URL != null) cellurls.push([iRow, 5, game.URL]);
 
             // var fRes = (line) => line.CenterCount + "c (" + line.Rank + (line.Rank == line.RankScore ? "" : "T") + ") " + line.Country;
             var fRes = (line) => line.CenterCount + "c " + line.Country + " (" + line.Rank + (line.Rank == line.RankScore ? "" : "T") + ")";
 
-            var others = "";
+            var dOthers = new dbnDiv();
+            dOthers.className = "otherPlayers";
+
             for (const country in game.ResultLines) {
                 var line = game.ResultLines[country];
                 if (line != line1 && line != line2) {
-                    others += country.substring(0, 1) + " " + line.Player.PlayerName + " (" + line.CenterCount + "c)" + "<BR>";
+                    dOthers.addText(country.substring(0, 1) + " " + line.Player.PlayerName + " (" + line.CenterCount + "c)");
+                    dOthers.addLineBreak();
                 }
             }
 
-            var xx = new dbnDiv();
-            xx.domelement.innerHTML = others;
+            var dg = new dbnDiv();
+            dg.addText(game.Competition.CompetitionName);
+            dg.addLineBreak();
+            dg.addText(game.Label);
+            dg.addLineBreak();
+
+            if (game.URL != null) {
+                var link = new dbnLink();
+                link.href = game.URL;
+                link.addText("View game");
+                link.checkForExternal();
+                dg.appendChild(link);
+            }
 
             return [
-                game.EndDate, game.Competition.CompetitionName + "<br>" + game.Label
+                game.EndDate, dg
                 , game.GameYearsCompleted + 1900
                 , fRes(line1), fRes(line2)
-                , game.Platform
-                , xx
+                , dOthers
             ]
         });
         tblGames.CellUrls = cellurls;

@@ -6,6 +6,7 @@ class dbnElement {
     domelement = null;
 
     constructor(pDomElement, parent = null) {
+        if (typeof pDomElement == "string") pDomElement = document.createElement(pDomElement);
         this.domelement = pDomElement;
         if (parent != null) {
             if (parent instanceof dbnElement) {
@@ -31,12 +32,17 @@ class dbnElement {
     get id() { return this.domelement.id; }
     set id(value) { this.domelement.id = value; }
 
+    get innerHTML() { return this.domelement.innerHTML; }
+    set innerHTML(value) { this.domelement.innerHTML = value; }
+
     appendChild(element) { this.domelement.appendChild(element instanceof dbnElement ? element.domelement : element); }
     createAndAppendElement(tagname) { var ret = new dbnElement(document.createElement(tagname)); this.appendChild(ret); return ret; }
 
     addDiv() { var ret = new dbnDiv(this); return ret; }
     addCard() { var ret = new dbnCard(this); return ret; }
     addText(text) { var ret = new dbnText(text, this); return ret; }
+
+    addLineBreak() { var ret = new dbnElement("br", this); return ret; }
 }
 
 class dbnScriptParent extends dbnElement {
@@ -56,6 +62,32 @@ class dbnCard extends dbnDiv {
     constructor(parent = null) {
         super(parent);
         this.className = "bfcard";
+    }
+}
+
+class dbnLink extends dbnElement {
+    constructor(parent = null) {
+        super(document.createElement("a"), parent);
+    }
+
+    get href() { return this.domelement.href; }
+    set href(value) { this.domelement.href = value; }
+
+    get openInNewWindow() { return this.domelement.target == "_blank"; }
+    set openInNewWindow(value) { this.domelement.target = value ? "_blank" : "_self"; }
+
+    checkForExternal() {
+        var isexternal = this.href.substring(0, 4).toLowerCase() == "http" && !this.href.toLowerCase().includes("diplobn.com");
+
+        if (isexternal) {
+            var icon = new dbnElement('i');
+            icon.className = "fa fa-external-link";
+            icon.domelement.setAttribute("aria-hidden", "true");
+
+            this.openInNewWindow = true;
+            this.addText(" ");
+            this.appendChild(icon);
+        }
     }
 }
 
@@ -347,11 +379,12 @@ class dbnTable extends dbnElement {
                 for (iCol in rr.CellUrls) {
                     if (iCol < row.children.length) {
                         var url = rr.CellUrls[iCol];
-                        var launch = url.substring(0, 4).toLowerCase() == "http" && !url.toLowerCase().includes("diplobn.com");
-                        var ss = "<a href='" + url + "'" + (launch ? " target ='_blank'" : "") + ">" + row.children[iCol].innerHTML;
-                        ss += launch ? ' <i class="fa fa-external-link" aria-hidden="true"></i>' : '';
-                        ss += "</a>";
-                        row.children[iCol].innerHTML = ss;
+                        var link = new dbnLink();
+                        link.href = url;
+                        link.innerHTML = row.children[iCol].innerHTML;
+                        link.checkForExternal();
+                        row.children[iCol].innerHTML = null;
+                        row.children[iCol].appendChild(link.domelement);
                     }
                 }
             }
