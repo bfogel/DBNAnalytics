@@ -1,6 +1,3 @@
-//To Do:
-//Replace dbnTable with dbnTable2 
-//Move tabs to a class
 
 //#region Common
 

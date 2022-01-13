@@ -90,14 +90,22 @@ class dbnTabs extends dbnCard {
     addTab(key, content) {
 
         if (content == null) content = "(null)";
+        if (content instanceof dbnElement) content = content.domelement;
 
         var tab;
-        if (content.tagName != null && content.tagName.toLowerCase() == "div") {
-            tab = content;
+        if (content instanceof HTMLElement) {
+            if (content.tagName != null && content.tagName.toLowerCase() == "div") {
+                tab = content;
+            } else {
+                var tab = document.createElement("div");
+                tab.appendChild(content);
+            }
         } else {
             var tab = document.createElement("div");
             tab.innerHTML = content;
         }
+
+        //tab will be a div object by this point
         tab.className = "bftabcontent";
         tab.style.display = 'none';
         this.divContent.appendChild(tab);
@@ -105,8 +113,8 @@ class dbnTabs extends dbnCard {
         var btn = document.createElement("button");
         btn.className = "bftablinks";
         btn.innerHTML = key;
-        btn.dbnTabs = this;
-        btn.setAttribute("onclick", "this.dbnTabs.ClickOnTab('" + key + "')");
+        btn.onclick = (e) => this.SelectTab(key);
+
         this.Buttons[key] = btn;
         this.divButtons.appendChild(btn);
 
@@ -122,7 +130,7 @@ class dbnTabs extends dbnCard {
         }
     }
 
-    ClickOnTab(clickedkey) {
+    SelectTab(clickedkey) {
         for (const key in this.Tabs) {
             const tab = this.Tabs[key];
             const button = this.Buttons[key];
@@ -136,11 +144,11 @@ class dbnTabs extends dbnCard {
         }
     }
 
-    ClickOnTabByIndex(index){
-        var i=0;
+    SelectTabByIndex(index) {
+        var i = 0;
         for (const key in this.Tabs) {
-            if(i==index){
-                this.ClickOnTab(key);
+            if (i == index) {
+                this.SelectTab(key);
                 return;
             }
             i++;
