@@ -9,43 +9,45 @@ var tblGames = null;
 
 function MakePlayerComparison() {
 
-    var titlecard = new dbnCard();
+    var titlecard = dbnHere.addCard();
     var title = titlecard.createAndAppendElement("h1");
-    title.createAndAppendText("Player vs. Player History");
-    titlecard.createAndAppendText("DBNI qualifying events and exhibitions covered by DBN");
+    title.addText("Player vs. Player History");
+    titlecard.addText("DBNI qualifying events and exhibitions covered by DBN");
 
-    cardPlayerComparison = new dbnCard();
+    cardPlayerComparison = dbnHere.addCard();
 
-    cardPlayerComparison.createAndAppendText("Player 1: ");
+    var ss = cardPlayerComparison.createAndAppendElement("style");
+    ss.addText(".dbnxx {font-size: 14px !important; line-height: 130%; }");
+
+    cardPlayerComparison.addText("Player 1: ");
     selPlayer1 = new dbnPlayerSelector(cardPlayerComparison);
 
     cardPlayerComparison.createAndAppendElement("br");
 
-    cardPlayerComparison.createAndAppendText("Player 2: ");
+    cardPlayerComparison.addText("Player 2: ");
     selPlayer2 = new dbnPlayerSelector(cardPlayerComparison);
 
     selPlayer1.onchange = LoadComparison;
     selPlayer2.onchange = LoadComparison;
 
     var style = "width: 300px; margin-bottom: 10px;";
-    selPlayer1.element.style = style;
-    selPlayer2.element.style = style;
+    selPlayer1.domelement.style = style;
+    selPlayer2.domelement.style = style;
 
-    divGames = new dbnDiv(cardPlayerComparison);
+    divGames = cardPlayerComparison.addDiv();
 
-    divGamesStatus = new dbnDiv(cardPlayerComparison);
+    divGamesStatus = cardPlayerComparison.addDiv();
 
-    // selPlayer1.element.value = 203;
-    // selPlayer2.element.value = 222;
+    selPlayer1.domelement.value = 203;
+    selPlayer2.domelement.value = 222;
+    LoadComparison();
 
-    // LoadComparison();
 }
 MakePlayerComparison();
 
-
 function LoadComparison() {
-    divGamesStatus.element.innerHTML = "Loading...";
-    divGames.element.innerHTML = "";
+    divGamesStatus.domelement.innerHTML = "Loading...";
+    divGames.domelement.innerHTML = "";
 
     var p1 = selPlayer1.SelectedPlayer;
     var p2 = selPlayer2.SelectedPlayer;
@@ -57,11 +59,12 @@ function LoadComparison() {
     }
 
     if (games != null) {
-        divGamesStatus.element.innerHTML = "";
+        divGamesStatus.domelement.innerHTML = "";
 
         tblGames = new dbnTable(divGames);
         var cellcountries = [];
         var cellurls = [];
+        var cellclasses = [];
 
         tblGames.Headers = ["Date", "Game", "Length", p1.PlayerName, p2.PlayerName, "Platform", "Others"];
 
@@ -71,6 +74,7 @@ function LoadComparison() {
 
             cellcountries.push([iRow, 3, line1.Country]);
             cellcountries.push([iRow, 4, line2.Country]);
+            cellclasses.push([iRow, 6, "dbnxx"]);
 
             if (game.URL != null) cellurls.push([iRow, 5, game.URL]);
 
@@ -85,20 +89,24 @@ function LoadComparison() {
                 }
             }
 
+            var xx = new dbnDiv();
+            xx.domelement.innerHTML = others;
+
             return [
                 game.EndDate, game.Competition.CompetitionName + "<br>" + game.Label
                 , game.GameYearsCompleted + 1900
                 , fRes(line1), fRes(line2)
                 , game.Platform
-                , "<font style=''>" + others + "</font>"
+                , xx
             ]
         });
         tblGames.CellUrls = cellurls;
         tblGames.CountryCells = cellcountries;
+        tblGames.CellClasses = cellclasses;
         tblGames.ClickHeaderToSort = true;
         tblGames.Generate();
     } else {
-        divGamesStatus.element.innerHTML = "None";
+        divGamesStatus.domelement.innerHTML = "None";
     }
 
 }

@@ -21,7 +21,8 @@ function dbnVersion(){return 2;}
 add_shortcode( 'dbnPlayerVsPlayer', 'dbnPlayerVsPlayer_Create' );
 function dbnPlayerVsPlayer_Create() {
     $ret = "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/DBNAnalytics.css?x=" . dbnVersion() . "'>";
-    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/DBNAnalytics.js?x=" . dbnVersion() . "'></script>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/DBNUI.js?x=" . dbnVersion() . "'></script>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/DBNGames.js?x=" . dbnVersion() . "'></script>";
     $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/PlayerComparison.js?x=" . dbnVersion() . "'></script>";
     return $ret;
 }
