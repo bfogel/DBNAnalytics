@@ -2,10 +2,6 @@
 var cardTitle = dbnHere().addCard();
 var cardDemo = dbnHere().addCard();
 
-var divOutput = new dbnDiv();
-var divMessages = divOutput.addDiv();
-divMessages.className = "board outputMessages";
-
 var mConfiguration = new PowerBidConfiguration();
 mConfiguration.PowerNames = ["Austria", "England", "France", "Germany", "Italy", "Russia", "Turkey"];
 mConfiguration.BoardCount = 2;
@@ -16,43 +12,30 @@ mConfiguration.MaximumIndividualBid = 164;
 mConfiguration.MinimumIndividualBid = 0;
 mConfiguration.IdenticalBidsProhibited = true;
 
+var previousBids = [[1, 4, 3, 85, 2, 5, 0], [0, 4, 164, 2, 1, 3, 5], [2, 3, 1, 5, 6, 4, 0], [3, 110, 0, 4, 1, 2, 10], [7, 0, 10, 1, 2, 30, 20], [1, 2, 42, 40, 3, 12, 0], [3, 4, 5, 164, 1, 2, 0], [0, 1, 2, 3, 4, 5, 6], [6, 5, 4, 3, 2, 1, 0], [0, 1, 150, 4, 3, 2, 19], [2, 1, 86, 3, 6, 4, 0], [2, 1, 4, 3, 81, 7, 0], [4, 57, 112, 0, 2, 1, 3], [4, 2, 164, 0, 5, 1, 3], [37, 3, 2, 1, 13, 24, 0], [8, 83, 1, 2, 3, 23, 0], [4, 3, 2, 1, 0, 64, 25], [4, 3, 2, 1, 0, 69, 22], [2, 5, 6, 4, 0, 3, 1], [4, 1, 164, 5, 0, 3, 2], [1, 20, 30, 12, 10, 0, 25], [0, 40, 50, 6, 3, 1, 2], [20, 4, 7, 22, 21, 0, 2], [2, 4, 106, 8, 3, 0, 1], [5, 1, 3, 4, 85, 2, 0], [17, 15, 20, 18, 0, 16, 14], [2, 40, 4, 10, 0, 1, 3], [3, 125, 5, 4, 0, 1, 2], [1, 77, 4, 3, 5, 2, 0], [1, 2, 93, 5, 4, 3, 0], [5, 6, 3, 4, 1, 2, 0], [5, 164, 4, 3, 2, 1, 0], [2, 5, 4, 85, 0, 1, 3], [4, 3, 5, 85, 0, 1, 2], [2, 164, 5, 4, 3, 0, 1], [1, 4, 2, 3, 5, 0, 6], [0, 1, 60, 2, 3, 4, 30], [3, 2, 1, 4, 6, 5, 0], [3, 2, 164, 4, 5, 1, 0], [4, 3, 0, 2, 6, 1, 5], [0, 164, 5, 4, 3, 1, 2], [1, 2, 164, 3, 4, 5, 0], [1, 2, 0, 3, 6, 5, 4], [4, 2, 3, 1, 50, 30, 0], [5, 95, 3, 1, 0, 4, 2], [0, 6, 1, 4, 3, 2, 5], [0, 164, 2, 4, 5, 3, 1], [1, 15, 3, 2, 30, 0, 7], [1, 3, 102, 2, 30, 0, 4], [9, 2, 33, 45, 10, 0, 1], [5, 4, 3, 1, 6, 0, 2], [1, 3, 6, 4, 2, 5, 0], [3, 6, 104, 4, 5, 2, 1], [1, 26, 25, 14, 3, 2, 4], [1, 4, 79, 6, 3, 2, 5], [2, 4, 5, 1, 79, 6, 3]];
+
+var divOutput = new dbnDiv();
+var divBoards = mConfiguration.GetAllBoardNumbers().map(x => divOutput.addDiv());
+divBoards.forEach(x => x.className = "board");
+
+var divMessages = divOutput.addDiv();
+divMessages.className = "board outputMessages";
+
 function MakePage() {
 
     var title = cardTitle.createAndAppendElement("h1");
     title.addText("DBN Invitational Power Auction Demo");
-    //titlecard.addText("DBNI qualifying events and exhibitions covered by DBN");
 
+    MakeInstructions();
     MakeInputTable();
 
-    dbnHere().appendChild(divOutput);
+    cardDemo.appendChild(divOutput);
 
-    // var ss = cardPlayerComparison.createAndAppendElement("style");
-    // ss.addText(".otherPlayers {font-size: 15px !important; line-height: 130%; margin-bottom: 5px;}");
-
-    // cardPlayerComparison.addText("Player 1: ");
-    // selPlayer1 = new dbnPlayerSelector(cardPlayerComparison);
-
-    // cardPlayerComparison.createAndAppendElement("br");
-
-    // cardPlayerComparison.addText("Player 2: ");
-    // selPlayer2 = new dbnPlayerSelector(cardPlayerComparison);
-
-    // selPlayer1.onchange = LoadComparison;
-    // selPlayer2.onchange = LoadComparison;
-
-    // var style = "width: 300px; margin-bottom: 10px;";
-    // selPlayer1.domelement.style = style;
-    // selPlayer2.domelement.style = style;
-
-    // divGames = cardPlayerComparison.addDiv();
-
-    // divGamesStatus = cardPlayerComparison.addDiv();
-
-    // selPlayer1.domelement.value = 203;
-    // selPlayer2.domelement.value = 222;
-    // LoadComparison();
-
+    MakeRandomForAll();
+    ResolveBids();
 }
+
+//#region PlayerBidUI
 
 class PlayerBidInput {
     seed = null;
@@ -97,6 +80,13 @@ class PlayerBidInput {
         this.UpdateFromBidSet(bs);
     }
 
+    SelectRandomReal() {
+        var bs = mConfiguration.MakeNewBidSet();
+        var rando = previousBids[Math.floor(Math.random() * previousBids.length)];
+        mConfiguration.PowerNames.forEach((powername, i) => bs.Bids[powername] = rando[i]);
+        this.UpdateFromBidSet(bs);
+    }
+
     Clear() {
         var bs = mConfiguration.MakeNewBidSet();
         this.UpdateFromBidSet(bs);
@@ -109,20 +99,49 @@ class PlayerBidInput {
 }
 PlayerBidInputs = {};
 
+//#endregion
+
+//#region MakeUI
+
+function MakeInstructions() {
+    var div = cardTitle.addDiv();
+
+    var p = div.addParagraph();
+    p.addText("Players have 200 points to bid for ");
+    p.addItalicText("both games combined");
+    p.addText(".");
+
+    div.addText("Bids for a single game are subject to these constraints:");
+    var ol = div.addOrderedList();
+    ol.AddItem("Individual bids must be no less than 0 and no more than 164 points.");
+    ol.AddItem("A player's total bid can be no more than 179 points.");
+    ol.AddItem("A player cannot bid the same amount on any two powers. This means that a player's total bid must be at least 21 points.");
+
+}
+
 function MakeInputTable() {
 
-    cardDemo.addButton("Randomize all bids", MakeRandomForAll, "regular");
-    cardDemo.addButton("Make all even 100", MakeEvenForAll, "regular");
-    cardDemo.addButton("Clear all bids", ClearAllSeeds, "regular");
-    cardDemo.addLineBreak();
+    var bbAll = cardDemo.addButtonBar();
+
+    bbAll.addButton("All use actual", SelectRealForAll);
+    bbAll.addButton("All use 179", MakeRandomForAll);
+    bbAll.addButton("All even 100", MakeEvenForAll);
+    bbAll.addButton("Clear all bids", ClearAllSeeds);
+
+    //cardDemo.addLineBreak();
+    cardDemo.addText("(\"Actual\" bids are taken from the 2021 DBNI.)");
 
     var tbl = cardDemo.addTable();
 
-    // s += '<th class="inputTable seed">Seed</th>';
     var headers = ["Seed"];
-    mConfiguration.PowerNames.forEach(x => headers.push(x));
-    headers.push("Total", "");
+    var countrycolumns = [];
+    mConfiguration.PowerNames.forEach((x, i) => {
+        headers.push(x);
+        countrycolumns[i + 1] = x;
+    });
+    headers.push("Total", "", "");
     tbl.Headers = headers;
+    tbl.CountryColumns = countrycolumns;
 
     var data = [];
 
@@ -130,11 +149,10 @@ function MakeInputTable() {
         var row = [];
         var pbi = new PlayerBidInput();
 
-        row.push(iSeed);  //      s += '<td class="inputTable seed">' + iSeed + '</td>';
+        row.push(iSeed);
         pbi.seed = iSeed;
 
         mConfiguration.PowerNames.forEach(powername => {
-            //s += '<td class = "inputTable inputCell">';
             var div = new dbnDiv();
             var input = div.createAndAppendElement("input");
             input.className = "bid";
@@ -158,15 +176,17 @@ function MakeInputTable() {
         row.push(spanTotal);
         pbi.totalSpan = spanTotal;
 
+        var bbRow = new dbnButtonBar();
+        bbRow.Compact = true;
+        bbRow.addButton("Use actual", () => { pbi.SelectRandomReal(); ResolveBids(); });
+        bbRow.addButton("Use 179", () => { pbi.MakeRandom(); ResolveBids(); });
+        bbRow.addButton("Even 100", () => { pbi.MakeEven(); ResolveBids(); });
+        row.push(bbRow);
+
         var spanValidate = new dbnSpan();
         spanValidate.className = "validationCell";
         pbi.validateSpan = spanValidate;
         row.push(spanValidate);
-
-        // s += '<td class="inputTable rowbuttons"><button onclick="MakeRandomForSeed(' + iSeed + ');ResolveBids()">Random</button>';
-        // s += ' <button onclick="MakeEvenForSeed(' + iSeed + ');ResolveBids()">Even 100</button></td>';
-        // s += '<td id="ValidationMessage' + iSeed + '" class="inputTable validationCell" ></td>';
-        // s += '</tr>';
 
         PlayerBidInputs["Seed" + iSeed] = pbi;
         data.push(row);
@@ -176,6 +196,8 @@ function MakeInputTable() {
     tbl.Generate();
 
 }
+
+//#endregion
 
 //#region UI response
 
@@ -187,6 +209,11 @@ function GetAllBidsets() {
 
 function ValidateAllSeeds() {
     for (const key in PlayerBidInputs) PlayerBidInputs[key].Validate();
+}
+
+function SelectRealForAll() {
+    for (const key in PlayerBidInputs) PlayerBidInputs[key].SelectRandomReal();
+    ResolveBids();
 }
 
 function MakeEvenForAll() {
@@ -214,7 +241,6 @@ function OnInput(pSeed, pPower) {
 
 //#region Bid resolution
 
-
 function AllBidsAreValid() {
     ValidateAllSeeds();
     var ret = true;
@@ -227,7 +253,6 @@ function AllBidsAreValid() {
 
 function ResolveBids() {
 
-    var s = "";
     var sMessages = "";
 
     var boards = [];
@@ -242,56 +267,43 @@ function ResolveBids() {
         auction.Resolve();
         auction.Profiles.forEach(profile => {
             var pbi = PlayerBidInputs["Seed" + profile.Seed];
-            pbi.resultSpans[profile.PowerAssignment].domelement.innerHTML = profile.BoardAssignment;
+            pbi.resultSpans[profile.PowerAssignment].domelement.innerHTML = " " + profile.BoardAssignment;
             boards[profile.BoardAssignment][profile.PowerAssignment] = profile;
         });
         sMessages = auction.GetAuditTrail();
     }
     divMessages.domelement.innerHTML = sMessages;
-    return;
 
-    // mConfiguration.GetAllBoardNumbers().forEach(boardnum => {
-    //     s += "<div class='board'>";
-    //     var sBoardLabel = boardnum;
-    //     if (mBoardNames !== undefined) {
-    //         sBoardLabel = mBoardNames[boardnum - 1];
-    //     }
-    //     s += "<b>Board " + sBoardLabel + "</b>";
-    //     s += "<table>";
-    //     mConfiguration.PowerNames.forEach(powername => {
-    //         var profile = boards[boardnum][powername];
-    //         s += "<tr>";
-    //         s += "<td class='resultTable'>" + powername + ": </td>";
-    //         s += "<td class='resultTable result'>";
-    //         if (profile === undefined) {
-    //             s += "--";
-    //         } else {
-    //             s += profile.Seed;
-    //             s += "<td class='resultTable result'>";
-    //             var name = GetNameFromSeed(profile.Seed);
-    //             if (name != '') s += " " + name;
-    //             s += "</td>";
-    //         }
-    //         s += "</td>";
-    //         s += "<td class='resultTable result'>(";
-    //         if (profile === undefined) {
-    //             s += "--";
-    //         } else {
-    //             s += "#" + profile.RankOfPowerAssignmentAmongBids;
-    //             //s += ", " + profile.BidSet.Bids[powername] + "";
-    //         }
-    //         s += ")</td>";
-    //         s += "</tr>";
-    //     });
-    //     s += "</table>";
-    //     s += "</div>";
-    // });
+    mConfiguration.GetAllBoardNumbers().forEach(boardnum => {
+        var div = divBoards[boardnum - 1];
+        div.domelement.innerHTML = "";
 
-    if (sMessages != "") {
-        s += "<div class='board outputMessages'>" + sMessages + "</div>";
-    }
+        var tbl = div.addTable();
+        tbl.Title = "Board " + boardnum;
+        var data = [];
+        var rowcountries = [];
 
-    elm.innerHTML = s;
+        mConfiguration.PowerNames.forEach((powername, iRow) => {
+            var profile = boards[boardnum][powername];
+            var row = [];
+
+            row.push(powername + ":");
+
+            if (profile === undefined) {
+                row.push("--");
+            } else {
+                row.push("Seed " + profile.Seed);
+            }
+            row.push((profile === undefined) ? "--" : "(#" + profile.RankOfPowerAssignmentAmongBids + ")");
+
+            data.push(row);
+            rowcountries.push(powername);
+        });
+
+        tbl.Data = data;
+        tbl.CountryRows = rowcountries;
+        tbl.Generate();
+    });
 
 }
 

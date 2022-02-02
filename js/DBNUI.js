@@ -40,13 +40,20 @@ class dbnElement {
 
     addDiv() { var ret = new dbnDiv(this); return ret; }
     addCard() { var ret = new dbnCard(this); return ret; }
-    addText(text) { var ret = new dbnText(text, this); return ret; }
+    addSpan() { var ret = new dbnSpan(this); return ret; }
 
     addButton(text, onclick = null, className = null) { var ret = new dbnButton(text, onclick, className, this); return ret; }
+    addButtonBar() { var ret = new dbnButtonBar(this); return ret; }
     addTable() { var ret = new dbnTable(this); return ret; }
 
+    addOrderedList() { var ret = new dbnOrderedList(this); return ret; }
+
     addLineBreak() { var ret = new dbnElement("br", this); return ret; }
-    addSpan() { var ret = new dbnSpan(this); return ret; }
+
+    addParagraph() { var ret = new dbnElement("p", this); return ret; }
+    addText(text) { var ret = new dbnText(text, this); return ret; }
+    addBoldText(text) { var ret = new dbnElement("b", this); ret.addText(text); return ret; }
+    addItalicText(text) { var ret = new dbnElement("i", this); ret.addText(text); return ret; }
 }
 
 class dbnScriptParent extends dbnElement {
@@ -108,6 +115,10 @@ class dbnText extends dbnElement {
 
 }
 
+//#endregion
+
+//#region Buttons
+
 class dbnButton extends dbnElement {
     constructor(text, onclick, className, parent = null) {
         super(document.createElement("button"), parent);
@@ -118,6 +129,42 @@ class dbnButton extends dbnElement {
 
     get onclick() { return this.domelement.onclick; }
     set onclick(value) { this.domelement.onclick = value; }
+}
+
+class dbnButtonBar extends dbnDiv {
+    constructor(parent = null) {
+        super(parent);
+        this.className = "dbnButtonBar";
+    }
+
+    get Compact() { return this.className.includes("dbnButtonBarCompact"); }
+    set Compact(value) {
+        if (this.Compact & !value) {
+            this.className = this.className.replace("dbnButtonBarCompact", "");
+        } else if (!this.Compact & value) {
+            this.className += " dbnButtonBarCompact";
+        }
+    }
+
+    AddButton(text, onclick) {
+        return this.addButton(text, onclick);
+    }
+}
+
+//#endregion
+
+//#region Lists
+
+class dbnOrderedList extends dbnElement {
+    constructor(parent = null) {
+        super("ol", parent);
+    }
+
+    AddItem(text) {
+        var ret = this.createAndAppendElement("li");
+        ret.addText(text);
+        return ret;
+    }
 }
 
 //#endregion
@@ -250,6 +297,7 @@ class dbnTable extends dbnElement {
     constructor(parent = null) {
         super(document.createElement("table"), typeof parent == "string" ? null : parent); //The string test on parent is necessary for legacy purposes (the old version required a variable name to be passed).  CustomHTML pages might still use it.
         this.domelement.dbnTable = this;
+        this.className = "bftable";
     }
 
     EnsureRows() {
@@ -308,7 +356,6 @@ class dbnTable extends dbnElement {
 
         var table = this.domelement;
         table.innerHTML = null;
-        table.className = "bftable";
 
         var thead = table.createTHead();
         var tbody = table.createTBody();
