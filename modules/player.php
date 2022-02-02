@@ -16,7 +16,7 @@ function dbnPlayer_MainPage() {
     return $ret;
 }
 
-function dbnVersion(){return 6;}
+function dbnVersion(){return 7;}
 
 add_shortcode( 'dbnPlayerVsPlayer', 'dbnPlayerVsPlayer_Create' );
 function dbnPlayerVsPlayer_Create() {
