@@ -31,7 +31,7 @@ function MakePage() {
 
     cardDemo.appendChild(divOutput);
 
-    MakeRandomForAll();
+    SelectRealForAll();
     ResolveBids();
 }
 
