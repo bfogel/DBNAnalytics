@@ -42,7 +42,11 @@ class dbnElement {
     addCard() { var ret = new dbnCard(this); return ret; }
     addText(text) { var ret = new dbnText(text, this); return ret; }
 
+    addButton(text, onclick = null, className = null) { var ret = new dbnButton(text, onclick, className, this); return ret; }
+    addTable() { var ret = new dbnTable(this); return ret; }
+
     addLineBreak() { var ret = new dbnElement("br", this); return ret; }
+    addSpan() { var ret = new dbnSpan(this); return ret; }
 }
 
 class dbnScriptParent extends dbnElement {
@@ -55,6 +59,12 @@ function dbnHere() { return new dbnScriptParent(); }
 class dbnDiv extends dbnElement {
     constructor(parent = null) {
         super(document.createElement("div"), parent);
+    }
+}
+
+class dbnSpan extends dbnElement {
+    constructor(parent = null) {
+        super(document.createElement("span"), parent);
     }
 }
 
@@ -96,6 +106,18 @@ class dbnText extends dbnElement {
         super(document.createTextNode(text), parent);
     }
 
+}
+
+class dbnButton extends dbnElement {
+    constructor(text, onclick, className, parent = null) {
+        super(document.createElement("button"), parent);
+        this.addText(text);
+        this.onclick = onclick;
+        this.className = className;
+    }
+
+    get onclick() { return this.domelement.onclick; }
+    set onclick(value) { this.domelement.onclick = value; }
 }
 
 //#endregion
