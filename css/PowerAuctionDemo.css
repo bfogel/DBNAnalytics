@@ -10,6 +10,10 @@ input.bid {
     /*white-space: normal;*/
 }
 
+.selected{
+    border: black solid 2px;
+}
+
 .inlineresult {
     font-weight: bold;
     color: black;
@@ -20,7 +24,7 @@ div.board {
     margin: 10px;
     display: inline-block;
     vertical-align: top;
-    padding: 0px 20px 0px 20px;
+    padding: 0px 10px 0px 10px;
 }
 
 div.outputMessages {
