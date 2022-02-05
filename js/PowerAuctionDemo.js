@@ -36,7 +36,8 @@ function MakePage() {
     cardDemo.appendChild(divOutput);
 
     //SelectRealForAll();
-    LoadPrevious(1);
+    //LoadPrevious(1);
+    MakeRandomForAll();
     ResolveBids();
 }
 
@@ -177,6 +178,7 @@ class PlayerBidInput {
 
     Clear() {
         var bs = this.MakeNewBidset();
+        bs.PlayerName = "Player " + bs.SeedInTourney;
         this.BidSet = bs;
     }
 
@@ -209,17 +211,22 @@ function MakeInstructions() {
 function MakeInputTable() {
 
     var bbAll = cardDemo.addButtonBar();
-
+    bbAll.style = "display: inline-block";
     for (let i = 0; i < 4; i++) {
         bbAll.addButton("2021 R" + (i + 1), () => LoadPrevious(i + 1));
     }
-    bbAll.addButton("Random 2021", SelectRealForAll);
-    bbAll.addButton("Random 179", MakeRandomForAll);
-    bbAll.addButton("Random 100", MakeEvenForAll);
-    bbAll.addButton("Clear all bids", ClearAllSeeds);
 
-    //cardDemo.addLineBreak();
-    cardDemo.addText("(\"Actual\" bids are taken from the 2021 DBNI.)");
+    cardDemo.addText(" ");
+
+    bbAll = cardDemo.addButtonBar();
+    bbAll.style = "display: inline-block";
+    bbAll.addButton("Random 2021", SelectRealForAll);
+    bbAll.addButton("All 179", MakeRandomForAll);
+    bbAll.addButton("All 100", MakeEvenForAll);
+    bbAll.addButton("Clear all", ClearAllSeeds);
+
+    cardDemo.addLineBreak();
+    // cardDemo.addText("(\"Actual\" bids are taken from the 2021 DBNI.)");
 
     var tbl = cardDemo.addTable();
 
@@ -307,26 +314,21 @@ function AllBidsAreValid() {
 
 function ResolveBids() {
 
-    var sMessages = "";
-
     var boards = [];
     mConfiguration.BoardNames.forEach((name, boardi) => boards[boardi] = {});
 
     mPlayerBidInputs.forEach(pbi => pbi.ClearResults());
 
-    if (!AllBidsAreValid()) {
-        sMessages = "There are invalid bids.";
-    } else {
-        var auction = mConfiguration.MakeNewAuction(GetAllBidsets());
-        auction.Resolve();
-        mPlayerBidInputs.forEach(pbi => {
-            pbi.UpdateDisplay();
-            var bs = pbi.BidSet;
-            boards[bs.BoardIndex][bs.PowerAssignment] = bs;
-        });
-        sMessages = auction.GetAuditTrail();
-    }
-    divMessages.domelement.innerHTML = sMessages;
+    var auction = mConfiguration.MakeNewAuction(GetAllBidsets());
+    auction.Resolve();
+    mPlayerBidInputs.forEach(pbi => {
+        pbi.UpdateDisplay();
+        var bs = pbi.BidSet;
+        if (!isNaN(bs.BoardIndex)) boards[bs.BoardIndex][bs.PowerAssignment] = bs;
+    });
+    divMessages.domelement.innerHTML = auction.GetAuditTrail();
+
+    if (auction.ResolutionFailed) return;
 
     mConfiguration.BoardNames.forEach((name, boardi) => {
         var div = divBoards[boardi];

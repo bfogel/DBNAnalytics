@@ -234,6 +234,8 @@ class Auction {
         this._bidsets = pBidSets.slice();
     }
 
+    ResolutionFailed = false;
+
     _bidsets = Array(0).map(x => new BidSet());
     get BidSets() { return this._bidsets; }
 
@@ -282,12 +284,22 @@ class Auction {
         this._powerAssignmentCounts = {};
         this._config.PowerNames.forEach(powername => this._powerAssignmentCounts[powername] = 0);
 
+        var bValid = true;
+
         this._bidsets.sort((a, b) => a.SeedInTourney - b.SeedInTourney);
         this._bidsets.forEach((x, i) => {
             x.PowerAssignment = undefined;
             x.BoardIndex = undefined;
             x.SeedInRound = i + 1
+            var msg = x.ValidateAndGetMessages();
+            if (msg != '') bValid = false;
         });
+
+        if (!bValid) {
+            this.ResolutionFailed = true;
+            this.AddToAuditTrail("There are invalid bids.");
+            return;
+        }
 
         while (this._remainingBidSets.length > 0) {
 
@@ -360,6 +372,9 @@ class Auction {
         finalavgs.forEach((x, i) => {
             this.AddToAuditTrail("Board " + (i + 1) + " seed avg: " + x.toFixed(1));
         });
+
+        this.ResolutionFailed = false;
+
     }
 
 }
