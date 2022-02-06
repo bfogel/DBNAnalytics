@@ -7,6 +7,7 @@ class PowerBidConfiguration {
     MaximumTotal;
     IdenticalBidsProhibited;
     MustUseAllPoints;
+    ReseedByRound = true;
 
     Duplicate() {
         var ret = new PowerBidConfiguration();
@@ -17,28 +18,15 @@ class PowerBidConfiguration {
         ret.IdenticalBidsProhibited = this.IdenticalBidsProhibited;
         ret.MustUseAllPoints = this.MustUseAllPoints;
         ret.BoardNames = this.BoardNames;
+        ret.ReseedByRound = this.ReseedByRound;
         return ret;
     }
 
-    MakeNewBidSet() {
-        return new BidSet(this);
-    }
+    MakeNewBidSet() { return new BidSet(this); }
 
-    MakeNewAuction(pBidSets) {
-        return new Auction(this, pBidSets)
-    }
+    MakeNewAuction(pBidSets) { return new Auction(this, pBidSets) }
 
     get PlayerCount() { return 7 * this.BoardNames.length; }
-
-    // GetAllSeeds() {
-    //     var ret = [];
-    //     this.BoardNames.forEach((name, iBoard) => {
-    //         this.PowerNames.forEach((powername, iPower) => {
-    //             ret.push((iBoard - 1) * this.PowerNames.length + iPower + 1)
-    //         });
-    //     });
-    //     return ret;
-    // }
 
 }
 
@@ -64,6 +52,8 @@ class BidSet {
         this._config.PowerNames.forEach(x => ret += this.Bids[x]);
         return ret;
     }
+
+    get SeedForBoardAssignment() { return this._config.ReseedByRound ? this.SeedInRound : this.SeedInTourney; }
 
     get PowersOrderedByBidSize() {
         var ret = this._config.PowerNames.slice();
@@ -263,11 +253,12 @@ class Auction {
         return ret;
     }
 
-    get BoardSeedInRoundAverages() {
+    get BoardSeedAverages() {
         var ret = this._config.BoardNames.map((name, i) => []);
         this.BidSets.forEach(bs => {
-            if (!isNaN(bs.BoardIndex)) ret[bs.BoardIndex].push(bs.SeedInRound);
+            if (!isNaN(bs.BoardIndex)) ret[bs.BoardIndex].push(bs.SeedForBoardAssignment);
         });
+        console.log(ret);
         ret = ret.map(x => {
             if (x.length == 0) return 0;
             var tot = 0;
@@ -280,6 +271,8 @@ class Auction {
     Resolve() {
         this._audittrail = "";
         this._remainingBidSets = this.BidSets.slice();
+
+        this.AddToAuditTrail(mConfiguration.ReseedByRound);
 
         this._powerAssignmentCounts = {};
         this._config.PowerNames.forEach(powername => this._powerAssignmentCounts[powername] = 0);
@@ -352,7 +345,7 @@ class Auction {
                 var bidsetsWithPower = this.BidSets.filter(bs => bs.PowerAssignment == selectedPower);
                 bidsetsWithPower.sort((a, b) => a.SeedInRound - b.SeedInRound);
 
-                var avgs = this.BoardSeedInRoundAverages;
+                var avgs = this.BoardSeedAverages;
                 var boardinds = [];
                 this._config.BoardNames.map((x, i) => boardinds.push(i));
 
@@ -361,14 +354,14 @@ class Auction {
                 for (let i = 0; i < boardinds.length; i++) {
                     var bs = bidsetsWithPower[i];
                     bs.BoardIndex = boardinds[i];
-                    this.AddToAuditTrail(" ---- Seed " + bs.SeedInRound + " (" + bs.PowerAssignment + ") to board " + (bs.BoardIndex + 1) + "  (" + avgs[boardinds[i]].toFixed(1) + " avg seed)");
+                    this.AddToAuditTrail(" ---- Seed " + bs.SeedForBoardAssignment + " (" + bs.PowerAssignment + ") to board " + (bs.BoardIndex + 1) + "  (" + avgs[boardinds[i]].toFixed(1) + " avg seed)");
                 }
 
             }
 
         }
 
-        var finalavgs = this.BoardSeedInRoundAverages;
+        var finalavgs = this.BoardSeedAverages;
         finalavgs.forEach((x, i) => {
             this.AddToAuditTrail("Board " + (i + 1) + " seed avg: " + x.toFixed(1));
         });
