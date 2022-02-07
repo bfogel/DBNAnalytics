@@ -29,9 +29,9 @@ function HandleRequest($request)
     switch ($request["Key"]) {
         case "profiles":
             //Add function to prep responses so they are standardized
-            return GetAndReturnJSON2('SELECT PlayerID, PlayerName FROM Player WHERE Token = ?', [$parms["token"]]);
+            return GetAndReturnJSON('SELECT PlayerID, PlayerName FROM Player WHERE Token = ?', [$parms["token"]]);
         case "players":
-            return GetAndReturnJSON2('SELECT PlayerID, PlayerName FROM Player');
+            return GetAndReturnJSON('SELECT PlayerID, PlayerName FROM Player');
         case "games": {
                 $p1id = $parms['p1'];
                 $p2id = $parms['p2'];
@@ -45,36 +45,7 @@ function HandleRequest($request)
     }
 }
 
-switch ($src) {
-    case 'p':
-        $ret = GetAndReturnJSON('SELECT PlayerID, PlayerName FROM Player');
-        break;
-
-    case 'pc': {
-            $p1id = $_GET['p1'];
-            $p2id = $_GET['p2'];
-            $where .= 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ' . $p1id . ')';
-            $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ' . $p2id . ')';
-            $ret = GetGames($where);
-            break;
-        }
-
-    case 'g':
-        $ret = GetGames('GameID in (11764,11765)');
-        break;
-
-    case 'pcb':
-        $ret = GetAndReturnJSON('SELECT * FROM PlayerCountryBid');
-        break;
-
-    default:
-        $ret = 'nope';
-        break;
-}
-
-echo $ret;
-
-function GetAndReturnJSON2($sql, $parameters = null)
+function GetAndReturnJSON($sql, $parameters = null)
 {
 
     $ret = ["success" => false];
@@ -149,40 +120,6 @@ function GetAndReturnJSON2($sql, $parameters = null)
     $ret["success"] = true;
 
     return $ret;
-}
-
-function GetAndReturnJSON($sql)
-{
-
-    $ret = ["success" => false];
-
-    $conn = dbn_GetConnection();
-    $result = $conn->query($sql);
-
-    if (!$result) {
-        $ret["message"] = $conn->error;
-        // } elseif ($result -> num_rows == 0) {
-        //     $ret["zero"] = true;
-    } else {
-        $fields = [];
-        foreach ($result->fetch_fields() as &$field) {
-            $ff = [];
-            $ff["name"] = $field->name;
-            array_push($fields, $ff);
-        }
-        unset($field);
-
-        $ret["fields"] = $fields;
-
-        $data = [];
-        while ($row = $result->fetch_assoc()) {
-            array_push($data, array_values($row));
-        }
-
-        $ret["data"] = $data;
-        $ret["success"] = true;
-    }
-    return json_encode($ret);
 }
 
 function GetGames($where)

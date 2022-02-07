@@ -8,7 +8,7 @@ function MakePage() {
     if (reqs.Send()) {
         div.addText("Success: " + req.Success);
         div.addLineBreak();
-        div.addText(JSON.stringify(req.Response));
+        div.addText(JSON.stringify(req.ResponseContent));
         div.addLineBreak();
         div.addText(reqs.ErrorMessage);
     } else {
