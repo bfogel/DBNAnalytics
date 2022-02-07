@@ -71,8 +71,6 @@ function GetAndReturnJSON2($sql, $parameters)
     $ret["sql"] = $sql;
     $ret["parameters"] = $parameters;
 
-    return $ret;
-
     $conn = dbn_GetConnection();
     $statement = $conn->prepare($sql);
 
@@ -83,6 +81,7 @@ function GetAndReturnJSON2($sql, $parameters)
         // } elseif ($result -> num_rows == 0) {
         //     $ret["zero"] = true;
     } else {
+        $ret["debug"] = "A";
         $result = $statement->get_result();
         $fields = [];
         foreach ($result->fetch_fields() as &$field) {
