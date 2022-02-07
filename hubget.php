@@ -80,12 +80,13 @@ function GetAndReturnJSON2($sql, $parameters)
         return $ret;
     }
 
-    // if (($statement->bind_param("s", $city)) === false) {
-    //     $ret["message"] = $conn->error;
-    //     return $ret;
-    // }
+    if (($statement->bind_param("s", $parameters[0])) === false) {
+        $ret["message"] = $conn->error;
+        return $ret;
+    }
 
-    if (($statement->execute($parameters)) === false) {
+
+    if (($statement->execute()) === false) {
         $ret["message"] = $conn->error;
         return $ret;
     }
