@@ -25,17 +25,18 @@ if ($requests != "") {
 
 function HandleRequest($request)
 {
+    $parms = $request["Parameters"];
     switch ($request["Key"]) {
-        case 'profiles':
-            $parms = $request["Parameters"];
+        case "profiles":
             //Add function to prep responses so they are standardized
             return GetAndReturnJSON2('SELECT PlayerID, PlayerName FROM Player WHERE Token = ?', [$parms["token"]]);
+        case "players":
+            return GetAndReturnJSON2('SELECT PlayerID, PlayerName FROM Player');
         default:
-            return "wut";
+            return "hubget: Unrecognized key (" + $request["Key"] + ")";
     }
 }
 
-//echo $bid;
 switch ($src) {
     case 'p':
         $ret = GetAndReturnJSON('SELECT PlayerID, PlayerName FROM Player');
@@ -65,7 +66,7 @@ switch ($src) {
 
 echo $ret;
 
-function GetAndReturnJSON2($sql, $parameters)
+function GetAndReturnJSON2($sql, $parameters = null)
 {
 
     $ret = ["success" => false];
@@ -80,30 +81,31 @@ function GetAndReturnJSON2($sql, $parameters)
         return $ret;
     }
 
-    $types = "";
-    foreach ($parameters as $value) {
-        switch (gettype($value)) {
-            case 'string':
-                $types .= "s";
-                break;
-            case 'integer':
-                $types .= "i";
-                break;
-            case 'double':
-                $types .= "d";
-                break;
-            default:
-                $ret["message"] = "Unsupported parameter type: " . gettype($value);
-                return $ret;
-                break;
+    if ($parameters != null) {
+        $types = "";
+        foreach ($parameters as $value) {
+            switch (gettype($value)) {
+                case 'string':
+                    $types .= "s";
+                    break;
+                case 'integer':
+                    $types .= "i";
+                    break;
+                case 'double':
+                    $types .= "d";
+                    break;
+                default:
+                    $ret["message"] = "Unsupported parameter type: " . gettype($value);
+                    return $ret;
+                    break;
+            }
+        }
+
+        if (($statement->bind_param($types, ...$parameters)) === false) {
+            $ret["message"] = $conn->error;
+            return $ret;
         }
     }
-
-    if (($statement->bind_param($types, ...$parameters)) === false) {
-        $ret["message"] = $conn->error;
-        return $ret;
-    }
-
 
     if (($statement->execute()) === false) {
         $ret["message"] = $conn->error;

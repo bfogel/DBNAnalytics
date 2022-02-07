@@ -76,9 +76,11 @@ class dbnHubRequestList {
     return fd;
   }
 
+  addRequest(request) { this.Requests.push(request); }
+
   addPlayerProfile(token) {
     var ret = new dbnHubRequest("profiles", { "token": token });
-    this.Requests.push(ret);
+    this.addRequest(ret);
     return ret;
   }
 }
@@ -106,8 +108,12 @@ class dbnHub {
   #players = null;
   get Players() {
     if (this.#players == null) {
-      var response = this.hubget('p');
-      var data = response.data;
+      var req = new dbnHubRequest("players");
+      var list = myHub.MakeRequestList();
+      list.addRequest(req);
+      list.Send();
+      var data = req.Response;
+      console.log(data);
       var pps = data.map(x => new dbnPlayer(x[0], x[1]));
       pps.sort((a, b) => {
         var aa = a.PlayerName.toLowerCase(); var bb = b.PlayerName.toLowerCase();
