@@ -68,9 +68,11 @@ function GetAndReturnJSON2($sql, $parameters)
 {
 
     $ret = ["success" => false];
+    $ret = ["sql" => $sql];
+    $ret = ["parameters" => $parameters];
 
     return $ret;
-    
+
     $conn = dbn_GetConnection();
     $statement = $conn->prepare($sql);
 
