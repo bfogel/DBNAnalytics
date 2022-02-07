@@ -16,11 +16,21 @@ if ($requests != "") {
     $list = json_decode($requests, true);
     $ret = [];
     foreach ($list as $item) {
-        $item["added"] = "new";
-        array_push($ret, $item);
+        array_push($ret, HandleRequest($item));
     }
     echo json_encode($ret);
     return;
+}
+
+function HandleRequest($request)
+{
+    switch ($request["Key"]) {
+        case 'profiles':
+            $parms = $request["Parameters"];
+            return GetAndReturnJSON('SELECT PlayerID, PlayerName FROM Player WHERE Token = "' + $parms["token"] + '"');
+        default:
+            return "wut";
+    }
 }
 
 //echo $bid;
