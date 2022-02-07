@@ -16,6 +16,7 @@ if ($requests != ""){
     $list = json_decode($requests, true);
     $ret = [];
     foreach ($list as $item){
+        $item["added"] = "new";
         array_push($ret, $item);
     }
     echo json_encode($list);
