@@ -74,33 +74,41 @@ function GetAndReturnJSON2($sql, $parameters)
     $conn = dbn_GetConnection();
     $statement = $conn->prepare($sql);
 
-    $statement->bind_param("s", $city);
-
-    if (!$statement->execute($parameters)) {
+    if ($statement === false) {
         $ret["message"] = $conn->error;
-        // } elseif ($result -> num_rows == 0) {
-        //     $ret["zero"] = true;
-    } else {
-        $ret["debug"] = "A";
-        $result = $statement->get_result();
-        $fields = [];
-        foreach ($result->fetch_fields() as &$field) {
-            $ff = [];
-            $ff["name"] = $field->name;
-            array_push($fields, $ff);
-        }
-        unset($field);
-
-        $ret["fields"] = $fields;
-
-        $data = [];
-        while ($row = $result->fetch_assoc()) {
-            array_push($data, array_values($row));
-        }
-
-        $ret["data"] = $data;
-        $ret["success"] = true;
+        return $ret;
     }
+
+    if (($statement->bind_param("s", $city)) === false) {
+        $ret["message"] = $conn->error;
+        return $ret;
+    }
+
+    if (($statement->execute($parameters)) === false) {
+        $ret["message"] = $conn->error;
+        return $ret;
+    }
+
+    $ret["debug"] = "A";
+    $result = $statement->get_result();
+    $fields = [];
+    foreach ($result->fetch_fields() as &$field) {
+        $ff = [];
+        $ff["name"] = $field->name;
+        array_push($fields, $ff);
+    }
+    unset($field);
+
+    $ret["fields"] = $fields;
+
+    $data = [];
+    while ($row = $result->fetch_assoc()) {
+        array_push($data, array_values($row));
+    }
+
+    $ret["data"] = $data;
+    $ret["success"] = true;
+
     return $ret;
 }
 
