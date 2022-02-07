@@ -13,7 +13,7 @@ $season = $_GET['season'];
 $requests = $_POST['requests'];
 
 if ($requests != ""){
-    echo "gotcha" . $requests;
+    echo $requests;
     return;
 }
 

@@ -1,23 +1,89 @@
 
 //#region Data hub
 
-class hubrequest {
-  constructor(key) { Key = key; }
+class dbnHubRequest {
   Key = null;
   Parameters = {};
+
+  constructor(key, parameters) { this.Key = key; this.Parameters = parameters; }
 
   Success;
   Response;
 
   MakeRequestJSON() {
     var ret = {};
-    ret.Key = Key;
-    ret.Parameters = this.Parameters;
+    ret["Key"] = this.Key;
+    ret["Parameters"] = this.Parameters;
+    return ret;
+  }
+}
+
+class dbnHubRequestList {
+  Requests = Array.from(Array(0), x => new dbnHubRequest());
+
+  ErrorMessage;
+
+  Send() {
+    if (this.Requests.length == 0) {
+      console.log("Error in dbnHubRequestList.Send: No requests.");
+      return false;
+    }
+
+    var req = new XMLHttpRequest();
+    var url = "https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php";
+    req.open('POST', url, false); //false for not-async
+    req.send(this.MakeFormData());
+
+    if (req.status == 200 && req.responseText != "nope") {
+      var resp;
+      try {
+        resp = JSON.parse(req.responseText);
+      } catch (error) {
+        this.ErrorMessage = "Error in dbnHubRequestList.Send: " + error;
+        return false;
+      }
+
+      if (!(resp instanceof Array)) {
+        this.ErrorMessage = "Error in dbnHubRequestList.Send: Response not an array. " + JSON.stringify(resp);
+        return false;
+      }
+
+      if (!(resp.length != this.Requests.length)) {
+        this.ErrorMessage = "Error in dbnHubRequestList.Send: Response length (" + resp.length + ") not the same as Request length (" + this.Requests.length + ").";
+        return false;
+      }
+
+      resp.forEach((x, i) => {
+        var qq = this.Requests[i];
+        qq.Response = x;
+      });
+
+      return true;
+
+    } else {
+      this.ErrorMessage = "Error in dbnHubRequestList.Send: " + req.responseText;
+      return false;
+    }
+
+  }
+
+  MakeFormData() {
+    var data = this.Requests.map(x => x.MakeRequestJSON());
+    var fd = new FormData();
+    fd.append("requests", JSON.stringify(data));
+    return fd;
+  }
+
+  addPlayerProfile(token) {
+    var ret = new dbnHubRequest("profiles", { "token": token });
+    this.Requests.push(ret);
     return ret;
   }
 }
 
 class dbnHub {
+
+  MakeRequestList() { return new dbnHubRequestList(); }
 
   hubget(src, vals = null) {
     var data = null;
@@ -36,24 +102,33 @@ class dbnHub {
   }
 
   hubgetNEW(requests) {
-    var data = null;
+    var list = new dbnHubRequestList();
+    if (requests instanceof dbnHubRequestList) {
+      list = requests;
+    } else {
+      if (!(requests instanceof Array)) throw "requests must be an array or a request list";
+      requests.forEach(x => {
+        if (!(x instanceof dbnHubRequest)) throw "Each element of requests must be a hub request";
+        list.Requests.push(x);
+      });
+    }
 
     var req = new XMLHttpRequest();
     var url = "https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php";
+    req.open('POST', url, false); //false for not-async
+    req.send(list.MakeFormData());
 
-    var data = requests.map(x => x.MakeRequestJSON());
-    var fd = new FormData();
-    fd.append("requests", JSON.stringify(data));
+    if (req.status == 200 && req.responseText != "nope") {
+      //var resp = JSON.parse(req.responseText);
 
-    XHR.open('POST', url, false); //false for not-async
-    XHR.send(fd);
+      var ret = Array.from(Array(0), x => new dbnHubRequest());
+      requests.forEach(x => ret.push(x));
 
-    if (req.status == 200 && req.responseText != "nope") data = JSON.parse(req.responseText);
+      return req.responseText;
 
-    var ret = Array.from(Array(0), x => new hubrequest());
-    requests.forEach(x => ret.push(x));
-
-    return ret;
+    } else {
+      return null;
+    }
   }
 
   #players = null;
