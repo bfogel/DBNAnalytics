@@ -69,8 +69,8 @@ function GetAndReturnJSON2($sql, $parameters)
 {
 
     $ret = ["success" => false];
-    $ret["sql"] = $sql;
-    $ret["parameters"] = $parameters;
+    // $ret["sql"] = $sql;
+    // $ret["parameters"] = $parameters;
 
     $conn = dbn_GetConnection();
     $statement = $conn->prepare($sql);
@@ -110,7 +110,6 @@ function GetAndReturnJSON2($sql, $parameters)
         return $ret;
     }
 
-    $ret["debug"] = "A";
     $result = $statement->get_result();
 
     if ($result === false) {
