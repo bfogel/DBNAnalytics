@@ -8,7 +8,7 @@ function MakePage() {
     var req = reqs.addPlayerProfile("mytoken");
 
     if (reqs.Send()) {
-        div.addText(req.Response);
+        div.addText(JSON.stringify(req.Response));
     } else {
         div.addText("fail " + reqs.ErrorMessage);
     }

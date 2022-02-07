@@ -48,7 +48,7 @@ class dbnHubRequestList {
         return false;
       }
 
-      if (!(resp.length != this.Requests.length)) {
+      if (resp.length != this.Requests.length) {
         this.ErrorMessage = "Error in dbnHubRequestList.Send: Response length (" + resp.length + ") not the same as Request length (" + this.Requests.length + ").";
         return false;
       }
@@ -99,36 +99,6 @@ class dbnHub {
     req.send(null);
     if (req.status == 200 && req.responseText != "nope") data = JSON.parse(req.responseText);
     return data;
-  }
-
-  hubgetNEW(requests) {
-    var list = new dbnHubRequestList();
-    if (requests instanceof dbnHubRequestList) {
-      list = requests;
-    } else {
-      if (!(requests instanceof Array)) throw "requests must be an array or a request list";
-      requests.forEach(x => {
-        if (!(x instanceof dbnHubRequest)) throw "Each element of requests must be a hub request";
-        list.Requests.push(x);
-      });
-    }
-
-    var req = new XMLHttpRequest();
-    var url = "https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php";
-    req.open('POST', url, false); //false for not-async
-    req.send(list.MakeFormData());
-
-    if (req.status == 200 && req.responseText != "nope") {
-      //var resp = JSON.parse(req.responseText);
-
-      var ret = Array.from(Array(0), x => new dbnHubRequest());
-      requests.forEach(x => ret.push(x));
-
-      return req.responseText;
-
-    } else {
-      return null;
-    }
   }
 
   #players = null;
