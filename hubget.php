@@ -27,7 +27,7 @@ function HandleRequest($request)
     switch ($request["Key"]) {
         case 'profiles':
             $parms = $request["Parameters"];
-            return $parms;
+            return 'SELECT PlayerID, PlayerName FROM Player WHERE Token = "' + $parms["token"] + '"';
             //REMOVE DECODE HERE ONCE GETANDRETURN IS REFACTORED
             return json_decode(GetAndReturnJSON('SELECT PlayerID, PlayerName FROM Player WHERE Token = "' + $parms["token"] + '"'));
         default:
