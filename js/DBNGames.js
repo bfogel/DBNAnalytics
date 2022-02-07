@@ -112,8 +112,7 @@ class dbnHub {
       var list = myHub.MakeRequestList();
       list.addRequest(req);
       list.Send();
-      var data = req.Response;
-      console.log(data);
+      var data = req.Response.data;
       var pps = data.map(x => new dbnPlayer(x[0], x[1]));
       pps.sort((a, b) => {
         var aa = a.PlayerName.toLowerCase(); var bb = b.PlayerName.toLowerCase();
