@@ -135,14 +135,17 @@ function GetAndReturnJSON2($sql, $parameters = null)
     }
     unset($field);
 
-    $ret["fields"] = $fields;
+    $content = [];
+    $content["fields"] = $fields;
 
     $data = [];
     while ($row = $result->fetch_assoc()) {
         array_push($data, array_values($row));
     }
 
-    $ret["data"] = $data;
+    $content["data"] = $data;
+
+    $ret["content"] = $content;
     $ret["success"] = true;
 
     return $ret;

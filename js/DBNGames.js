@@ -8,7 +8,14 @@ class dbnHubRequest {
   constructor(key, parameters) { this.Key = key; this.Parameters = parameters; }
 
   Success;
-  Response;
+  Message;
+  ResponseContent;
+
+  SendAlone() {
+    var list = myHub.MakeRequestList();
+    list.addRequest(this);
+    return list.Send();
+  }
 
   MakeRequestJSON() {
     var ret = {};
@@ -57,7 +64,8 @@ class dbnHubRequestList {
       resp.forEach((x, i) => {
         var reqq = this.Requests[i];
         reqq.Success = x["success"];
-        reqq.Response = x;
+        reqq.Message = x["message"];
+        reqq.ResponseContent = x["content"];
       });
 
       return true;
@@ -83,6 +91,7 @@ class dbnHubRequestList {
     this.addRequest(ret);
     return ret;
   }
+
 }
 
 class dbnHub {
@@ -109,10 +118,8 @@ class dbnHub {
   get Players() {
     if (this.#players == null) {
       var req = new dbnHubRequest("players");
-      var list = myHub.MakeRequestList();
-      list.addRequest(req);
-      list.Send();
-      var data = req.Response.data;
+      req.SendAlone();
+      var data = req.ResponseContent.data;
       var pps = data.map(x => new dbnPlayer(x[0], x[1]));
       pps.sort((a, b) => {
         var aa = a.PlayerName.toLowerCase(); var bb = b.PlayerName.toLowerCase();
@@ -126,11 +133,13 @@ class dbnHub {
   GetGamesForPlayers(player1id, player2id = null) {
     var vals = { "p1": player1id };
     if (player2id != null) vals["p2"] = player2id;
-    var response = this.hubget("pc", vals);
 
-    if (response == null) return null;
+    var req = new dbnHubRequest("games", vals);
+    req.SendAlone();
 
-    var games = response.map(x => new dbnGame(x));
+    if (!req.Success) return null;
+
+    var games = req.ResponseContent.map(x => new dbnGame(x));
 
     return games;
   }
