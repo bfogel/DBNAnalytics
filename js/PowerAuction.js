@@ -272,8 +272,6 @@ class Auction {
         this._audittrail = "";
         this._remainingBidSets = this.BidSets.slice();
 
-        this.AddToAuditTrail(mConfiguration.ReseedByRound);
-
         this._powerAssignmentCounts = {};
         this._config.PowerNames.forEach(powername => this._powerAssignmentCounts[powername] = 0);
 

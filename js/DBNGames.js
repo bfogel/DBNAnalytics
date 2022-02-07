@@ -54,8 +54,9 @@ class dbnHubRequestList {
       }
 
       resp.forEach((x, i) => {
-        var qq = this.Requests[i];
-        qq.Response = x;
+        var reqq = this.Requests[i];
+        reqq.Success = x["success"];
+        reqq.Response = x;
       });
 
       return true;

@@ -27,9 +27,10 @@ function HandleRequest($request)
     switch ($request["Key"]) {
         case 'profiles':
             $parms = $request["Parameters"];
-            // return ["sql" => 'SELECT PlayerID, PlayerName FROM Player WHERE Token = "' . $parms["token"] . '"'];
             //REMOVE DECODE HERE ONCE GETANDRETURN IS REFACTORED
-            return json_decode(GetAndReturnJSON('SELECT PlayerID, PlayerName FROM Player WHERE Token = "' . $parms["token"] . '"'));
+            //AND CONVERT TO PREPARED STATEMENT
+            //Add function to prep responses so they are standardized
+            return json_decode(GetAndReturnJSON2('SELECT PlayerID, PlayerName FROM Player WHERE Token = ?', [$parms["token"]]));
         default:
             return "wut";
     }
@@ -64,6 +65,43 @@ switch ($src) {
 }
 
 echo $ret;
+
+function GetAndReturnJSON2($sql, $parameters)
+{
+
+    $ret = ["success" => false];
+
+    $conn = dbn_GetConnection();
+    $statement = $conn->prepare($sql);
+
+    $statement->bind_param("s", $city);
+
+    if (!$statement->execute($parameters)) {
+        $ret["message"] = $conn->error;
+        // } elseif ($result -> num_rows == 0) {
+        //     $ret["zero"] = true;
+    } else {
+        $result = $statement->get_result();
+        $fields = [];
+        foreach ($result->fetch_fields() as &$field) {
+            $ff = [];
+            $ff["name"] = $field->name;
+            array_push($fields, $ff);
+        }
+        unset($field);
+
+        $ret["fields"] = $fields;
+
+        $data = [];
+        while ($row = $result->fetch_assoc()) {
+            array_push($data, array_values($row));
+        }
+
+        $ret["data"] = $data;
+        $ret["success"] = true;
+    }
+    return json_encode($ret);
+}
 
 function GetAndReturnJSON($sql)
 {
