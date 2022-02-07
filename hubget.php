@@ -10,6 +10,13 @@ $src = $_GET['src'];
 $year = $_GET['year'];
 $season = $_GET['season'];
 
+$requests = $_POST['requests'];
+
+if ($requests != ""){
+    echo "gotcha" . $requests;
+    return;
+}
+
 //echo $bid;
 switch ($src) {
     case 'p':
