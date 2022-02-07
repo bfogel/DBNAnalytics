@@ -80,7 +80,26 @@ function GetAndReturnJSON2($sql, $parameters)
         return $ret;
     }
 
-    if (($statement->bind_param("s", ...$parameters)) === false) {
+    $types = "";
+    foreach ($parameters as $value) {
+        switch (gettype($value)) {
+            case 'string':
+                $types .= "s";
+                break;
+            case 'integer':
+                $types .= "i";
+                break;
+            case 'double':
+                $types .= "d";
+                break;
+            default:
+                $ret["message"] = "Unsupported parameter type: " . gettype($value);
+                return $ret;
+                break;
+        }
+    }
+
+    if (($statement->bind_param($types, ...$parameters)) === false) {
         $ret["message"] = $conn->error;
         return $ret;
     }
