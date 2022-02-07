@@ -19,7 +19,7 @@ if ($requests != "") {
         $item["added"] = "new";
         array_push($ret, ["what" => "you"]);
     }
-    echo json_encode($list);
+    echo json_encode($ret);
     return;
 }
 
