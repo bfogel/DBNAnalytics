@@ -27,10 +27,8 @@ function HandleRequest($request)
     switch ($request["Key"]) {
         case 'profiles':
             $parms = $request["Parameters"];
-            //REMOVE DECODE HERE ONCE GETANDRETURN IS REFACTORED
-            //AND CONVERT TO PREPARED STATEMENT
             //Add function to prep responses so they are standardized
-            return json_decode(GetAndReturnJSON2('SELECT PlayerID, PlayerName FROM Player WHERE Token = ?', [$parms["token"]]));
+            return GetAndReturnJSON2('SELECT PlayerID, PlayerName FROM Player WHERE Token = ?', [$parms["token"]]);
         default:
             return "wut";
     }
@@ -71,6 +69,8 @@ function GetAndReturnJSON2($sql, $parameters)
 
     $ret = ["success" => false];
 
+    return $ret;
+    
     $conn = dbn_GetConnection();
     $statement = $conn->prepare($sql);
 
@@ -100,7 +100,7 @@ function GetAndReturnJSON2($sql, $parameters)
         $ret["data"] = $data;
         $ret["success"] = true;
     }
-    return json_encode($ret);
+    return $ret;
 }
 
 function GetAndReturnJSON($sql)

@@ -9,6 +9,8 @@ function MakePage() {
         div.addText("Success: " + req.Success);
         div.addLineBreak();
         div.addText(JSON.stringify(req.Response));
+        div.addLineBreak();
+        div.addText(reqs.ErrorMessage);
     } else {
         div.addText("fail " + reqs.ErrorMessage);
     }
