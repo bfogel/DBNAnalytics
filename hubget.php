@@ -1,6 +1,7 @@
 <?php
 
 include("modules/dataaccess.php");
+//mysqli_report(MYSQLI_REPORT_ERROR);
 
 header("Access-Control-Allow-Origin: *");
 
@@ -91,6 +92,12 @@ function GetAndReturnJSON2($sql, $parameters)
 
     $ret["debug"] = "A";
     $result = $statement->get_result();
+
+    if ($result === false) {
+        $ret["message"] = $conn->error;
+        return $ret;
+    }
+
     $fields = [];
     foreach ($result->fetch_fields() as &$field) {
         $ff = [];

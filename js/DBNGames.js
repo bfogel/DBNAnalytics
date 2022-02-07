@@ -39,6 +39,7 @@ class dbnHubRequestList {
       try {
         resp = JSON.parse(req.responseText);
       } catch (error) {
+        console.log(req.responseText);
         this.ErrorMessage = "Error in dbnHubRequestList.Send: " + error;
         return false;
       }
