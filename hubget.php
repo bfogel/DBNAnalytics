@@ -32,6 +32,14 @@ function HandleRequest($request)
             return GetAndReturnJSON2('SELECT PlayerID, PlayerName FROM Player WHERE Token = ?', [$parms["token"]]);
         case "players":
             return GetAndReturnJSON2('SELECT PlayerID, PlayerName FROM Player');
+        case "games": {
+                $p1id = $parms['p1'];
+                $p2id = $parms['p2'];
+                $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ' . $p1id . ')';
+                $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ' . $p2id . ')';
+                $ret = ["success" => true, "content" => GetGames($where)];
+                return $ret;
+            }
         default:
             return "hubget: Unrecognized key (" + $request["Key"] + ")";
     }
