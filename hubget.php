@@ -189,6 +189,6 @@ function GetGames($where)
             $games[$gamekey] = $game;
         }
 
-        return json_encode(array_values($games));
+        return array_values($games);
     }
 }
