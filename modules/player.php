@@ -9,14 +9,14 @@ add_shortcode( 'dbnPlayerPage', 'dbnPlayer_MainPage' );
 
 function dbnPlayer_MainPage() {
 
-	$sPlayerID .= $_GET["pid"];
+	$sPlayerID = $_GET["pid"];
 	if ($sPlayerID == null) {$sPlayerID = "None";}
-	$ret .= dbn_GetHTML('Player', $sPlayerID);
+	$ret = dbn_GetHTML('Player', $sPlayerID);
 
     return $ret;
 }
 
-function dbnVersion(){return 9;}
+function dbnVersion(){return 10;}
 
 add_shortcode( 'dbnPlayerVsPlayer', 'dbnPlayerVsPlayer_Create' );
 function dbnPlayerVsPlayer_Create() {
