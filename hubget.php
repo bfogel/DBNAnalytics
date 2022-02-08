@@ -63,7 +63,7 @@ function HandleRequest($request)
                 $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                 $games = GetGames2($where, [$parms['p1'], $parms['p2']]);
 
-                if ($games instanceof ResultSet) return $games;
+                if ($games instanceof ResultSet) return $games->ToJSON();
                 return ["success" => true, "content" => $games];
             }
         default:
