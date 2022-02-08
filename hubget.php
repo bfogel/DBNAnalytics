@@ -61,8 +61,9 @@ function HandleRequest($request)
         case "games2": {
                 $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                 $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
-                $ret = ["success" => true, "content" => GetGames($where, [$parms['p1'], $parms['p2']])];
-                return $ret;
+                $games = GetGames($where, [$parms['p1'], $parms['p2']]);
+                if($games instanceof ResultSet) return $games;
+                return ["success" => true, "content" => $games];
             }
         default:
             return "hubget: Unrecognized key (" + $request["Key"] + ")";
@@ -242,7 +243,7 @@ function GetGames2($where, $params)
 
     $rs->message = $sql;
     return $rs;
-    
+
     if (!$rs["success"]) return $rs;
 
     $cGameID = $rs->GetFieldIndex("GameID");

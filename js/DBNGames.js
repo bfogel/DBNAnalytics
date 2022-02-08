@@ -137,7 +137,7 @@ class dbnHub {
     var req = new dbnHubRequest("games", vals);
     req.SendAlone();
 
-    console.log(req.Message);
+    //console.log(req.ResponseContent);
 
     if (!req.Success) return null;
 
