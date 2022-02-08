@@ -19,6 +19,12 @@ function dbn_GetConnection(){
 
 }
 
+function GetResultsetAsJSON($sql, $parameters = null)
+{
+    $rs = new ResultSet($sql, $parameters);
+    return $rs->ToJSON();
+}
+
 class ResultSet
 {
     public $success = false;
