@@ -8,9 +8,9 @@ add_shortcode( 'dbnCompetitionResults', 'dbnCompetition_GetResults' );
 
 function dbnCompetition_GetResults() {
 
-	$iID .= $_GET["compid"];
+	$iID = $_GET["compid"];
 	if ($iID == null) {$iID = "VDL20212041DBNIQ2022";}
-	$ret .= dbn_GetHTML('Competition', $iID);
+	$ret = dbn_GetHTML('Competition', $iID);
 
     return $ret;
 }
@@ -19,9 +19,9 @@ add_shortcode( 'dbnCompetitionGroup', 'dbnCompetitionGroup_GetResults' );
 
 function dbnCompetitionGroup_GetResults() {
 
-	$iID .= $_GET["groupid"];
+	$iID = $_GET["groupid"];
 	if ($iID == null) {$iID = "DBNIQ2022";}
-	$ret .= dbn_GetHTML('CompGroup', $iID);
+	$ret = dbn_GetHTML('CompGroup', $iID);
 
     return $ret;
 }
