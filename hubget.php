@@ -44,6 +44,22 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $vars);
             }
 
+        case "dbnischedule": {
+                $token = $parms["token"];
+                if ($token = null) return ["success" => false, "message" => "Missing token"];
+
+                $sql = "SELECT C.CompetitionID, C.CompetitionName";
+                $sql .= " , S.Seed, S.InRound1, S.InRound2, S.InRound3, S.InRound4";
+                $sql .= " FROM Competition AS C";
+                $sql .= " INNER JOIN DBNInvitationalSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
+                $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
+                $sql .= ' INNER JOIN Country as CO on S.Country_CountryID = CO.CountryID';
+                $sql .= " WHERE P.Token = ?";
+                $vars = [$token];
+
+                return GetResultsetAsJSON($sql, $vars);
+            }
+
         case "games": {
                 $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                 $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
@@ -53,7 +69,7 @@ function HandleRequest($request)
                 return ["success" => true, "content" => $games];
             }
         default:
-            return "hubget: Unrecognized key (" + $request["Key"] + ")";
+            return ["success" => false, "message" => "hubget: Unrecognized key (" + $request["Key"] + ")"];
     }
 }
 

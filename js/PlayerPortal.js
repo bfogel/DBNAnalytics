@@ -16,7 +16,7 @@ function MakePage() {
 
         div.addText("Player Success: " + reqPlayers.Success);
         div.addLineBreak();
-        div.addText(JSON.stringify(reqPlayers.ResponseContent)); div.addLineBreak();
+        div.addText(JSON.stringify(reqPlayers.ResponseToPlayers())); div.addLineBreak();
         div.addText(JSON.stringify(reqPlayers.Message)); div.addLineBreak();
 
         div.addLineBreak();
