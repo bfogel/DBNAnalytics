@@ -61,7 +61,7 @@ function HandleRequest($request)
         case "games2": {
                 $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                 $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
-                $games = GetGames($where, [$parms['p1'], $parms['p2']]);
+                $games = GetGames2($where, [$parms['p1'], $parms['p2']]);
 
                 $fff = "cha: ";
                 if ($games instanceof ResultSet) {
