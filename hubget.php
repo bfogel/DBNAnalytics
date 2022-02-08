@@ -46,7 +46,7 @@ function HandleRequest($request)
 
         case "dbnischedule": {
                 $token = $parms["token"];
-                if ($token = null) return ["success" => false, "message" => "Missing token"];
+                if ($token == null) return ["success" => false, "message" => "Missing token"];
 
                 $sql = "SELECT C.CompetitionID, C.CompetitionName";
                 $sql .= " , S.Seed, S.InRound1, S.InRound2, S.InRound3, S.InRound4";
