@@ -242,7 +242,7 @@ function GetGames2($where, $params)
 
     $rs = GetResultset($sql, $params);
 
-    if (!$rs["success"]) return $rs;
+    if (!$rs->success) return $rs;
 
     $cGameID = $rs->GetFieldIndex("GameID");
     $cLabel = $rs->GetFieldIndex("Label");
