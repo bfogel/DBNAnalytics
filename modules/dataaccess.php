@@ -82,7 +82,7 @@ class ResultSet
                         $types .= "d";
                         break;
                     default:
-                        $this["message"] = "Unsupported parameter type: " . gettype($value);
+                        $this->message = "Unsupported parameter type: " . gettype($value);
                         return;
                 }
             }
@@ -124,5 +124,3 @@ class ResultSet
         $this->success = true;
     }
 }
-
-?>
