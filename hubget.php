@@ -12,6 +12,16 @@ class ResultSet
     public $data = [];
     public $message = null;
 
+    public function GetFieldIndex($fieldname)
+    {
+        $i = 0;
+        foreach ($this->fields as $value) {
+            if ($value["name"] == $fieldname) return $i;
+            $i++;
+        }
+        return -1;
+    }
+
     public function ToJSON()
     {
         $ret = [];
@@ -230,48 +240,70 @@ function GetGames2($where, $params)
 
     $rs = GetResultset($sql, $params);
 
-    if (!$rs["success"])  return $rs;
+    if (!$rs["success"]) return $rs;
+
+    $cGameID = $rs->GetFieldIndex("GameID");
+    $cLabel = $rs->GetFieldIndex("Label");
+    $cEndDate = $rs->GetFieldIndex("EndDate");
+    $cDrawSize = $rs->GetFieldIndex("DrawSize");
+    $cGameYearsCompleted = $rs->GetFieldIndex("GameYearsCompleted");
+    $cGamePlatform_GamePlatformID = $rs->GetFieldIndex("GamePlatform_GamePlatformID");
+    $cGamePlatformIdentifier = $rs->GetFieldIndex("GamePlatformIdentifier");
+    $cCompetitionID = $rs->GetFieldIndex("CompetitionID");
+    $cCompetitionName = $rs->GetFieldIndex("CompetitionName");
+    $cPlayerID = $rs->GetFieldIndex("PlayerID");
+    $cPlayerName = $rs->GetFieldIndex("PlayerName");
+    $cCountryName = $rs->GetFieldIndex("CountryName");
+    $cNote = $rs->GetFieldIndex("Note");
+    $cInGameAtEnd = $rs->GetFieldIndex("InGameAtEnd");
+    $cCenterCount = $rs->GetFieldIndex("CenterCount");
+    $cYearOfElimination = $rs->GetFieldIndex("YearOfElimination");
+    $cUnexcusedResignation = $rs->GetFieldIndex("UnexcusedResignation");
+    $cScore = $rs->GetFieldIndex("Score");
+    $cRank = $rs->GetFieldIndex("Rank");
+    $cRankScore = $rs->GetFieldIndex("RankScore");
+    $cTopShare = $rs->GetFieldIndex("TopShare");
 
     $games = [];
     $game = null;
     $gamekey = null;
     $lines = null;
 
-    // while ($row = $result->fetch_assoc()) {
-    //     $gamekey = "game" . $row["GameID"];
-    //     if (!array_key_exists($gamekey, $games)) {
-    //         $game = [
-    //             "GameID" => $row["GameID"], "Label" => $row["Label"], "EndDate" => $row["EndDate"], "DrawSize" => $row["DrawSize"], "GameYearsCompleted" => $row["GameYearsCompleted"], "Competition" => ["CompetitionID" => $row["CompetitionID"], "CompetitionName" => $row["CompetitionName"]]
-    //         ];
+    foreach ($rs->data as $row) {
+        $gamekey = "game" . $row["GameID"];
+        if (!array_key_exists($gamekey, $games)) {
+            $game = [
+                "GameID" => $row[$cGameID], "Label" => $row[$cLabel], "EndDate" => $row[$cEndDate], "DrawSize" => $row[$cDrawSize], "GameYearsCompleted" => $row[$cGameYearsCompleted], "Competition" => ["CompetitionID" => $row[$cCompetitionID], "CompetitionName" => $row[$cCompetitionName]]
+            ];
 
-    //         switch ($row["GamePlatform_GamePlatformID"]) {
-    //             case 0:
-    //                 $game["Platform"] = "In person";
-    //                 break;
+            switch ($row[$cGamePlatform_GamePlatformID]) {
+                case 0:
+                    $game["Platform"] = "In person";
+                    break;
 
-    //             case 1:
-    //                 $game["Platform"] = "Backstabbr";
-    //                 $game["URL"] = 'https://www.backstabbr.com/game/' . $row["GamePlatformIdentifier"];
-    //                 break;
+                case 1:
+                    $game["Platform"] = "Backstabbr";
+                    $game["URL"] = 'https://www.backstabbr.com/game/' . $row[$cGamePlatformIdentifier];
+                    break;
 
-    //             default:
-    //                 $game["Platform"] = "Unknown";
-    //                 break;
-    //         }
+                default:
+                    $game["Platform"] = "Unknown";
+                    break;
+            }
 
-    //         $games[$gamekey] = $game;
-    //         $lines = [];
-    //     }
+            $games[$gamekey] = $game;
+            $lines = [];
+        }
 
-    //     $line = [
-    //         "Player" => ["PlayerID" => $row["PlayerID"], "PlayerName" => $row["PlayerName"]], "Country" => $row["CountryName"], "Note" => $row["Note"], "CenterCount" => $row["CenterCount"], "InGameAtEnd" => $row["InGameAtEnd"], "YearOfElimination" => $row["YearOfElimination"], "UnexcusedResignation" => $row["UnexcusedResignation"], "Score" => $row["Score"], "Rank" => $row["Rank"], "RankScore" => $row["RankScore"], "TopShare" => $row["TopShare"]
-    //     ];
+        $line = [
+            "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote], "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination], "UnexcusedResignation" => $row[$cUnexcusedResignation], "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
+        ];
 
-    //     $lines[$line["Country"]] = $line;
-    //     // array_push($lines, $line);
-    //     $game["ResultLines"] = $lines;
-    //     $games[$gamekey] = $game;
-    // }
+        $lines[$line["Country"]] = $line;
+        // array_push($lines, $line);
+        $game["ResultLines"] = $lines;
+        $games[$gamekey] = $game;
+    }
 
     return array_values($games);
 }
