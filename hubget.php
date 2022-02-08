@@ -62,7 +62,8 @@ function HandleRequest($request)
                 $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                 $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                 $games = GetGames($where, [$parms['p1'], $parms['p2']]);
-                if($games instanceof ResultSet) return "I can't take this";
+                //if($games instanceof ResultSet) return "I can't take this";
+                return ["success" => false, "content" => "screw this"];
                 return ["success" => true, "content" => $games];
             }
         default:
