@@ -134,10 +134,10 @@ class dbnHub {
     var vals = { "p1": player1id };
     if (player2id != null) vals["p2"] = player2id;
 
-    var req = new dbnHubRequest("games", vals);
+    var req = new dbnHubRequest("games2", vals);
     req.SendAlone();
 
-    //console.log(req.ResponseContent);
+    console.log(req.Message);
 
     if (!req.Success) return null;
 
