@@ -62,8 +62,19 @@ function HandleRequest($request)
                 $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                 $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                 $games = GetGames($where, [$parms['p1'], $parms['p2']]);
-                //if($games instanceof ResultSet) return "I can't take this";
-                return ["success" => false, "content" => "here: " . (is_a($games, "ResultSet"))];
+
+                $fff = "cha: ";
+                if ($games instanceof ResultSet) {
+                    $fff .= "INS";
+                } else {
+                    $fff .= "nINS";
+                }
+                if (is_a($games, "ResultSet")) {
+                    $fff .= " ISA";
+                } else {
+                    $fff .= " nISA";
+                }
+                return ["success" => false, "content" => $fff];
                 return ["success" => true, "content" => $games];
             }
         default:
