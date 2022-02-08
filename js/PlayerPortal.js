@@ -3,7 +3,8 @@ function MakePage() {
     var div = dbnHere().addDiv();
 
     var reqs = myHub.MakeRequestList();
-    var req = reqs.addPlayerProfile(playertoken);
+    var req = new dbnHubRequest_Bids(playertoken);
+    reqs.addRequest(req);
 
     if (reqs.Send()) {
         div.addText("Success: " + req.Success);

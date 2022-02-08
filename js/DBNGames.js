@@ -1,11 +1,11 @@
 
-//#region Data hub
+//#region DataRequest classes
 
-class dbnHubRequest {
+class bfDataRequest {
+  constructor(key, parameters) { this.Key = key; this.Parameters = parameters; }
+
   Key = null;
   Parameters = {};
-
-  constructor(key, parameters) { this.Key = key; this.Parameters = parameters; }
 
   Success;
   Message;
@@ -25,7 +25,10 @@ class dbnHubRequest {
   }
 }
 
-class dbnHubRequestList {
+class bfDataRequestList {
+  constructor(url) { this.Url = url; }
+
+  Url;
   Requests = Array.from(Array(0), x => new dbnHubRequest());
 
   ErrorMessage;
@@ -42,8 +45,7 @@ class dbnHubRequestList {
     }
 
     var req = new XMLHttpRequest();
-    var url = "https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php";
-    req.open('POST', url, false); //false for not-async
+    req.open('POST', this.Url, false); //false for not-async
     req.send(this.MakeFormData());
 
     if (req.status == 200 && req.responseText != "nope") {
@@ -90,48 +92,22 @@ class dbnHubRequestList {
 
   addRequest(request) { this.Requests.push(request); }
 
-  addPlayerProfile(token) {
-    var ret = new dbnHubRequest("profiles", { "token": token });
-    this.addRequest(ret);
-    return ret;
-  }
-
 }
+
+//#endregion
+
+//#region DBN data access
 
 class dbnHub {
 
-  MakeRequestList() { return new dbnHubRequestList(); }
+  MakeRequestList() { return new bfDataRequestList("https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php"); }
 
-  hubget(src, vals = null) {
-    var data = null;
-
-    var req = new XMLHttpRequest();
-    var url = "https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php?src=" + src;
-    if (vals != null) {
-      for (const key in vals) {
-        url += "&" + key + "=" + vals[key];
-      }
-    }
-    req.open('GET', url, false);
-    req.send(null);
-    if (req.status == 200 && req.responseText != "nope") data = JSON.parse(req.responseText);
-    return data;
-  }
-
-  #players = null;
+  #players = Array.from(Array(0), x => new dbnPlayer());
   get Players() {
-    if (this.#players == null) {
-      var req = new dbnHubRequest("players");
+    if (this.#players.length = []) {
+      var req = new dbnHubRequest_Players();
       req.SendAlone();
-      if(!req.Success) return [];
-
-      var data = req.ResponseContent.data;
-      var pps = data.map(x => new dbnPlayer(x[0], x[1]));
-      pps.sort((a, b) => {
-        var aa = a.PlayerName.toLowerCase(); var bb = b.PlayerName.toLowerCase();
-        return aa > bb ? 1 : (aa < bb ? -1 : 0);
-      });
-      this.#players = pps;
+      this.#players = req.ResponseToPlayers();
     }
     return this.#players;
   }
@@ -140,7 +116,7 @@ class dbnHub {
     var vals = { "p1": player1id };
     if (player2id != null) vals["p2"] = player2id;
 
-    var req = new dbnHubRequest("games", vals);
+    var req = new bfDataRequest("games", vals);
     req.SendAlone();
 
     if (!req.Success) return null;
@@ -154,6 +130,18 @@ var myHub = new dbnHub();
 
 //#endregion
 
+//#region Misc DataRequest classes
+
+class dbnHubRequest_Bids extends bfDataRequest { constructor(token) { super("bids", { "token": token }); } }
+
+class dbnHubRequest_Competitions extends bfDataRequest {
+  constructor(compids, token) {
+    super("competitions", { "compids": compids, "token": token });
+  }
+}
+
+//#endregion
+
 //#region Player
 
 class dbnPlayer {
@@ -161,6 +149,24 @@ class dbnPlayer {
   PlayerID = null;
   PlayerName = null;
   toString() { return "{Player " + this.PlayerID + ": " + this.PlayerName + "}"; }
+}
+
+class dbnHubRequest_Players extends bfDataRequest {
+  constructor(token = null) { super("players", { "token": token }); }
+
+  ResponseToPlayers() {
+    var ret = Array.from(Array(0), x => new dbnPlayer());
+
+    if (this.Success) {
+      var data = this.ResponseContent.data;
+      ret = data.map(x => new dbnPlayer(x[0], x[1]));
+      ret.sort((a, b) => {
+        var aa = a.PlayerName.toLowerCase(); var bb = b.PlayerName.toLowerCase();
+        return aa > bb ? 1 : (aa < bb ? -1 : 0);
+      });
+    }
+    return ret;
+  }
 }
 
 class dbnPlayerSelector extends dbnElement {

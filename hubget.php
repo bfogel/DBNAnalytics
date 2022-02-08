@@ -32,8 +32,18 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, [$parms["token"]]);
             }
 
-        case "players":
-            return GetResultsetAsJSON('SELECT PlayerID, PlayerName FROM Player');
+        case "players": {
+                $vars = null;
+                $sql = "SELECT PlayerID, PlayerName FROM Player";
+
+                $token = $parms["token"];
+                if ($token != null) {
+                    $sql .= ' WHERE P.Token = ?';
+                    $vars = [$token];
+                }
+                return GetResultsetAsJSON($sql, $vars);
+            }
+
         case "games": {
                 $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                 $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
