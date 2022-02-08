@@ -20,8 +20,18 @@ function HandleRequest($request)
 {
     $parms = $request["Parameters"];
     switch ($request["Key"]) {
-        case "profiles":
-            return GetResultsetAsJSON('SELECT PlayerID, PlayerName FROM Player WHERE Token = ?', [$parms["token"]]);
+        case "bids": {
+                $sql = 'SELECT P.PlayerName, CO.CountryName';
+                $sql .= ', C.CompetitionID, C.CompetitionName';
+                $sql .= ', B.Round, B.Bid';
+                $sql .= ' FROM Player as P';
+                $sql .= ' INNER JOIN PlayerCountryBid as B on B.Player_PlayerID = P.PlayerID';
+                $sql .= ' INNER JOIN Competition as C on B.Competition_CompetitionID = C.CompetitionID';
+                $sql .= ' INNER JOIN Country as CO on B.Country_CountryID = CO.CountryID';
+                $sql .= ' WHERE P.Token = ?';
+                return GetResultsetAsJSON($sql, [$parms["token"]]);
+            }
+
         case "players":
             return GetResultsetAsJSON('SELECT PlayerID, PlayerName FROM Player');
         case "games": {
