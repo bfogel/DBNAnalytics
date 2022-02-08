@@ -46,7 +46,7 @@ function HandleRequest($request)
                 $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ' + $parms['p1'] + ')';
                 $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ' + $parms['p2'] + ')';
                 $ret = ["success" => true, "content" => GetGames($where)];
-                $ret["sql"] = $where;
+                $ret["message"] = $where;
                 return $ret;
             }
         case "games2": {
