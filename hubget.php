@@ -38,7 +38,7 @@ function HandleRequest($request)
 
                 $token = $parms["token"];
                 if ($token != null) {
-                    $sql .= ' WHERE P.Token = ?';
+                    $sql .= ' WHERE Token = ?';
                     $vars = [$token];
                 }
                 return GetResultsetAsJSON($sql, $vars);

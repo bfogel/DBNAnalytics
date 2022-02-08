@@ -3,13 +3,22 @@ function MakePage() {
     var div = dbnHere().addDiv();
 
     var reqs = myHub.MakeRequestList();
-    var req = new dbnHubRequest_Bids(playertoken);
-    reqs.addRequest(req);
+    var reqBids = new dbnHubRequest_Bids(playertoken);
+    var reqPlayers = new dbnHubRequest_Players(playertoken);
+    reqs.addRequest([reqBids, reqPlayers]);
 
     if (reqs.Send()) {
-        div.addText("Success: " + req.Success);
+        div.addText("Bids Success: " + reqBids.Success);
         div.addLineBreak();
-        div.addText(JSON.stringify(req.ResponseContent));
+        div.addText(JSON.stringify(reqBids.ResponseContent));
+        div.addLineBreak();
+        div.addLineBreak();
+
+        div.addText("Player Success: " + reqPlayers.Success);
+        div.addLineBreak();
+        div.addText(JSON.stringify(reqPlayers.ResponseContent)); div.addLineBreak();
+        div.addText(JSON.stringify(reqPlayers.Message)); div.addLineBreak();
+
         div.addLineBreak();
         div.addText(reqs.ErrorMessage);
     } else {

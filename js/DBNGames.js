@@ -90,7 +90,15 @@ class bfDataRequestList {
     return fd;
   }
 
-  addRequest(request) { this.Requests.push(request); }
+  addRequest(request) {
+    if (request instanceof bfDataRequest) {
+      this.Requests.push(request);
+    } else if (request instanceof Array) {
+      request.forEach(x => this.addRequest(x));
+    } else {
+      throw "request must be bfDataRequest or an array of bfDataRequest";
+    }
+  }
 
 }
 
