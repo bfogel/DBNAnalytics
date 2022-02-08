@@ -141,81 +141,7 @@ function HandleRequest($request)
 function GetResultsetAsJSON($sql, $parameters = null)
 {
     $rs = new ResultSet($sql, $parameters);
-    // $rs = GetResultset($sql, $parameters);
     return $rs->ToJSON();
-}
-
-function GetResultset($sql, $parameters = null)
-{
-    $ret = new ResultSet();
-    $ret->success = false;
-
-    $conn = dbn_GetConnection();
-    $statement = $conn->prepare($sql);
-
-    if ($statement === false) {
-        $ret->message = $conn->error;
-        return $ret;
-    }
-
-    if ($parameters != null) {
-        $types = "";
-        foreach ($parameters as $value) {
-            switch (gettype($value)) {
-                case 'string':
-                    $types .= "s";
-                    break;
-                case 'integer':
-                    $types .= "i";
-                    break;
-                case 'double':
-                    $types .= "d";
-                    break;
-                default:
-                    $ret["message"] = "Unsupported parameter type: " . gettype($value);
-                    return $ret;
-                    break;
-            }
-        }
-
-        if (($statement->bind_param($types, ...$parameters)) === false) {
-            $ret->message  = $conn->error;
-            return $ret;
-        }
-    }
-
-    if (($statement->execute()) === false) {
-        $ret->message  = $conn->error;
-        return $ret;
-    }
-
-    $result = $statement->get_result();
-
-    if ($result === false) {
-        $ret->message  = $conn->error;
-        return $ret;
-    }
-
-    $fields = [];
-    foreach ($result->fetch_fields() as &$field) {
-        $ff = [];
-        $ff["name"] = $field->name;
-        array_push($fields, $ff);
-    }
-    unset($field);
-
-    $ret->fields = $fields;
-
-    $data = [];
-    while ($row = $result->fetch_assoc()) {
-        array_push($data, array_values($row));
-    }
-
-    $ret->data  = $data;
-
-    $ret->success = true;
-
-    return $ret;
 }
 
 function GetGames($where, $params)
@@ -237,7 +163,7 @@ function GetGames($where, $params)
     $sql .= ' WHERE ' . $where;
     $sql .= ' ORDER BY G.GameID, CO.CountryName';
 
-    $rs = GetResultset($sql, $params);
+    $rs = new ResultSet($sql, $params);
 
     if (!$rs->success) return $rs;
 
