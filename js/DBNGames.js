@@ -30,6 +30,11 @@ class dbnHubRequestList {
 
   ErrorMessage;
 
+  _SetErrorMessageAndLog(s) {
+    console.log(s);
+    this.ErrorMessage = s;
+  }
+
   Send() {
     if (this.Requests.length == 0) {
       console.log("Error in dbnHubRequestList.Send: No requests.");
@@ -46,18 +51,17 @@ class dbnHubRequestList {
       try {
         resp = JSON.parse(req.responseText);
       } catch (error) {
-        console.log(req.responseText);
-        this.ErrorMessage = "Error in dbnHubRequestList.Send: " + error;
+        this._SetErrorMessageAndLog("Error in dbnHubRequestList.Send(1): " + error + "\n" + req.responseText);
         return false;
       }
 
       if (!(resp instanceof Array)) {
-        this.ErrorMessage = "Error in dbnHubRequestList.Send: Response not an array. " + JSON.stringify(resp);
+        this._SetErrorMessageAndLog("Error in dbnHubRequestList.Send(2): Response not an array. " + JSON.stringify(resp));
         return false;
       }
 
       if (resp.length != this.Requests.length) {
-        this.ErrorMessage = "Error in dbnHubRequestList.Send: Response length (" + resp.length + ") not the same as Request length (" + this.Requests.length + ").";
+        this._SetErrorMessageAndLog("Error in dbnHubRequestList.Send(3): Response length (" + resp.length + ") not the same as Request length (" + this.Requests.length + ").");
         return false;
       }
 
@@ -71,7 +75,7 @@ class dbnHubRequestList {
       return true;
 
     } else {
-      this.ErrorMessage = "Error in dbnHubRequestList.Send: " + req.responseText;
+      this._SetErrorMessageAndLog("Error in dbnHubRequestList.Send(4): " + req.responseText);
       return false;
     }
 
@@ -119,6 +123,8 @@ class dbnHub {
     if (this.#players == null) {
       var req = new dbnHubRequest("players");
       req.SendAlone();
+      if(!req.Success) return [];
+
       var data = req.ResponseContent.data;
       var pps = data.map(x => new dbnPlayer(x[0], x[1]));
       pps.sort((a, b) => {

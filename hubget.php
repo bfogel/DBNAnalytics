@@ -14,8 +14,7 @@ class ResultSet
 
     function __construct($sql = null, $parameters = null)
     {
-        if ($sql != null)       $this->Retrieve($sql, $parameters);
-        print "In BaseClass constructor\n";
+        if ($sql != null) $this->Retrieve($sql, $parameters);
     }
 
     public function GetFieldIndex($fieldname)
@@ -69,20 +68,20 @@ class ResultSet
             }
 
             if (($statement->bind_param($types, ...$parameters)) === false) {
-                $this->message  = $conn->error;
+                $this->message = $conn->error;
                 return;
             }
         }
 
         if (($statement->execute()) === false) {
-            $this->message  = $conn->error;
+            $this->message = $conn->error;
             return;
         }
 
         $result = $statement->get_result();
 
         if ($result === false) {
-            $this->message  = $conn->error;
+            $this->message = $conn->error;
             return;
         }
 
@@ -101,7 +100,7 @@ class ResultSet
             array_push($data, array_values($row));
         }
 
-        $this->data  = $data;
+        $this->data = $data;
         $this->success = true;
     }
 }
