@@ -240,6 +240,7 @@ function GetGames2($where, $params)
 
     $rs = GetResultset($sql, $params);
 
+    $rs->message = $sql;
     if (!$rs["success"]) return $rs;
 
     $cGameID = $rs->GetFieldIndex("GameID");
