@@ -5,22 +5,22 @@ function MakePage() {
     var reqs = myHub.MakeRequestList();
     var reqBids = new dbnHubRequest_Bids(playertoken);
     var reqPlayers = new dbnHubRequest_Players(playertoken);
-    reqs.addRequest([reqBids, reqPlayers]);
+    var reqSchedule = new dbnHubRequest_DBNISchedule(playertoken);
+
+    reqs.addRequest([reqBids, reqPlayers, reqSchedule]);
 
     if (reqs.Send()) {
-        div.addText("Bids Success: " + reqBids.Success);
-        div.addLineBreak();
-        div.addText(JSON.stringify(reqBids.ResponseContent));
-        div.addLineBreak();
-        div.addLineBreak();
-
-        div.addText("Player Success: " + reqPlayers.Success);
-        div.addLineBreak();
-        div.addText(JSON.stringify(reqPlayers.ResponseToPlayers())); div.addLineBreak();
-        div.addText(JSON.stringify(reqPlayers.Message)); div.addLineBreak();
+        reqs.Requests.forEach(x => {
+            div.addText("Success: " + x.Success);
+            div.addLineBreak();
+            div.addText(x.Success ? JSON.stringify(x.ResponseContent) : x.Message);
+            div.addLineBreak();
+            div.addLineBreak();
+        });
 
         div.addLineBreak();
         div.addText(reqs.ErrorMessage);
+
     } else {
         div.addText("fail " + reqs.ErrorMessage);
     }

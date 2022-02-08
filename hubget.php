@@ -53,7 +53,6 @@ function HandleRequest($request)
                 $sql .= " FROM Competition AS C";
                 $sql .= " INNER JOIN DBNInvitationalSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
                 $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
-                $sql .= ' INNER JOIN Country as CO on S.Country_CountryID = CO.CountryID';
                 $sql .= " WHERE P.Token = ?";
                 $vars = [$token];
 
