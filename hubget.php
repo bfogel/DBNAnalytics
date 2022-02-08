@@ -272,7 +272,7 @@ function GetGames2($where, $params)
     $lines = null;
 
     foreach ($rs->data as $row) {
-        $gamekey = "game" . $row["GameID"];
+        $gamekey = "game" . $row[$cGameID];
         if (!array_key_exists($gamekey, $games)) {
             $game = [
                 "GameID" => $row[$cGameID], "Label" => $row[$cLabel], "EndDate" => $row[$cEndDate], "DrawSize" => $row[$cDrawSize], "GameYearsCompleted" => $row[$cGameYearsCompleted], "Competition" => ["CompetitionID" => $row[$cCompetitionID], "CompetitionName" => $row[$cCompetitionName]]
