@@ -241,6 +241,8 @@ function GetGames2($where, $params)
     $rs = GetResultset($sql, $params);
 
     $rs->message = $sql;
+    return $rs;
+    
     if (!$rs["success"]) return $rs;
 
     $cGameID = $rs->GetFieldIndex("GameID");
