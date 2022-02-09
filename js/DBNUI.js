@@ -40,6 +40,7 @@ class dbnElement {
 
     addDiv() { var ret = new dbnDiv(this); return ret; }
     addCard() { var ret = new dbnCard(this); return ret; }
+    addTitleCard(title) { var ret = new dbnCard(this); var x = ret.createAndAppendElement("h1"); x.addText(title); return ret; }
     addSpan() { var ret = new dbnSpan(this); return ret; }
 
     addButton(text, onclick = null, className = null) { var ret = new dbnButton(text, onclick, className, this); return ret; }

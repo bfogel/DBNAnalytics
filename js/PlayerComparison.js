@@ -9,9 +9,7 @@ var tblGames = null;
 
 function MakePlayerComparison() {
 
-    var titlecard = dbnHere().addCard();
-    var title = titlecard.createAndAppendElement("h1");
-    title.addText("Player vs. Player History");
+    var titlecard = dbnHere().addTitleCard("Player vs. Player History");
     titlecard.addText("DBNI qualifying events and exhibitions covered by DBN");
 
     cardPlayerComparison = dbnHere().addCard();

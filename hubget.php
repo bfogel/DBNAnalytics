@@ -52,6 +52,7 @@ function HandleRequest($request)
                 $sql .= " INNER JOIN DBNInvitationalSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
                 $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
                 $sql .= " WHERE P.Token = ?";
+                $sql .= " ORDER BY C.CompetitionName";
                 $vars = [$token];
 
                 return GetResultsetAsJSON($sql, $vars);

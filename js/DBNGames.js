@@ -199,8 +199,25 @@ var myHub = new dbnHub();
 
 //#region Misc DataRequest classes
 
+class dbnDBNISchedule {
+  CompetitionID;
+  CompetitionName;
+  Seed;
+  InRound1;
+  InRound2;
+  InRound3;
+  InRound4;
+}
+class dbnHubRequest_DBNISchedule extends bfDataRequest {
+  constructor(token) { super("dbnischedule", { "token": token }); }
+  ResponseToObjects() {
+    var ret = Array.from(Array(0), x => new dbnDBNISchedule());
+    ret = super.ResponseToObjects(() => new dbnDBNISchedule());
+    return ret;
+  }
+}
+
 class dbnHubRequest_Bids extends bfDataRequest { constructor(token) { super("bids", { "token": token }); } }
-class dbnHubRequest_DBNISchedule extends bfDataRequest { constructor(token) { super("dbnischedule", { "token": token }); } }
 
 class dbnHubRequest_Competitions extends bfDataRequest {
   constructor(compids, token) {
