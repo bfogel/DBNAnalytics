@@ -5,11 +5,13 @@ class bfDataSet {
   Fields;
   Data;
 
-  DataToObjects(objectfunction = null) {
-    if (objectfunction == null) objectfunction = () => { };
+  get Fieldnames() { return this.Fields.map(ff => ff["name"]); }
 
-    var fieldnames = this.ResponseContent["fields"].map(ff => ff["name"]);
-    this.Data.map(row => {
+  DataToObjects(objectfunction = null) {
+    if (objectfunction == null) objectfunction = () => { return {}; };
+
+    var fieldnames = this.Fieldnames;
+    return this.Data.map(row => {
       var ret = objectfunction();
       fieldnames.forEach((f, i) => ret[f] = row[i]);
       return ret;

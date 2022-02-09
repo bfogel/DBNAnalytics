@@ -14,7 +14,10 @@ function MakePage() {
             div.addText("Success: " + x.Success);
             div.addLineBreak();
             div.addText(x.Success ? JSON.stringify(x.ResponseContent) : x.Message); div.addLineBreak();
-            div.addText(x.ResponseIsDataSet); div.addLineBreak();
+            if (x.ResponseIsDataSet) {
+                var objs = x.ResponseToObjects();
+                objs.forEach(x => { div.addText(JSON.stringify(x)); div.addLineBreak(); })
+            }
             div.addLineBreak();
         });
 
