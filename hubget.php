@@ -22,7 +22,7 @@ function HandleRequest($request)
     switch ($request["Key"]) {
         case "bids": {
                 $sql = 'SELECT CO.CountryName as Country, B.Competition_CompetitionID as CompetitionID';
-                $sql .= ', B.Round, B.Bid';
+                $sql .= ', B.Round, B.Bid, B.Locked';
                 $sql .= ' FROM Player as P';
                 $sql .= ' INNER JOIN PlayerCountryBid as B on B.Player_PlayerID = P.PlayerID';
                 $sql .= ' INNER JOIN Country as CO on B.Country_CountryID = CO.CountryID';

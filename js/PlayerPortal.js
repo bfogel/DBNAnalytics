@@ -7,29 +7,11 @@ function MakePage() {
     var reqPlayers = new dbnHubRequest_Players(playertoken);
     var reqSchedule = new dbnHubRequest_DBNISchedule(playertoken);
 
-    reqs.addRequest([reqBids, reqPlayers, reqSchedule]);
+    reqs.addRequest([reqPlayers, reqBids, reqSchedule]);
 
-    if (reqs.Send()) {
-        reqs.Requests.forEach(x => {
-            div.addText("Success: " + x.Success);
-            div.addLineBreak();
-            div.addText(x.Success ? JSON.stringify(x.ResponseContent) : x.Message); div.addLineBreak();
-            if (x.ResponseIsDataSet) {
-                var objs = x.ResponseToObjects();
-                objs.forEach(x => { div.addText(JSON.stringify(x)); div.addLineBreak(); })
-            }
-            div.addLineBreak();
-        });
-
-        div.addLineBreak();
-        div.addText(reqs.ErrorMessage);
-
-    } else {
-        div.addText("fail " + reqs.ErrorMessage);
-    }
+    reqs.Send();
+    reqs.ReportToDiv(div);
 
 }
-
-
 
 MakePage();

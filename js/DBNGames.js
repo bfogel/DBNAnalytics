@@ -55,6 +55,21 @@ class bfDataRequest {
   }
 
   ResponseToObjects(objectfunction = null) { return this.ReponseToDataSet().DataToObjects(objectfunction); }
+
+  ReportToDiv(div) {
+    div.addText((this.constructor.name) + " Success: " + this.Success);
+    div.addLineBreak();
+    if (this.Success) {
+      if (this.ResponseIsDataSet) {
+        var objs = this.ResponseToObjects();
+        objs.forEach(x => { div.addText(JSON.stringify(x)); div.addLineBreak(); })
+      } else {
+        div.addText(JSON.stringify(this.ResponseContent)); div.addLineBreak();
+      }
+    } else {
+      div.addText(this.Message); div.addLineBreak();
+    }
+  }
 }
 
 class bfDataRequestList {
@@ -113,6 +128,18 @@ class bfDataRequestList {
       return false;
     }
 
+  }
+
+  ReportToDiv(div) {
+    if (this.ErrorMessage) {
+      div.addLineBreak();
+      div.addText("List ErrorMessage: " + this.ErrorMessage);
+    }
+
+    this.Requests.forEach(req => {
+      req.ReportToDiv(div);
+      div.addLineBreak();
+    });
   }
 
   MakeFormData() {
