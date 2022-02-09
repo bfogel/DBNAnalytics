@@ -13,8 +13,8 @@ function MakePage() {
         reqs.Requests.forEach(x => {
             div.addText("Success: " + x.Success);
             div.addLineBreak();
-            div.addText(x.Success ? JSON.stringify(x.ResponseContent) : x.Message);
-            div.addLineBreak();
+            div.addText(x.Success ? JSON.stringify(x.ResponseContent) : x.Message); div.addLineBreak();
+            div.addText(x.ResponseIsDataSet); div.addLineBreak();
             div.addLineBreak();
         });
 

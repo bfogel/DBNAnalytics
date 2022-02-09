@@ -1,6 +1,22 @@
 
 //#region DataRequest classes
 
+class bfDataSet {
+  Fields;
+  Data;
+
+  DataToObjects(objectfunction = null) {
+    if (objectfunction == null) objectfunction = () => { };
+
+    var fieldnames = this.ResponseContent["fields"].map(ff => ff["name"]);
+    this.Data.map(row => {
+      var ret = objectfunction();
+      fieldnames.forEach((f, i) => ret[f] = row[i]);
+      return ret;
+    });
+  }
+}
+
 class bfDataRequest {
   constructor(key, parameters) { this.Key = key; this.Parameters = parameters; }
 
@@ -23,6 +39,20 @@ class bfDataRequest {
     ret["Parameters"] = this.Parameters;
     return ret;
   }
+
+  get ResponseIsDataSet() {
+    if (typeof this.ResponseContent === "object" && this.ResponseContent != null && this.ResponseContent.hasOwnProperty("data") && this.ResponseContent.hasOwnProperty("data")) return true;
+    return false;
+  }
+
+  ReponseToDataSet() {
+    var ret = new bfDataSet();
+    ret.Fields = this.ResponseContent["fields"];
+    ret.Data = this.ResponseContent["data"];
+    return ret;
+  }
+
+  ResponseToObjects(objectfunction = null) { return this.ReponseToDataSet().DataToObjects(objectfunction); }
 }
 
 class bfDataRequestList {
