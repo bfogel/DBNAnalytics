@@ -55,6 +55,14 @@ class dbnElement {
     addText(text) { var ret = new dbnText(text, this); return ret; }
     addBoldText(text) { var ret = new dbnElement("b", this); ret.addText(text); return ret; }
     addItalicText(text) { var ret = new dbnElement("i", this); ret.addText(text); return ret; }
+
+    /**
+     * adds an <H_> element
+     * @param {number} level 
+     * @param {string} text 
+     * @returns 
+     */
+    addHeading(level, text) { var ret = new dbnElement("h" + level, this); ret.addText(text); return ret; }
 }
 
 class dbnScriptParent extends dbnElement {

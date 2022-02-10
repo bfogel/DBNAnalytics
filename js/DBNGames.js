@@ -199,15 +199,7 @@ var myHub = new dbnHub();
 
 //#region Misc DataRequest classes
 
-class dbnDBNISchedule {
-  CompetitionID;
-  CompetitionName;
-  Seed;
-  InRound1;
-  InRound2;
-  InRound3;
-  InRound4;
-}
+class dbnDBNISchedule { CompetitionID; CompetitionName; Seed; InRound1; InRound2; InRound3; InRound4; }
 class dbnHubRequest_DBNISchedule extends bfDataRequest {
   constructor(token) { super("dbnischedule", { "token": token }); }
   ResponseToObjects() {
@@ -217,7 +209,15 @@ class dbnHubRequest_DBNISchedule extends bfDataRequest {
   }
 }
 
-class dbnHubRequest_Bids extends bfDataRequest { constructor(token) { super("bids", { "token": token }); } }
+class dbnDBNIBid { Country; CompetitionID; Round; Bid; Locked; }
+class dbnHubRequest_Bids extends bfDataRequest {
+  constructor(token) { super("bids", { "token": token }); }
+  ResponseToObjects() {
+    var ret = Array.from(Array(0), x => new dbnDBNIBid());
+    ret = super.ResponseToObjects(() => new dbnDBNIBid());
+    return ret;
+  }
+}
 
 class dbnHubRequest_Competitions extends bfDataRequest {
   constructor(compids, token) {

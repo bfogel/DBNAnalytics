@@ -1,3 +1,4 @@
+"use strict";
 
 function MakePage() {
     var div = dbnHere().addDiv();
@@ -15,17 +16,61 @@ function MakePage() {
         var playername = reqPlayers.ResponseToObjects()[0]["PlayerName"];
         var titlecard = div.addTitleCard("DBNI Player Portal: " + playername);
 
-        var card = div.addCard();
-        var sched = reqSchedule.ResponseToObjects();
+        var allschedules = reqSchedule.ResponseToObjects();
+        var allbids = reqBids.ResponseToObjects();
 
-        sched.forEach(x => {
-            card.addText(x.CompetitionName); card.addLineBreak();
-            for (let i = 1; i < 5; i++) {
-                if (x["InRound" + i]) {
-                    card.addText("Round " + i + ":"); card.addLineBreak();
+        allschedules.forEach(schedule => {
+            var manager = PowerBidManager.GetManagerForCompetition(schedule.CompetitionID);
+            var card = div.addCard();
+
+            card.addHeading(2, schedule.CompetitionName);
+            card.addHeading(3, "Seed #" + schedule.Seed);
+            card.appendChild(manager.MakeInstructions());
+
+            var tbl = card.addTable();
+
+            var headers = ["Round", "Tourn<br>Seed"];
+            var countrycolumns = [];
+            manager.PowerNames.forEach((x, i) => { headers.push(x); countrycolumns[i + 2] = x; });
+            headers.push("Total", "", "");
+            tbl.Headers = headers;
+            tbl.CountryColumns = countrycolumns;
+
+            var data = [];
+
+            for (let iRound = 1; iRound < manager.RoundCount + 1; iRound++) {
+                if (schedule["InRound" + iRound]) {
+                    var row = [];
+                    row.push("Round " + iRound);
+
+                    var bs = manager.MakeNewBidSet();
+                    bs.SeedInTourney = schedule.Seed;
+                    bs.PlayerName = playername;
+                    bs.Round = iRound;
+
+                    var locked = false;
+                    allbids.filter(bid => {
+                        if (bid.CompetitionID == schedule.CompetitionID && bid.Round == iRound) {
+                            bs.Bids[bid.Country] = bid.Bid;
+                            if (bid.Locked) locked = true;
+                        }
+                    });
+
+                    var pbi = new PlayerBidInput();
+                    var rowui = pbi.MakeRow();
+                    rowui.splice(2, 1);
+                    rowui.splice(0, 1);
+                    row.push(...rowui);
+                    pbi.BidSet = bs;
+
+                    manager.RegisterBidSet(bs);
+
+                    data.push(row);
                 }
-
             }
+            tbl.Data = data;
+            tbl.Generate();
+            manager.ValidateBidSets();
         });
     };
 
