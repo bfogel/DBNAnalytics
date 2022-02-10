@@ -31,7 +31,7 @@ function HandleRequest($request)
             }
 
         case "savebid": {
-                $bids = json_decode($parms["bids"]);
+                $bids = json_decode($parms["bids"], true);
                 $token = $parms["token"];
 
                 $bids["PlayerID"] = GetPlayerIDFromToken($token);
