@@ -39,8 +39,8 @@ function HandleRequest($request)
                 }
 
                 $sql = 'SELECT B.Locked FROM PlayerCountryBid as B';
-                $sql .= ' WHERE B.Player_PlayerID = ' . $playerid . ' AND B.Round = ' . $parms["round"];
-                $rs = new ResultSet($sql);
+                $sql .= ' WHERE B.Player_PlayerID = ? AND B.Round = ?';
+                $rs = new ResultSet($sql, [$playerid, $parms["round"]]);
 
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
 
@@ -49,7 +49,7 @@ function HandleRequest($request)
                     if ($row[0] == 1) $locked = true;
                 }
                 if ($locked) {
-                    return ["success" => false, "message" => "Bids for this round are locked"];
+                    return ["success" => false, "message" => "Bids for this round are locked.  Contact the TD to unlock."];
                 }
 
                 return ["success" => true, "content" => json_encode(["what" => "yes"])];
