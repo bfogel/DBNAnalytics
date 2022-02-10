@@ -4,6 +4,10 @@ input.bid {
     text-align: center;
 }
 
+div.bid {
+    width: 50px;
+    text-align: center;
+}
 .validationCell {
     color: red;
     padding-left: 10px;

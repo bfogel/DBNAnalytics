@@ -14,7 +14,7 @@ function MakePage() {
         //reqs.ReportToDiv(div);
 
         var playername = reqPlayers.ResponseToObjects()[0]["PlayerName"];
-        var titlecard = div.addTitleCard("DBNI Player Portal: " + playername);
+        div.addTitleCard("DBNI Player Portal: " + playername);
 
         var allschedules = reqSchedule.ResponseToObjects();
         var allbids = reqBids.ResponseToObjects();
@@ -25,18 +25,17 @@ function MakePage() {
 
             card.addHeading(2, schedule.CompetitionName);
             card.addHeading(3, "Seed #" + schedule.Seed);
-            card.appendChild(manager.MakeInstructions());
+            //card.appendChild(manager.MakeInstructions());
 
             var tbl = card.addTable();
 
             var headers = ["Round", "Tourn<br>Seed"];
-            var countrycolumns = [];
-            manager.PowerNames.forEach((x, i) => { headers.push(x); countrycolumns[i + 2] = x; });
+            headers.push(...manager.PowerNames);
             headers.push("Total", "Random", "");
             tbl.Headers = headers;
-            tbl.CountryColumns = countrycolumns;
 
             var data = [];
+            var bOneIsUnlocked = false;
 
             for (let iRound = 1; iRound < manager.RoundCount + 1; iRound++) {
                 if (schedule["InRound" + iRound]) {
@@ -57,15 +56,24 @@ function MakePage() {
                     });
 
                     var pbi = new PlayerBidInput(manager);
+                    pbi.Locked = locked;
                     var rowui = pbi.MakeRow();
-                    rowui.splice(2, 1);
-                    rowui.splice(0, 1);
+                    rowui.splice(2, 1); //Remove PlayerNamne
+                    rowui.splice(0, 1); //Remove SeedInRound
 
-                    var bbRow = new dbnButtonBar();
-                    bbRow.Compact = true;
-                    bbRow.addButton("Even", ((inp) => { inp.BidSet.MakeEven(); inp.UpdateDisplay(); }).bind(undefined, pbi));
-                    bbRow.addButton("Any", ((inp) => { inp.BidSet.MakeRandom(); inp.UpdateDisplay(); }).bind(undefined, pbi));
-                    rowui.splice(rowui.length - 1, 0, bbRow);
+                    if (!locked) {
+                        bOneIsUnlocked = true;
+                        var bbSave = new dbnButtonBar();
+                        bbSave.Compact = true;
+                        bbSave.addButton("Save", ((inp) => { inp.BidSet.MakeEven(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
+                        rowui.splice(1, 0, bbSave);
+                    }
+
+                    var bbRandom = new dbnButtonBar();
+                    bbRandom.Compact = true;
+                    bbRandom.addButton("Even", ((inp) => { inp.BidSet.MakeEven(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
+                    bbRandom.addButton("Any", ((inp) => { inp.BidSet.MakeRandom(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
+                    rowui.splice(rowui.length - 1, 0, bbRandom);
 
                     row.push(...rowui);
                     manager.RegisterBidSet(bs);
@@ -74,12 +82,16 @@ function MakePage() {
                     data.push(row);
                 }
             }
+
+            if (bOneIsUnlocked) tbl.Headers.splice(2, 0, "Save");
+            tbl.CountryColumns = {};
+            manager.PowerNames.forEach((x, i) => tbl.CountryColumns[i + 2 + (bOneIsUnlocked ? 1 : 0)] = x);
+
             tbl.Data = data;
             tbl.Generate();
             manager.ValidateBidSets();
         });
     };
-
 }
 
 MakePage();

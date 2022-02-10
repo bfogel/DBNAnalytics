@@ -583,6 +583,11 @@ class PlayerBidInput {
 
     inputs = {};
 
+    /** @type {Object.<string,dbnDiv>} */
+    #bidDivs = {};
+    /** @type {Object.<string,dbnElement>} */
+    #bidElements = {};
+
     seedInRoundSpan = null;
     seedInTourneySpan = null;
     playerNameSpan = null;
@@ -592,7 +597,16 @@ class PlayerBidInput {
 
     OnChange;
 
+    #Locked = false;
+    get Locked() { return this.#Locked; }
+    set Locked(value) {
+        this.#Locked = value;
+        this.Manager.PowerNames.forEach(x => this.#MakeBidElement(x));
+        this.UpdateDisplay();
+    }
+
     MakeRow() {
+        /** @type {dbnElement[]} */
         var row = [];
 
         this.seedInRoundSpan = new dbnSpan();
@@ -603,20 +617,8 @@ class PlayerBidInput {
 
         this.Manager.PowerNames.forEach(powername => {
             var div = new dbnDiv();
-            var input = div.createAndAppendElement("input");
-            input.className = "bid";
-            input.domelement.type = "number";
-            input.domelement.value = 0;
-            input.domelement.max = this.Manager.MaximumIndividualBid;
-            input.domelement.min = this.Manager.MinimumIndividualBid;
-            input.domelement.oninput = () => this.OnInput(powername);
-
-            this.inputs[powername] = input;
-
-            var spanResult = div.addSpan();
-            spanResult.className = "inlineresult";
-            this.resultSpans[powername] = spanResult;
-
+            this.#bidDivs[powername] = div;
+            this.#MakeBidElement(powername);
             row.push(div);
         });
 
@@ -631,6 +633,38 @@ class PlayerBidInput {
         row.push(spanValidate);
 
         return row;
+    }
+
+    /**
+     * @param {string} powername 
+     */
+    #MakeBidElement(powername) {
+        if (!this.#bidDivs.hasOwnProperty(powername)) return;
+
+        var div = this.#bidDivs[powername];
+        div.innerHTML = "";
+
+        if (this.Locked) {
+            var bid = div.addDiv();
+            bid.className = "bid";
+            div.appendChild(bid);
+            this.#bidElements[powername] = bid;
+        } else {
+            var input = div.createAndAppendElement("input");
+            input.className = "bid";
+            input.domelement.type = "number";
+            input.domelement.value = 0;
+            input.domelement.max = this.Manager.MaximumIndividualBid;
+            input.domelement.min = this.Manager.MinimumIndividualBid;
+            input.domelement.oninput = () => this.OnInput(powername);
+
+            this.inputs[powername] = input;
+            this.#bidElements[powername] = input;
+        }
+
+        var spanResult = div.addSpan();
+        spanResult.className = "inlineresult";
+        this.resultSpans[powername] = spanResult;
     }
 
     OnInput(powername) {
@@ -654,10 +688,19 @@ class PlayerBidInput {
     }
 
     UpdateDisplay() {
+        if (this.seedInRoundSpan == null) return;
+        
         this.seedInRoundSpan.domelement.innerHTML = this.BidSet.SeedInRound;
         this.seedInTourneySpan.domelement.innerHTML = this.BidSet.SeedInTourney ? this.BidSet.SeedInTourney : this.BidSet.SeedInRound;
         this.playerNameSpan.domelement.innerHTML = this.BidSet.PlayerName;
-        this.Manager.PowerNames.forEach(powername => this.inputs[powername].domelement.value = this.BidSet.Bids[powername]);
+
+        this.Manager.PowerNames.forEach(powername => {
+            if (this.Locked) {
+                this.#bidElements[powername].innerHTML = this.BidSet.Bids[powername];
+            } else {
+                this.#bidElements[powername].domelement.value = this.BidSet.Bids[powername];
+            }
+        });
 
         if (!isNaN(this.BidSet.BoardIndex)) {
             this.Manager.PowerNames.forEach(x => {
@@ -672,45 +715,6 @@ class PlayerBidInput {
         this.totalSpan.domelement.innerHTML = this.BidSet.Total;
         this.validateSpan.domelement.innerHTML = this.BidSet.LastValidationMessages;
     }
-
-    // MakeNewBidset() {
-    //     var bs = mConfiguration.MakeNewBidSet();
-    //     bs.SeedInTourney = this.BidSet.SeedInTourney;
-    //     bs.PlayerName = this.BidSet.PlayerName;
-    //     return bs;
-    // }
-
-    // MakeRandom() {
-    //     var bs = this.MakeNewBidset();
-    //     bs.MakeRandom();
-    //     bs.PlayerName = "Random 179";
-    //     this.BidSet = bs;
-    // }
-
-    // MakeEven() {
-    //     var cc = mConfiguration.Duplicate();
-    //     cc.MaximumTotal = 100;
-    //     var bs = cc.MakeNewBidSet();
-    //     bs.SeedInTourney = this.BidSet.SeedInTourney;
-    //     bs.PlayerName = this.BidSet.PlayerName;
-    //     bs.MakeEven();
-    //     bs.PlayerName = "Even 100";
-    //     this.BidSet = bs;
-    // }
-
-    // SelectRandomReal() {
-    //     var bs = this.MakeNewBidset();
-    //     var rando = previousBids[Math.floor(Math.random() * previousBids.length)];
-    //     bs.PlayerName = rando[0];
-    //     mConfiguration.PowerNames.forEach((powername, i) => bs.Bids[powername] = rando[3][i]);
-    //     this.BidSet = bs;
-    // }
-
-    // Clear() {
-    //     var bs = this.MakeNewBidset();
-    //     bs.PlayerName = "Player " + bs.SeedInTourney;
-    //     this.BidSet = bs;
-    // }
 
     ClearResults() {
         for (const key in this.resultSpans) this.resultSpans[key].domelement.innerHTML = "";

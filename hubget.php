@@ -30,6 +30,11 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, [$parms["token"]]);
             }
 
+        case "savebid": {
+                $bids = json_decode($parms["bids"]);
+                return ["success" => true, "content" => json_encode($bids)];
+            }
+
         case "players": {
                 $vars = null;
                 $sql = "SELECT PlayerID, PlayerName FROM Player";

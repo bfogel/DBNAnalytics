@@ -282,14 +282,20 @@ class dbnRow {
 
 class dbnTable extends dbnElement {
 
+    /** @type {object[][]} */
     Data = null;
+    
+    /** @type {string[]} */
     Headers = null;
+    
+    /** @type {string} */
     Title = null;
     ClickHeaderToSort = false;
 
     NumberColumns = null;
     HighlightedRows = null;
 
+    /** @type {Object.<number,string>} */
     CountryColumns = null;
     CountryRows = null;
     CountryCells = null;
