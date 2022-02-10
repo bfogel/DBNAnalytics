@@ -42,15 +42,17 @@ function HandleRequest($request)
                 $sql .= ' WHERE B.Player_PlayerID = ' . $playerid . ' B.Round = ' . $parms["round"];
                 $rs = new ResultSet($sql);
                 $locked = false;
+
+                return ["success" => false, "message" => json_encode($rs->data)];
+
                 foreach ($rs->data as $row) {
-                    echo json_encode($row);
                     if ($row[0] == 1) $locked = true;
                 }
                 if ($locked) {
                     return ["success" => false, "message" => "Bids for this round are locked"];
                 }
 
-                return ["success" => true, "content" => json_encode($bids)];
+                return ["success" => true, "content" => json_encode(["what" => "yes"])];
             }
 
         case "players": {
