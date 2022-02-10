@@ -43,7 +43,7 @@ function HandleRequest($request)
                 $rs = new ResultSet($sql);
                 $locked = false;
                 foreach ($rs->data as $row) {
-                    if ($row[0] == true) $locked = true;
+                    if ($row[0] == 1) $locked = true;
                 }
                 if ($locked) {
                     return ["success" => false, "message" => "Bids for this round are locked"];

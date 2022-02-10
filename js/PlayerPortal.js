@@ -61,6 +61,7 @@ function MakePage() {
                     rowui.splice(2, 1); //Remove PlayerNamne
                     rowui.splice(0, 1); //Remove SeedInRound
 
+                    locked = false;
                     if (!locked) {
                         bOneIsUnlocked = true;
                         var bbSave = new dbnButtonBar();
@@ -98,7 +99,7 @@ function MakePage() {
  * @param {PlayerBidInput} pbi 
  */
 function SaveBids(pbi) {
-    var parms = { "token": playertoken + "A", "round": pbi.BidSet.Round, "bids": JSON.stringify(pbi.BidSet.Bids) };
+    var parms = { "token": playertoken, "round": pbi.BidSet.Round, "bids": JSON.stringify(pbi.BidSet.Bids) };
     var req = new bfDataRequest("savebid", parms);
     req.SendAlone();
 
