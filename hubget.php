@@ -39,7 +39,7 @@ function HandleRequest($request)
                 }
 
                 $sql = 'SELECT B.Locked FROM PlayerCountryBid as B';
-                $sql .= ' WHERE B.Player_PlayerID = ' . $playerid . '  B.Round = ' . $parms["round"];
+                $sql .= ' WHERE B.Player_PlayerID = ' . $playerid . ' AND B.Round = ' . $parms["round"];
                 $rs = new ResultSet($sql);
 
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
