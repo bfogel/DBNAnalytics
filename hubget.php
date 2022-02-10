@@ -43,6 +43,7 @@ function HandleRequest($request)
                 $rs = new ResultSet($sql);
                 $locked = false;
                 foreach ($rs->data as $row) {
+                    echo json_encode($row);
                     if ($row[0] == 1) $locked = true;
                 }
                 if ($locked) {
