@@ -32,7 +32,7 @@ function MakePage() {
             var headers = ["Round", "Tourn<br>Seed"];
             var countrycolumns = [];
             manager.PowerNames.forEach((x, i) => { headers.push(x); countrycolumns[i + 2] = x; });
-            headers.push("Total", "", "");
+            headers.push("Total", "Random", "");
             tbl.Headers = headers;
             tbl.CountryColumns = countrycolumns;
 
@@ -56,14 +56,20 @@ function MakePage() {
                         }
                     });
 
-                    var pbi = new PlayerBidInput();
+                    var pbi = new PlayerBidInput(manager);
                     var rowui = pbi.MakeRow();
                     rowui.splice(2, 1);
                     rowui.splice(0, 1);
-                    row.push(...rowui);
-                    pbi.BidSet = bs;
 
+                    var bbRow = new dbnButtonBar();
+                    bbRow.Compact = true;
+                    bbRow.addButton("Even", ((inp) => { inp.BidSet.MakeEven(); inp.UpdateDisplay(); }).bind(undefined, pbi));
+                    bbRow.addButton("Any", ((inp) => { inp.BidSet.MakeRandom(); inp.UpdateDisplay(); }).bind(undefined, pbi));
+                    rowui.splice(rowui.length - 1, 0, bbRow);
+
+                    row.push(...rowui);
                     manager.RegisterBidSet(bs);
+                    pbi.BidSet = bs;
 
                     data.push(row);
                 }
