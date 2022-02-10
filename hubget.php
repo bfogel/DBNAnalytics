@@ -43,10 +43,8 @@ function HandleRequest($request)
                 $rs = new ResultSet($sql);
 
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
+
                 $locked = false;
-
-                return ["success" => false, "message" => json_encode($rs->data)];
-
                 foreach ($rs->data as $row) {
                     if ($row[0] == 1) $locked = true;
                 }
