@@ -55,7 +55,7 @@ function HandleRequest($request)
                 }
 
                 $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
-                $sql .= ' (?,?,?,?,?)';
+                $sql .= ' VALUES (?,?,?,?,?)';
 
 
                 $rs = new ResultSet($sql, [$competitionID, $playerid, $round, 0]);
