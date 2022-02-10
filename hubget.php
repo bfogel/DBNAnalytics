@@ -31,6 +31,8 @@ function HandleRequest($request)
             }
 
         case "savebid": {
+                $competitionID = $parms["competitionid"];
+                $round = $parms["round"];
                 $bids = json_decode($parms["bids"], true);
                 $playerid = GetPlayerIDFromToken($parms["token"]);
 
@@ -38,9 +40,9 @@ function HandleRequest($request)
                     return ["success" => false, "message" => "Unrecognized player"];
                 }
 
-                $sql = 'SELECT B.Locked FROM PlayerCountryBid as B';
-                $sql .= ' WHERE B.Player_PlayerID = ? AND B.Round = ?';
-                $rs = new ResultSet($sql, [$playerid, $parms["round"]]);
+                $sql = 'SELECT Locked FROM PlayerCountryBid';
+                $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND.Round = ?';
+                $rs = new ResultSet($sql, [$competitionID, $playerid, $round]);
 
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
 
@@ -51,6 +53,14 @@ function HandleRequest($request)
                 if ($locked) {
                     return ["success" => false, "message" => "Bids for this round are locked.  Contact the TD to unlock."];
                 }
+
+                $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
+                $sql .= ' (?,?,?,?,?)';
+
+
+                $rs = new ResultSet($sql, [$competitionID, $playerid, $round, 0]);
+                if (!$rs->success) return ["success" => false, "message" => $rs->message];
+
 
                 return ["success" => true, "content" => json_encode(["what" => "yes"])];
             }
