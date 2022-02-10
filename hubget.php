@@ -37,6 +37,18 @@ function HandleRequest($request)
                 if ($playerid == null) {
                     return ["success" => false, "message" => "Unrecognized player"];
                 }
+
+                $sql = 'SELECT B.Locked FROM PlayerCountryBid as B';
+                $sql .= ' WHERE B.Player_PlayerID = ' . $playerid . ' B.Round = ' . $parms["round"];
+                $rs = new ResultSet($sql);
+                $locked = false;
+                foreach ($rs->data as $row) {
+                    if ($row[0] == true) $locked = true;
+                }
+                if ($locked) {
+                    return ["success" => false, "message" => "Bids for this round are locked"];
+                }
+
                 return ["success" => true, "content" => json_encode($bids)];
             }
 

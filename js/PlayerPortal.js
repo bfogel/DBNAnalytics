@@ -98,7 +98,7 @@ function MakePage() {
  * @param {PlayerBidInput} pbi 
  */
 function SaveBids(pbi) {
-    var parms = { "token": playertoken + "A", "bids": JSON.stringify(pbi.BidSet.Bids) };
+    var parms = { "token": playertoken + "A", "round": pbi.BidSet.Round, "bids": JSON.stringify(pbi.BidSet.Bids) };
     var req = new bfDataRequest("savebid", parms);
     req.SendAlone();
 
