@@ -98,10 +98,15 @@ function MakePage() {
  * @param {PlayerBidInput} pbi 
  */
 function SaveBids(pbi) {
-    var parms = { "token": playertoken, "bids": JSON.stringify(pbi.BidSet.Bids) };
+    var parms = { "token": playertoken + "A", "bids": JSON.stringify(pbi.BidSet.Bids) };
     var req = new bfDataRequest("savebid", parms);
     req.SendAlone();
-    console.log(JSON.stringify(req));
+
+    if (!req.Success) {
+        alert("Unable to save: " + req.Message);
+    } else {
+        console.log(JSON.stringify(req.ResponseContent));
+    }
 }
 
 MakePage();

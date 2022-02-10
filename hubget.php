@@ -32,10 +32,11 @@ function HandleRequest($request)
 
         case "savebid": {
                 $bids = json_decode($parms["bids"], true);
-                $token = $parms["token"];
+                $playerid = GetPlayerIDFromToken($parms["token"]);
 
-                $bids["PlayerID"] = GetPlayerIDFromToken($token);
-
+                if ($playerid == null) {
+                    return ["success" => false, "message" => "Unrecognized player"];
+                }
                 return ["success" => true, "content" => json_encode($bids)];
             }
 
