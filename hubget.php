@@ -32,6 +32,10 @@ function HandleRequest($request)
 
         case "savebid": {
                 $bids = json_decode($parms["bids"]);
+                $token = $parms["token"];
+
+                $bids["PlayerID"] = GetPlayerIDFromToken($token);
+
                 return ["success" => true, "content" => json_encode($bids)];
             }
 
@@ -74,6 +78,17 @@ function HandleRequest($request)
         default:
             return ["success" => false, "message" => "hubget: Unrecognized key (" + $request["Key"] + ")"];
     }
+}
+
+function GetPlayerIDFromToken($token)
+{
+    $vars = [$token];
+    $sql = "SELECT PlayerID, PlayerName FROM Player";
+    $sql .= ' WHERE Token = ?';
+    $rs = new ResultSet($sql, $vars);
+    $data = $rs->data;
+    if (count($data) == 0) return null;
+    return $data[0][0];
 }
 
 function GetGames($where, $params)

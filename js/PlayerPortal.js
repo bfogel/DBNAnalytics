@@ -65,7 +65,7 @@ function MakePage() {
                         bOneIsUnlocked = true;
                         var bbSave = new dbnButtonBar();
                         bbSave.Compact = true;
-                        bbSave.addButton("Save", ((inp) => { inp.BidSet.MakeEven(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
+                        bbSave.addButton("Save", ((inp) => SaveBids(inp)).bind(undefined, pbi));
                         rowui.splice(1, 0, bbSave);
                     }
 
@@ -92,6 +92,16 @@ function MakePage() {
             manager.ValidateBidSets();
         });
     };
+}
+
+/**
+ * @param {PlayerBidInput} pbi 
+ */
+function SaveBids(pbi) {
+    var parms = { "token": playertoken, "bids": JSON.stringify(pbi.BidSet.Bids) };
+    var req = new bfDataRequest("savebid", parms);
+    req.SendAlone();
+    console.log(JSON.stringify(req));
 }
 
 MakePage();
