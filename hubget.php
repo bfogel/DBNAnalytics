@@ -41,7 +41,7 @@ function HandleRequest($request)
                 }
 
                 $sql = 'SELECT Locked FROM PlayerCountryBid';
-                $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND.Round = ?';
+                $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
                 $rs = new ResultSet($sql, [$competitionID, $playerid, $round]);
 
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
