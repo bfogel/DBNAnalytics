@@ -118,7 +118,8 @@ function HandleRequest($request)
                 $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
 
                 if (IsZach($token)) {
-                    $sql .= " WHERE C.CompetitionID = 3051";
+                    // $sql .= " WHERE C.CompetitionID = 3051";
+                    $sql .= " WHERE C.CompetitionID = 2038";
                 } else {
                     $sql .= " WHERE P.Token = ?";
                 }

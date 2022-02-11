@@ -11,8 +11,9 @@ function MakePage() {
 
     var reqs = myHub.MakeRequestList();
     var reqPlayers = new dbnHubRequest_Players(tdtoken);
+    var reqSchedule = new dbnHubRequest_DBNISchedule(tdtoken);
 
-    reqs.addRequest([reqPlayers]);
+    reqs.addRequest([reqPlayers, reqSchedule]);
 
     if (reqs.Send()) {
         //reqs.ReportToDiv(div);
@@ -25,9 +26,10 @@ function MakePage() {
 
         var tdname = players[0]["PlayerName"];
         div.addTitleCard("DBNI TD Portal: " + tdname);
-        return;
+        
+        var allschedules = reqSchedule.ResponseToObjects();
+        console.log(allschedules);
 
-        // var allschedules = reqSchedule.ResponseToObjects();
         // var allbids = reqBids.ResponseToObjects();
 
         // allschedules.forEach(schedule => {
