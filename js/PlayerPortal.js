@@ -3,6 +3,13 @@
 function MakePage() {
     var div = dbnHere().addDiv();
 
+    var playertoken = myHub.UserToken;
+
+    if (!playertoken) {
+        div.addBoldText("Invalid player token");
+        return;
+    }
+
     var reqs = myHub.MakeRequestList();
     var reqPlayers = new dbnHubRequest_Players(playertoken);
     var reqSchedule = new dbnHubRequest_DBNISchedule(playertoken);
@@ -13,7 +20,13 @@ function MakePage() {
     if (reqs.Send()) {
         //reqs.ReportToDiv(div);
 
-        var playername = reqPlayers.ResponseToObjects()[0]["PlayerName"];
+        var players = reqPlayers.ResponseToObjects();
+        if (players.length == 0) {
+            div.addBoldText("Invalid player token");
+            return;
+        }
+
+        var playername = players[0]["PlayerName"];
         div.addTitleCard("DBNI Player Portal: " + playername);
 
         var allschedules = reqSchedule.ResponseToObjects();
@@ -23,9 +36,7 @@ function MakePage() {
             var manager = PowerBidManager.GetManagerForCompetition(schedule.CompetitionID);
             var card = div.addCard();
 
-            card.addHeading(2, schedule.CompetitionName);
-            card.addHeading(3, "Seed #" + schedule.Seed);
-            //card.appendChild(manager.MakeInstructions());
+            card.addHeading(1, schedule.CompetitionName);
 
             var tbl = card.addTable();
 
@@ -61,7 +72,6 @@ function MakePage() {
                     rowui.splice(2, 1); //Remove PlayerNamne
                     rowui.splice(0, 1); //Remove SeedInRound
 
-                    locked = false;
                     if (!locked) {
                         bOneIsUnlocked = true;
                         var bbSave = new dbnButtonBar();
@@ -91,14 +101,24 @@ function MakePage() {
             tbl.Data = data;
             tbl.Generate();
             manager.ValidateBidSets();
+
+            if (bOneIsUnlocked) card.appendChild(manager.MakeInstructions());
+
         });
-    };
+    }
 }
 
 /**
  * @param {PlayerBidInput} pbi 
  */
 function SaveBids(pbi) {
+    if (pbi.BidSet.LastValidationMessages) {
+        alert("The bid set is not valid:\n" + pbi.BidSet.LastValidationMessages.replace("<br>", "\n"));
+        return;
+    }
+
+    var playertoken = myHub.UserToken;
+
     var parms = { "token": playertoken, "competitionid": pbi.BidSet.CompetitionID, "round": pbi.BidSet.Round, "bids": JSON.stringify(pbi.BidSet.Bids) };
     var req = new bfDataRequest("savebid", parms);
     req.SendAlone();

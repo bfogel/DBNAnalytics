@@ -29,7 +29,7 @@ class bfDataRequest {
   Message;
   ResponseContent;
   AffectedRows;
-  
+
   SendAlone() {
     var list = myHub.MakeRequestList();
     list.addRequest(this);
@@ -170,6 +170,13 @@ class dbnHub {
 
   MakeRequestList() { return new bfDataRequestList("https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php"); }
 
+  get UserToken() {
+    const queryString = window.location.search;
+    var src = new URLSearchParams(queryString);
+    if (src.has("token")) return src.get("token");
+    return null;
+  }
+
   #players = Array.from(Array(0), x => new dbnPlayer());
   get Players() {
     if (this.#players.length = []) {
@@ -200,7 +207,7 @@ var myHub = new dbnHub();
 
 //#region Misc DataRequest classes
 
-class dbnDBNISchedule { CompetitionID; CompetitionName; Seed; InRound1; InRound2; InRound3; InRound4; }
+class dbnDBNISchedule { PlayerID; CompetitionID; CompetitionName; Seed; InRound1; InRound2; InRound3; InRound4; }
 class dbnHubRequest_DBNISchedule extends bfDataRequest {
   constructor(token) { super("dbnischedule", { "token": token }); }
   ResponseToObjects() {
@@ -210,7 +217,7 @@ class dbnHubRequest_DBNISchedule extends bfDataRequest {
   }
 }
 
-class dbnDBNIBid { Country; CompetitionID; Round; Bid; Locked; }
+class dbnDBNIBid { PlayerID; Country; CompetitionID; Round; Bid; Locked; }
 class dbnHubRequest_Bids extends bfDataRequest {
   constructor(token) { super("bids", { "token": token }); }
   ResponseToObjects() {

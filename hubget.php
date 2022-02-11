@@ -43,7 +43,7 @@ function HandleRequest($request)
     $parms = $request["Parameters"];
     switch ($request["Key"]) {
         case "bids": {
-                $sql = 'SELECT CO.CountryName as Country, B.Competition_CompetitionID as CompetitionID';
+                $sql = 'SELECT P.PlayerID, CO.CountryName as Country, B.Competition_CompetitionID as CompetitionID';
                 $sql .= ', B.Round, B.Bid, B.Locked';
                 $sql .= ' FROM Player as P';
                 $sql .= ' INNER JOIN PlayerCountryBid as B on B.Player_PlayerID = P.PlayerID';
@@ -106,7 +106,7 @@ function HandleRequest($request)
                 $token = $parms["token"];
                 if ($token == null) return ["success" => false, "message" => "Missing token"];
 
-                $sql = "SELECT C.CompetitionID, C.CompetitionName";
+                $sql = "SELECT P.PlayerID, C.CompetitionID, C.CompetitionName";
                 $sql .= " , S.Seed, S.InRound1, S.InRound2, S.InRound3, S.InRound4";
                 $sql .= " FROM Competition AS C";
                 $sql .= " INNER JOIN DBNInvitationalSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
