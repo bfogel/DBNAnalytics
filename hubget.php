@@ -58,7 +58,7 @@ function HandleRequest($request)
                 $sql .= ' VALUES (?,?,?,?,?)';
 
 
-                $rs = new ResultSet($sql, [$competitionID, $playerid, $round, 0]);
+                $rs = new ResultSet($sql, [$competitionID, $playerid, $round, 0, 10]);
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
 
 
