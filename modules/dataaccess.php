@@ -88,13 +88,13 @@ class ResultSet
             }
 
             if (($statement->bind_param($types, ...$parameters)) === false) {
-                $this->message = $conn->error;
+                $this->message = "bind_param: " . $conn->error;
                 return;
             }
         }
 
         if (($statement->execute()) === false) {
-            $this->message = $conn->error;
+            $this->message = "execute: " . $conn->error;
             return;
         }
 
