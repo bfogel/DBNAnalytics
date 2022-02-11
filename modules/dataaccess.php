@@ -31,6 +31,7 @@ class ResultSet
     public $fields = [];
     public $data = [];
     public $message = null;
+    public $affected_rows = null;
 
     function __construct($sql = null, $parameters = null)
     {
@@ -103,6 +104,10 @@ class ResultSet
         }
 
         $result = $statement->get_result();
+
+        $this->affected_rows = $statement->affected_rows;
+
+        $this->message = "affected: " . $statement->affected_rows;
 
         if ($result === false) {
             $this->message = "affected: " . $statement->affected_rows;

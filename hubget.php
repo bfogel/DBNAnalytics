@@ -45,6 +45,7 @@ function HandleRequest($request)
                 $rs = new ResultSet($sql, [$competitionID, $playerid, $round]);
 
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
+                return ["success" => false, "message" => "resultset: " . $rs->affected_rows];
 
                 $locked = false;
                 foreach ($rs->data as $row) {
@@ -53,6 +54,10 @@ function HandleRequest($request)
                 if ($locked) {
                     return ["success" => false, "message" => "Bids for this round are locked.  Contact the TD to unlock."];
                 }
+
+                $sql = "DELETE FROM PlayerCountryBid WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND `Round` = ?";
+                $rs = new ResultSet($sql, [$competitionID, $playerid, $round, 0, 10]);
+                // if (!$rs->success) return ["success" => false, "message" => $rs->message];
 
                 $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
                 $sql .= ' VALUES (?,?,?,?,?)';
