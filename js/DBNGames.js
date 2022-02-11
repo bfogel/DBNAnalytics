@@ -28,7 +28,8 @@ class bfDataRequest {
   Success;
   Message;
   ResponseContent;
-
+  AffectedRows;
+  
   SendAlone() {
     var list = myHub.MakeRequestList();
     list.addRequest(this);

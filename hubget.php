@@ -57,15 +57,12 @@ function HandleRequest($request)
 
                 $sql = "DELETE FROM PlayerCountryBid WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND `Round` = ?";
                 $rs = new ResultSet($sql, [$competitionID, $playerid, $round, 0, 10]);
-                // if (!$rs->success) return ["success" => false, "message" => $rs->message];
+                if (!$rs->success) return ["success" => false, "message" => "(clearing) " . $rs->message];
 
                 $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
                 $sql .= ' VALUES (?,?,?,?,?)';
-
-
                 $rs = new ResultSet($sql, [$competitionID, $playerid, $round, 0, 10]);
-                if (!$rs->success) return ["success" => false, "message" => $rs->message];
-
+                if (!$rs->success) return ["success" => false, "message" => "(adding) " . $rs->message];
 
                 return ["success" => true, "content" => json_encode(["what" => "yes"])];
             }

@@ -91,14 +91,14 @@ class ResultSet
             }
 
             if (($statement->bind_param($types, ...$parameters)) === false) {
-                $this->message = "bind_param: " . $conn->error;
+                $this->message = "bind_param: " . $statement->error;
                 $statement->close();
                 return;
             }
         }
 
         if (($statement->execute()) === false) {
-            $this->message = "execute: " . $conn->error;
+            $this->message = "execute: " . $statement->error;
             $statement->close();
             return;
         }
@@ -107,13 +107,15 @@ class ResultSet
 
         $this->affected_rows = $statement->affected_rows;
 
-        $this->message = "affected: " . $statement->affected_rows;
-
         if ($result === false) {
-            $this->message = "affected: " . $statement->affected_rows;
-            // if($statement->affected_rows!=)
-            // $this->message = $conn->error;
-            $statement->close();
+            if ($statement->errno == 0) {
+                //Successful data modification statement
+                $this->success = true;
+                $statement->close();
+            } else {
+                $this->message = "get_result: " . $statement->affected_rows;
+                $statement->close();
+            }
             return;
         }
 
