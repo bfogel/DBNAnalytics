@@ -65,6 +65,7 @@ class ResultSet
 
         if ($statement === false) {
             $this->message = $conn->error;
+            $statement->close();
             return;
         }
 
@@ -83,18 +84,21 @@ class ResultSet
                         break;
                     default:
                         $this->message = "Unsupported parameter type: " . gettype($value);
+                        $statement->close();
                         return;
                 }
             }
 
             if (($statement->bind_param($types, ...$parameters)) === false) {
                 $this->message = "bind_param: " . $conn->error;
+                $statement->close();
                 return;
             }
         }
 
         if (($statement->execute()) === false) {
             $this->message = "execute: " . $conn->error;
+            $statement->close();
             return;
         }
 
@@ -104,6 +108,7 @@ class ResultSet
             $this->message = "affected: " . $statement->affected_rows;
             // if($statement->affected_rows!=)
             // $this->message = $conn->error;
+            $statement->close();
             return;
         }
 
@@ -124,5 +129,6 @@ class ResultSet
 
         $this->data = $data;
         $this->success = true;
+        $statement->close();
     }
 }
