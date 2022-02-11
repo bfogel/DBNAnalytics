@@ -16,6 +16,28 @@ if ($requests != "") {
     return;
 }
 
+function CountryNameToID($country)
+{
+    switch ($country) {
+        case 'Austria':
+            return 0;
+        case 'England':
+            return 1;
+        case 'France':
+            return 2;
+        case 'Germany':
+            return 3;
+        case 'Italy':
+            return 4;
+        case 'Russia':
+            return 5;
+        case 'Turkey':
+            return 6;
+        default:
+            return -1;
+    }
+}
+
 function HandleRequest($request)
 {
     $parms = $request["Parameters"];
@@ -59,8 +81,11 @@ function HandleRequest($request)
 
                 $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
                 $sql .= ' VALUES (?,?,?,?,?)';
-                $rs = new ResultSet($sql, [$competitionID, $playerid, $round, 0, 10]);
-                if (!$rs->success) return ["success" => false, "message" => "(adding) " . $rs->message];
+
+                foreach ($bids as $country => $bid) {
+                    $rs = new ResultSet($sql, [$competitionID, $playerid, $round, CountryNameToID($country), $bid]);
+                    if (!$rs->success) return ["success" => false, "message" => "(adding " . $country . ") " . $rs->message];
+                }
 
                 return ["success" => true, "content" => json_encode(["what" => "yes"])];
             }

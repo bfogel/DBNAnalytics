@@ -106,7 +106,8 @@ function SaveBids(pbi) {
     if (!req.Success) {
         alert("Unable to save: " + req.Message);
     } else {
-        console.log(JSON.stringify(req.ResponseContent));
+        alert("Saved");
+        // console.log(JSON.stringify(req.ResponseContent));
     }
 }
 
