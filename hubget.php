@@ -120,12 +120,13 @@ function HandleRequest($request)
                 if (IsZach($token)) {
                     // $sql .= " WHERE C.CompetitionID = 3051";
                     $sql .= " WHERE C.CompetitionID = 2038";
+                    $vars = null;
                 } else {
                     $sql .= " WHERE P.Token = ?";
+                    $vars = [$token];
                 }
 
                 $sql .= " ORDER BY C.CompetitionName";
-                $vars = [$token];
 
                 return GetResultsetAsJSON($sql, $vars);
             }
