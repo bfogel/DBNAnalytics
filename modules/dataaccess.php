@@ -101,7 +101,7 @@ class ResultSet
         $result = $statement->get_result();
 
         if ($result === false) {
-            $this->message = $statement->affected_rows;
+            $this->message = "affected: " . $statement->affected_rows;
             // if($statement->affected_rows!=)
             // $this->message = $conn->error;
             return;
