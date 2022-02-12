@@ -233,9 +233,9 @@ class dbnHubRequest_CompetitionPlayerSeed extends bfDataRequest {
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerSeed()); }
 }
 
-class dbnCompetitionPlayerSchedule { PlayerID; CompetitionID; CompetitionName; Round; BidsLocked; }
+class dbnCompetitionPlayerSchedule { PlayerID; PlayerName; CompetitionID; CompetitionName; Round; Locked; }
 class dbnHubRequest_CompetitionPlayerSchedule extends bfDataRequest {
-  constructor(token) { super("compschedule", { "token": token }); }
+  constructor() { super("compschedule", null); }
   /** @returns {dbnCompetitionPlayerSchedule[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerSchedule()); }
 }

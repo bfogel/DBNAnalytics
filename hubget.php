@@ -173,14 +173,13 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $vars);
             }
 
-        case "dbnischedule": {
-                $token = $parms["token"];
-                if ($token == null) return ["success" => false, "message" => "Missing token"];
+        case "compschedule": {
+                $ui = GetUserInfo($parms);
+                if ($ui->PlayerID == 0) return ["success" => false, "message" => $ui->PlayerName];
 
-                $sql = "SELECT P.PlayerID, C.CompetitionID, C.CompetitionName";
-                $sql .= " , S.Seed, S.InRound1, S.InRound2, S.InRound3, S.InRound4";
+                $sql = "SELECT P.PlayerID, P.PlayerName C.CompetitionID, C.CompetitionName, S.Seed, S.Locked";
                 $sql .= " FROM Competition AS C";
-                $sql .= " INNER JOIN DBNInvitationalSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
+                $sql .= " INNER JOIN CompetitionPlayerSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
                 $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
 
                 if (IsZach($token)) {
@@ -188,8 +187,8 @@ function HandleRequest($request)
                     $sql .= " WHERE C.CompetitionID = 2038";
                     $vars = null;
                 } else {
-                    $sql .= " WHERE P.Token = ?";
-                    $vars = [$token];
+                    $sql .= " WHERE P.PlayerID = ?";
+                    $vars = [$ui->PlayerID];
                 }
 
                 $sql .= " ORDER BY C.CompetitionName";
