@@ -25,7 +25,10 @@ class bfDataRequest {
     this.Parameters = parameters;
 
     var src = new URLSearchParams(window.location.search);
-    if (src.has("token")) this.Parameters["token"] = src.get("token");
+    if (src.has("token")) {
+      if (!this.Parameters) this.Parameters = {};
+      this.Parameters["token"] = src.get("token");
+    }
 
   }
 
