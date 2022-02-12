@@ -8,6 +8,7 @@ function MakePage() {
 
     reqUserInfo.SendAlone();
     if (reqUserInfo.Success) {
+        console.log(reqUserInfo.ResponseContent);
         console.log(reqUserInfo.UserInfo);
     } else {
         console.log("fail", reqUserInfo.Message);

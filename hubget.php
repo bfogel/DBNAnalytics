@@ -72,13 +72,15 @@ function GetUserInfo($parameters)
     return new UserInfo(0, "no token");
 }
 
+//Should return a JSON object with expected fields set 
+// (really you should define a response class)
 function HandleRequest($request)
 {
     $parms = $request["Parameters"];
     switch ($request["Key"]) {
         case "userinfo": {
                 $ui = GetUserInfo($parms);
-                if ($ui != null && $ui->PlayerID != 0) return ["success" => true, "content" => json_encode($ui)];
+                if ($ui != null && $ui->PlayerID != 0) return ["success" => true, "content" => $ui];
                 if ($ui != null && $ui->PlayerID == 0) return ["success" => false, "message" => "Could not locate user (" . $ui->PlayerName . ")"];
                 return ["success" => false, "message" => "Could not locate user."];
             }

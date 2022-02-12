@@ -216,9 +216,13 @@ class dbnUserInfo { PlayerID; PlayerName; }
 class dbnHubRequest_UserInfo extends bfDataRequest {
   constructor() { super("userinfo", null); }
   /** @returns {dbnUserInfo} */
-  UserInfo() {
-    var objs = super.ResponseToObjects(() => new dbnUserInfo());
-    return objs.length > 0 ? objs[0] : null;
+  get UserInfo() {
+    if (this.ResponseContent) {
+      var ret = new dbnUserInfo();
+      Object.assign(ret, this.ResponseContent);
+      return ret
+    }
+    return null;
   }
 }
 
