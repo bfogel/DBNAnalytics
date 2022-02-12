@@ -5,10 +5,11 @@ function MakePage() {
 
     var reqs = myHub.MakeRequestList();
     var reqUserInfo = new dbnHubRequest_UserInfo();
-    var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed();
-    var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule();
-    var reqBids = new dbnHubRequest_Bids();
+    // var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed();
+    // var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule();
+    // var reqBids = new dbnHubRequest_Bids();
 
+    reqUserInfo.SendAlone();
     if (reqUserInfo.Success) {
         console.log(reqUserInfo.UserInfo);
     } else {
