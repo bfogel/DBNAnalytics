@@ -5,20 +5,21 @@ function MakePage() {
 
     var reqs = myHub.MakeRequestList();
     var reqUserInfo = new dbnHubRequest_UserInfo();
-    // var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed();
+    var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed();
     // var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule();
     // var reqBids = new dbnHubRequest_Bids();
 
-    reqUserInfo.SendAlone();
-    if (reqUserInfo.Success) {
-        console.log(reqUserInfo.UserInfo);
+    reqs.addRequest([reqUserInfo, reqSeeds]);
+    reqs.Send();
+
+    var reqq = reqSeeds;
+    if (reqq.Success) {
+        console.log(reqq.ResponseContent);
     } else {
-        console.log("fail", reqUserInfo.Message);
+        console.log("fail", reqq.Message);
     }
 
     return;
-
-    reqs.addRequest([reqPlayers, reqSchedule, reqBids]);
 
     if (reqs.Send()) {
         //reqs.ReportToDiv(div);

@@ -55,7 +55,7 @@ class UserInfo
 }
 
 $_UserInfo = null;
-function GetUserInfo($parameters)
+function GetUserInfo($parameters): UserInfo
 {
     if ($_UserInfo == null) {
 
@@ -151,13 +151,13 @@ function HandleRequest($request)
             }
 
         case "compseeds": {
-                $token = $parms["token"];
-                if ($token == null) return ["success" => false, "message" => "Missing token"];
+                $ui = GetUserInfo($parms);
+                if ($ui->PlayerID == 0) return ["success" => false, "message" => $ui->PlayerName];
 
-                $sql = "SELECT P.PlayerID, C.CompetitionID, C.CompetitionName";
-                $sql .= " , S.Seed, S.InRound1, S.InRound2, S.InRound3, S.InRound4";
+                $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName";
+                $sql .= " , S.Seed, S.Locked";
                 $sql .= " FROM Competition AS C";
-                $sql .= " INNER JOIN DBNInvitationalSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
+                $sql .= " INNER JOIN CompetitionPlayerSeed as S on S.Competition_CompetitionID = C.CompetitionID";
                 $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
 
                 if (IsZach($token)) {
