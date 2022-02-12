@@ -48,7 +48,10 @@ function MakePage() {
         var data = [];
         var bOneIsUnlocked = false;
 
-        allschedules.filter(x => x.CompetitionID == seed.CompetitionID).forEach(schedule => {
+        var theseschedules = allschedules.filter(x => x.CompetitionID == seed.CompetitionID);
+        theseschedules.sort((a, b) => a.Round - b.Round);
+
+        theseschedules.forEach(schedule => {
 
             var row = [];
             row.push("Round " + schedule.Round);

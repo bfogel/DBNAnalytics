@@ -167,7 +167,19 @@ function HandleRequest($request)
                 $sql .= ' FROM Player as P';
                 $sql .= ' INNER JOIN PlayerCountryBid as B on B.Player_PlayerID = P.PlayerID';
                 $sql .= ' INNER JOIN Country as CO on B.Country_CountryID = CO.CountryID';
-                $sql .= ' WHERE P.PlayerID = ?';
+                $sql .= ' INNER JOIN Competition as C on B.Competition_CompetitionID = C.CompetitionID';
+
+                $asTD = false;
+                if ($parameters != null && array_key_exists("asTD", $parameters)) $asTD = $parameters["asTD"];
+
+                if ($asTD) {
+                    $sql .= " WHERE C.Director_PlayerID = ?";
+                    $vars = [$userinfo->PlayerID];
+                } else {
+                    $sql .= " WHERE P.PlayerID = ?";
+                    $vars = [$userinfo->PlayerID];
+                }
+
                 return GetResultsetAsJSON($sql, [$userinfo->PlayerID]);
             }
 

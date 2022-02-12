@@ -50,6 +50,7 @@ class dbnElement {
     addOrderedList() { var ret = new dbnOrderedList(this); return ret; }
 
     addLineBreak() { var ret = new dbnElement("br", this); return ret; }
+    addHardRule() { var ret = new dbnElement("hr", this); return ret; }
 
     addParagraph() { var ret = new dbnElement("p", this); return ret; }
     addText(text) { var ret = new dbnText(text, this); return ret; }

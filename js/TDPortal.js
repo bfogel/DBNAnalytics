@@ -1,11 +1,63 @@
 "use strict";
 
-//Also add a TD_PlayerID field to Competition
-//Add td flag to the relevant data requests
-//Add GetUserPlayerID function to hubget.php, which can be converted to look at wordpress user later
-//PlayerPortal save should check both bids
+class CompetitionController {
 
-/** @type {dbnCompetition[]]} */
+    CompetitionID = 0;
+    CompetitionName = "";
+
+    /** @type {PowerBidManager} */
+    Manager;
+
+    /** @type {dbnCompetitionPlayerSeed[]} */
+    Seeds;
+    /** @type {number[]} */
+    Rounds;
+    /** @type {dbnCompetitionPlayerSchedule[]} */
+    Schedules;
+
+    /** @type {BidSet[]} */
+    BidSets;
+
+    #ViewDiv;
+
+    MakeBidSets() {
+        this.Schedules.forEach(sched => {
+            var bs = manager.MakeNewBidSet();
+            bs.SeedInTourney = seed.Seed;
+            bs.PlayerName = seed.PlayerName;
+            bs.Round = schedule.Round;
+
+            var thesebids = allbids.filter(bid => bid.CompetitionID == schedule.CompetitionID && bid.Round == schedule.Round);
+            thesebids.forEach(bid => bs.Bids[bid.Country] = bid.Bid);
+
+        });
+    }
+
+    MakeUI() {
+        var card = new dbnCard();
+
+        card.addHeading(1, this.CompetitionName);
+        var bbRounds = card.addButtonBar();
+        bbRounds.addButton("All bids", () => alert("yep" + round));
+        this.Rounds.forEach((round, i) => {
+            bbRounds.addButton("Round " + round, () => alert("yep" + round));
+        });
+
+        this.#ViewDiv = card.addDiv();
+        return card;
+    }
+
+    #MakeAllBidsUI() {
+        var ret = new dbnTable();
+
+
+    }
+}
+
+/** @type {dbnUserInfo} */
+var myUserInfo;
+
+/** @type {CompetitionController[]]} */
 var myCompetitions = [];
 
 function MakePage() {
@@ -14,52 +66,48 @@ function MakePage() {
     var reqs = myHub.MakeRequestList();
     var reqUserInfo = new dbnHubRequest_UserInfo();
     var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed(true);
-     var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule(true);
-    // var reqBids = new dbnHubRequest_Bids();
+    var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule(true);
+    var reqBids = new dbnHubRequest_Bids(true);
 
-    reqs.addRequest([reqUserInfo, reqSeeds, reqSchedule]);
+    reqs.addRequest([reqUserInfo, reqSeeds, reqSchedule, reqBids]);
 
     reqs.Send();
-     reqs.ReportToConsole(); return;
+      reqs.ReportToConsole(); return;
 
-    var userinfo = reqUserInfo.UserInfo;
-    if (!userinfo) {
-        div.addBoldText("Could not locate user");
-        return;
-    }
+    myUserInfo = reqUserInfo.UserInfo;
+    if (!myUserInfo) { div.addBoldText("Could not locate user"); return; }
+    if (!reqs.Success) { reqs.ReportToConsole(); return; }
 
-    if (!reqs.Success) {
-        reqs.ReportToConsole();
-        return;
-    }
+    //Passed user and data retrieval
 
-    div.addTitleCard("DBN TD Portal: " + userinfo.PlayerName);
+    div.addTitleCard("DBN TD Portal: " + myUserInfo.PlayerName);
 
     var allseeds = reqSeeds.ResponseToObjects();
-    // var allschedules = reqSchedule.ResponseToObjects();
+    var allschedules = reqSchedule.ResponseToObjects();
     // var allbids = reqBids.ResponseToObjects();
 
     //Collect competitions
     allseeds.forEach(x => {
         if (!myCompetitions.hasOwnProperty(x.CompetitionID)) {
-            var comp = new dbnCompetition();
+            var comp = new CompetitionController();
             comp.CompetitionID = x.CompetitionID;
             comp.CompetitionName = x.CompetitionName;
             myCompetitions[x.CompetitionID] = comp;
         }
     });
 
-
     myCompetitions.forEach(comp => {
-        var manager = PowerBidManager.GetManagerForCompetition(comp.CompetitionID);
-        var card = div.addCard();
+        comp.Manager = PowerBidManager.GetManagerForCompetition(comp.CompetitionID);
 
-        card.addHeading(1, comp.CompetitionName);
+        comp.Seeds = allseeds.filter(x => x.CompetitionID == comp.CompetitionID);
+        comp.Seeds.sort((a, b) => a.Seed - b.Seed);
 
-        var seeds = allseeds.filter(x => x.CompetitionID == comp.CompetitionID);
-        seeds.sort((a, b) => a.Seed - b.Seed);
+        comp.Rounds = [];
+        allschedules.forEach(x => { if (!comp.Rounds.includes(x.Round)) comp.Rounds.push(x.Round); });
+        comp.Rounds.sort();
 
-        
+        div.appendChild(comp.MakeUI());
+
     });
     // allschedules.forEach(schedule => {
     //     var manager = PowerBidManager.GetManagerForCompetition(schedule.CompetitionID);
