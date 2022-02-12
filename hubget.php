@@ -180,7 +180,7 @@ function HandleRequest($request)
                 $userinfo = GetUserInfo($parms);
                 if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
 
-                $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.Locked";
+                $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.BidsLocked";
                 $sql .= " FROM Competition AS C";
                 $sql .= " INNER JOIN CompetitionPlayerSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
                 $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
