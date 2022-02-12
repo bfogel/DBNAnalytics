@@ -75,8 +75,6 @@ function GetUserInfo($parameters): UserInfo
         } else {
             $_UserInfo = new UserInfo(0, "no token");
         }
-    } else {
-        return new UserInfo(0, "YES");
     }
     return $_UserInfo;
 }
