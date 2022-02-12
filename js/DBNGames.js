@@ -65,7 +65,8 @@ class bfDataRequest {
     return ret;
   }
 
-  ResponseToObjects(objectfunction = null) { return this.ReponseToDataSet().DataToObjects(objectfunction); }
+  ResponseToObjects(objectfunction = null) { return this.ResponseIsDataSet ? this.ReponseToDataSet().DataToObjects(objectfunction) : null; }
+  GetFirstObject(objectfunction = null) { var objs = this.ResponseToObjects(objectfunction); return objs == null ? null : objs[0]; }
 
   ReportToDiv(div) {
     div.addText((this.constructor.name) + " Success: " + this.Success);
@@ -139,6 +140,14 @@ class bfDataRequestList {
       return false;
     }
 
+  }
+
+  ReportToConsole() {
+    if (this.ErrorMessage) console.log("List ErrorMessage: " + this.ErrorMessage);
+
+    this.Requests.forEach(req => {
+      console.log("Request", req.Key, !req.Success ? "fail " + req.Message : (req.ResponseIsDataSet ? req.ResponseToObjects() : req.ResponseContent));
+    });
   }
 
   ReportToDiv(div) {
@@ -243,7 +252,7 @@ class dbnHubRequest_CompetitionPlayerSchedule extends bfDataRequest {
 //Rename
 class dbnDBNIBid { PlayerID; Country; CompetitionID; Round; Bid; }
 class dbnHubRequest_Bids extends bfDataRequest {
-  constructor(token) { super("bids", { "token": token }); }
+  constructor() { super("bids", null); }
   /** @returns {dbnDBNIBid[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnDBNIBid()); }
 }

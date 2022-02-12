@@ -80,25 +80,29 @@ function GetUserInfo($parameters): UserInfo
 }
 
 //Should return a JSON object with expected fields set 
-// (really you should define a response class)
+// (really you should define a response class with two subclasses SuccessResponse and FailureResponse)
 function HandleRequest($request)
 {
     $parms = $request["Parameters"];
     switch ($request["Key"]) {
         case "userinfo": {
-                $ui = GetUserInfo($parms);
-                if ($ui != null && $ui->PlayerID != 0) return ["success" => true, "content" => $ui];
-                if ($ui != null && $ui->PlayerID == 0) return ["success" => false, "message" => "Could not locate user (" . $ui->PlayerName . ")"];
+                $userinfo = GetUserInfo($parms);
+                if ($userinfo != null && $userinfo->PlayerID != 0) return ["success" => true, "content" => $userinfo];
+                if ($userinfo != null && $userinfo->PlayerID == 0) return ["success" => false, "message" => "Could not locate user (" . $userinfo->PlayerName . ")"];
                 return ["success" => false, "message" => "Could not locate user."];
             }
+
         case "bids": {
+                $userinfo = GetUserInfo($parms);
+                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
+
                 $sql = 'SELECT P.PlayerID, CO.CountryName as Country, B.Competition_CompetitionID as CompetitionID';
                 $sql .= ', B.Round, B.Bid';
                 $sql .= ' FROM Player as P';
                 $sql .= ' INNER JOIN PlayerCountryBid as B on B.Player_PlayerID = P.PlayerID';
                 $sql .= ' INNER JOIN Country as CO on B.Country_CountryID = CO.CountryID';
-                $sql .= ' WHERE P.Token = ?';
-                return GetResultsetAsJSON($sql, [$parms["token"]]);
+                $sql .= ' WHERE P.PlayerID = ?';
+                return GetResultsetAsJSON($sql, [$userinfo->PlayerID]);
             }
 
         case "savebid": {
@@ -152,8 +156,8 @@ function HandleRequest($request)
             }
 
         case "compseeds": {
-                $ui = GetUserInfo($parms);
-                if ($ui->PlayerID == 0) return ["success" => false, "message" => $ui->PlayerName];
+                $userinfo = GetUserInfo($parms);
+                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
 
                 $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Seed";
                 $sql .= " FROM Competition AS C";
@@ -166,7 +170,7 @@ function HandleRequest($request)
                     $vars = null;
                 } else {
                     $sql .= " WHERE P.PlayerID = ?";
-                    $vars = [$ui->PlayerID];
+                    $vars = [$userinfo->PlayerID];
                 }
 
                 $sql .= " ORDER BY C.CompetitionName";
@@ -175,8 +179,8 @@ function HandleRequest($request)
             }
 
         case "compschedule": {
-                $ui = GetUserInfo($parms);
-                if ($ui->PlayerID == 0) return ["success" => false, "message" => $ui->PlayerName];
+                $userinfo = GetUserInfo($parms);
+                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
 
                 $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.Locked";
                 $sql .= " FROM Competition AS C";
@@ -189,7 +193,7 @@ function HandleRequest($request)
                     $vars = null;
                 } else {
                     $sql .= " WHERE P.PlayerID = ?";
-                    $vars = [$ui->PlayerID];
+                    $vars = [$userinfo->PlayerID];
                 }
 
                 $sql .= " ORDER BY C.CompetitionName";

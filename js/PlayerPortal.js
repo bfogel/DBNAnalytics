@@ -7,18 +7,12 @@ function MakePage() {
     var reqUserInfo = new dbnHubRequest_UserInfo();
     var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed();
     var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule();
-    // var reqBids = new dbnHubRequest_Bids();
+    var reqBids = new dbnHubRequest_Bids();
 
     reqs.addRequest([reqUserInfo, reqSeeds, reqSchedule]);
     reqs.Send();
 
-    var reqq = reqSchedule;
-    if (reqq.Success) {
-        console.log(reqq.ResponseToObjects());
-    } else {
-        console.log("fail", reqq.Message);
-    }
-
+    reqs.ReportToConsole();
     return;
 
     if (reqs.Send()) {
