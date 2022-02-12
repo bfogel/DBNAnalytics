@@ -164,8 +164,8 @@ function HandleRequest($request)
                     $sql .= " WHERE C.CompetitionID = 2038";
                     $vars = null;
                 } else {
-                    $sql .= " WHERE P.Token = ?";
-                    $vars = [$token];
+                    $sql .= " WHERE P.PlayerID = ?";
+                    $vars = [$ui->PlayerID];
                 }
 
                 $sql .= " ORDER BY C.CompetitionName";
