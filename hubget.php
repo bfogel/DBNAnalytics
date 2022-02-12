@@ -16,11 +16,6 @@ if ($requests != "") {
     return;
 }
 
-function IsZach($token)
-{
-    return $token == "b10a9bcf-9e4a-4d4a-8389-02d938edb3d5";
-}
-
 function CountryNameToID($country)
 {
     switch ($country) {
@@ -138,10 +133,12 @@ function HandleRequest($request)
                 $sql .= " INNER JOIN CompetitionPlayerSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
                 $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
 
-                if (IsZach("")) {
-                    // $sql .= " WHERE C.CompetitionID = 3051";
-                    $sql .= " WHERE C.CompetitionID = 2038";
-                    $vars = null;
+                $asTD = false;
+                if ($parameters != null && array_key_exists("asTD", $parameters)) $asTD = $parameters["asTD"];
+
+                if ($asTD) {
+                    $sql .= " WHERE C.Director_PlayerID = ?";
+                    $vars = [$userinfo->PlayerID];
                 } else {
                     $sql .= " WHERE P.PlayerID = ?";
                     $vars = [$userinfo->PlayerID];

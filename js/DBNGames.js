@@ -250,7 +250,7 @@ class dbnHubRequest_CompetitionPlayerSeed extends bfDataRequest {
 
 class dbnCompetitionPlayerSchedule { PlayerID; PlayerName; CompetitionID; CompetitionName; Round; BidsLocked; }
 class dbnHubRequest_CompetitionPlayerSchedule extends bfDataRequest {
-  constructor() { super("compschedule", null); }
+  constructor(pAsTD = false) { super("compschedule", { "asTD": pAsTD }); }
   /** @returns {dbnCompetitionPlayerSchedule[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerSchedule()); }
 }
@@ -258,14 +258,15 @@ class dbnHubRequest_CompetitionPlayerSchedule extends bfDataRequest {
 //Rename
 class dbnDBNIBid { PlayerID; Country; CompetitionID; Round; Bid; }
 class dbnHubRequest_Bids extends bfDataRequest {
-  constructor() { super("bids", null); }
+  constructor(pAsTD = false) { super("bids", { "asTD": pAsTD }); }
   /** @returns {dbnDBNIBid[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnDBNIBid()); }
 }
 
+class dbnCompetition { CompetitionID; CompetitionName; }
 class dbnHubRequest_Competitions extends bfDataRequest {
-  constructor(compids, token) {
-    super("competitions", { "compids": compids, "token": token });
+  constructor(compids) {
+    super("competitions", { "compids": compids });
   }
 }
 
