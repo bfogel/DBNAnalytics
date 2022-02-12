@@ -226,7 +226,7 @@ class dbnHubRequest_UserInfo extends bfDataRequest {
   }
 }
 
-class dbnCompetitionPlayerSeed { PlayerID; PlayerName; CompetitionID; CompetitionName; Seed; Locked; }
+class dbnCompetitionPlayerSeed { PlayerID; PlayerName; CompetitionID; CompetitionName; Seed; }
 class dbnHubRequest_CompetitionPlayerSeed extends bfDataRequest {
   constructor() { super("compseeds", null); }
   /** @returns {dbnCompetitionPlayerSeed[]} */
