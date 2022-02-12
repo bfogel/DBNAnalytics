@@ -62,12 +62,14 @@ function GetUserInfo($parameters)
             if (count($rs->data) > 0) {
                 $row = $rs->data[0];
                 return new UserInfo($row[0], $row[1]);
+            } else {
+                return new UserInfo(0, "no data");
             }
         } else {
             return new UserInfo(0, $rs->message);
         }
     }
-    return null;
+    return new UserInfo(0, "no token");
 }
 
 function HandleRequest($request)
@@ -76,7 +78,8 @@ function HandleRequest($request)
     switch ($request["Key"]) {
         case "userinfo": {
                 $ui = GetUserInfo($parms);
-                if ($ui != null) ["success" => true, "content" => json_encode($ui)];
+                if ($ui != null && $ui->PlayerID != 0) return ["success" => true, "content" => json_encode($ui)];
+                if ($ui != null && $ui->PlayerID == 0) return ["success" => false, "message" => "Could not locate user (" . $ui->PlayerName . ")"];
                 return ["success" => false, "message" => "Could not locate user."];
             }
         case "bids": {
