@@ -71,8 +71,9 @@ function GetUserInfo($parameters)
             } else {
                 $_UserInfo = new UserInfo(0, $rs->message);
             }
+        } else {
+            $_UserInfo = new UserInfo(0, "no token");
         }
-        $_UserInfo = new UserInfo(0, "no token");
     }
     return $_UserInfo;
 }
@@ -84,7 +85,6 @@ function HandleRequest($request)
     $parms = $request["Parameters"];
     switch ($request["Key"]) {
         case "userinfo": {
-                return ["success" => false, "message" => json_encode($parms)];
                 $ui = GetUserInfo($parms);
                 if ($ui != null && $ui->PlayerID != 0) return ["success" => true, "content" => $ui];
                 if ($ui != null && $ui->PlayerID == 0) return ["success" => false, "message" => "Could not locate user (" . $ui->PlayerName . ")"];
