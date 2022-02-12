@@ -226,9 +226,9 @@ class dbnHubRequest_UserInfo extends bfDataRequest {
   }
 }
 
-class dbnCompetitionPlayerSeed { PlayerID; CompetitionID; CompetitionName; Seed; }
+class dbnCompetitionPlayerSeed { PlayerID; PlayerName; CompetitionID; CompetitionName; Seed; Locked; }
 class dbnHubRequest_CompetitionPlayerSeed extends bfDataRequest {
-  constructor(token) { super("compseeds", { "token": token }); }
+  constructor() { super("compseeds", null); }
   /** @returns {dbnCompetitionPlayerSeed[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerSeed()); }
 }

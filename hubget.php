@@ -54,22 +54,27 @@ class UserInfo
     }
 }
 
+$_UserInfo = null;
 function GetUserInfo($parameters)
 {
-    if (array_key_exists("token", $parameters)) {
-        $rs = new ResultSet("SELECT * FROM Player WHERE Token = ?", [$parameters["token"]]);
-        if ($rs->success) {
-            if (count($rs->data) > 0) {
-                $row = $rs->data[0];
-                return new UserInfo($row[0], $row[1]);
+    if ($_UserInfo == null) {
+
+        if (array_key_exists("token", $parameters)) {
+            $rs = new ResultSet("SELECT * FROM Player WHERE Token = ?", [$parameters["token"]]);
+            if ($rs->success) {
+                if (count($rs->data) > 0) {
+                    $row = $rs->data[0];
+                    $_UserInfo = new UserInfo($row[0], $row[1]);
+                } else {
+                    $_UserInfo = new UserInfo(0, "no data");
+                }
             } else {
-                return new UserInfo(0, "no data");
+                $_UserInfo = new UserInfo(0, $rs->message);
             }
-        } else {
-            return new UserInfo(0, $rs->message);
         }
+        $_UserInfo = new UserInfo(0, "no token");
     }
-    return new UserInfo(0, "no token");
+    return $_UserInfo;
 }
 
 //Should return a JSON object with expected fields set 
@@ -141,6 +146,30 @@ function HandleRequest($request)
                     $sql .= ' WHERE Token = ?';
                     $vars = [$token];
                 }
+                return GetResultsetAsJSON($sql, $vars);
+            }
+
+        case "compseeds": {
+                $token = $parms["token"];
+                if ($token == null) return ["success" => false, "message" => "Missing token"];
+
+                $sql = "SELECT P.PlayerID, C.CompetitionID, C.CompetitionName";
+                $sql .= " , S.Seed, S.InRound1, S.InRound2, S.InRound3, S.InRound4";
+                $sql .= " FROM Competition AS C";
+                $sql .= " INNER JOIN DBNInvitationalSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
+                $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
+
+                if (IsZach($token)) {
+                    // $sql .= " WHERE C.CompetitionID = 3051";
+                    $sql .= " WHERE C.CompetitionID = 2038";
+                    $vars = null;
+                } else {
+                    $sql .= " WHERE P.Token = ?";
+                    $vars = [$token];
+                }
+
+                $sql .= " ORDER BY C.CompetitionName";
+
                 return GetResultsetAsJSON($sql, $vars);
             }
 
