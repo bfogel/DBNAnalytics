@@ -63,6 +63,8 @@ function GetUserInfo($parameters)
                 $row = $rs->data[0];
                 return new UserInfo($row[0], $row[1]);
             }
+        } else {
+            return new UserInfo(0, $rs->message);
         }
     }
     return null;
