@@ -9,32 +9,31 @@ function MakePage() {
     var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule();
     var reqBids = new dbnHubRequest_Bids();
 
-    reqs.addRequest([reqUserInfo, reqSeeds, reqSchedule]);
+    reqs.addRequest([reqUserInfo, reqSeeds, reqSchedule, reqBids]);
+
     reqs.Send();
+    // reqs.ReportToConsole();
+    // return;
 
-    reqs.ReportToConsole();
-    return;
+    var userinfo = reqUserInfo.UserInfo;
+    if (!userinfo) {
+        div.addBoldText("Could not locate user");
+        return;
+    }
 
-    if (reqs.Send()) {
-        //reqs.ReportToDiv(div);
+    if (reqs.Success) {
 
-        var players = reqPlayers.ResponseToObjects();
-        if (players.length == 0) {
-            div.addBoldText("Invalid player token");
-            return;
-        }
+        div.addTitleCard("DBN Player Portal: " + userinfo.PlayerName);
 
-        var playername = players[0]["PlayerName"];
-        div.addTitleCard("DBNI Player Portal: " + playername);
-
+        var allseeds = reqSeeds.ResponseToObjects();
         var allschedules = reqSchedule.ResponseToObjects();
         var allbids = reqBids.ResponseToObjects();
 
-        allschedules.forEach(schedule => {
-            var manager = PowerBidManager.GetManagerForCompetition(schedule.CompetitionID);
+        allseeds.forEach(seed => {
+            var manager = PowerBidManager.GetManagerForCompetition(seed.CompetitionID);
             var card = div.addCard();
 
-            card.addHeading(1, schedule.CompetitionName);
+            card.addHeading(1, seed.CompetitionName);
 
             var tbl = card.addTable();
 
@@ -46,51 +45,45 @@ function MakePage() {
             var data = [];
             var bOneIsUnlocked = false;
 
-            for (let iRound = 1; iRound < manager.RoundCount + 1; iRound++) {
-                if (schedule["InRound" + iRound]) {
-                    var row = [];
-                    row.push("Round " + iRound);
+            allschedules.filter(x => x.CompetitionID == seed.CompetitionID).forEach(schedule => {
 
-                    var bs = manager.MakeNewBidSet();
-                    bs.SeedInTourney = schedule.Seed;
-                    bs.PlayerName = playername;
-                    bs.Round = iRound;
+                var row = [];
+                row.push("Round " + schedule.Round);
 
-                    var locked = false;
-                    allbids.filter(bid => {
-                        if (bid.CompetitionID == schedule.CompetitionID && bid.Round == iRound) {
-                            bs.Bids[bid.Country] = bid.Bid;
-                            if (bid.Locked) locked = true;
-                        }
-                    });
+                var bs = manager.MakeNewBidSet();
+                bs.SeedInTourney = seed.Seed;
+                bs.PlayerName = seed.PlayerName;
+                bs.Round = schedule.Round;
 
-                    var pbi = new PlayerBidInput(manager);
-                    pbi.Locked = locked;
-                    var rowui = pbi.MakeRow();
-                    rowui.splice(2, 1); //Remove PlayerNamne
-                    rowui.splice(0, 1); //Remove SeedInRound
+                var thesebids = allbids.filter(bid => bid.CompetitionID == schedule.CompetitionID && bid.Round == schedule.Round);
+                thesebids.forEach(bid => bs.Bids[bid.Country] = bid.Bid);
 
-                    if (!locked) {
-                        bOneIsUnlocked = true;
-                        var bbSave = new dbnButtonBar();
-                        bbSave.Compact = true;
-                        bbSave.addButton("Save", ((inp) => SaveBids(inp)).bind(undefined, pbi));
-                        rowui.splice(1, 0, bbSave);
-                    }
+                var pbi = new PlayerBidInput(manager);
+                pbi.Locked = schedule.Locked;
+                var rowui = pbi.MakeRow();
+                rowui.splice(2, 1); //Remove PlayerNamne
+                rowui.splice(0, 1); //Remove SeedInRound
 
-                    var bbRandom = new dbnButtonBar();
-                    bbRandom.Compact = true;
-                    bbRandom.addButton("Even", ((inp) => { inp.BidSet.MakeEven(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
-                    bbRandom.addButton("Any", ((inp) => { inp.BidSet.MakeRandom(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
-                    rowui.splice(rowui.length - 1, 0, bbRandom);
-
-                    row.push(...rowui);
-                    manager.RegisterBidSet(bs);
-                    pbi.BidSet = bs;
-
-                    data.push(row);
+                if (!schedule.Locked) {
+                    bOneIsUnlocked = true;
+                    var bbSave = new dbnButtonBar();
+                    bbSave.Compact = true;
+                    bbSave.addButton("Save", ((inp) => SaveBids(inp)).bind(undefined, pbi));
+                    rowui.splice(1, 0, bbSave);
                 }
-            }
+
+                var bbRandom = new dbnButtonBar();
+                bbRandom.Compact = true;
+                bbRandom.addButton("Even", ((inp) => { inp.BidSet.MakeEven(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
+                bbRandom.addButton("Any", ((inp) => { inp.BidSet.MakeRandom(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
+                rowui.splice(rowui.length - 1, 0, bbRandom);
+
+                row.push(...rowui);
+                manager.RegisterBidSet(bs);
+                pbi.BidSet = bs;
+
+                data.push(row);
+            });
 
             if (bOneIsUnlocked) tbl.Headers.splice(2, 0, "Save");
             tbl.CountryColumns = {};

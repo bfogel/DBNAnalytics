@@ -106,18 +106,16 @@ function HandleRequest($request)
             }
 
         case "savebid": {
+                $userinfo = GetUserInfo($parms);
+                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
+
                 $competitionID = $parms["competitionid"];
                 $round = $parms["round"];
                 $bids = json_decode($parms["bids"], true);
-                $playerid = GetPlayerIDFromToken($parms["token"]);
 
-                if ($playerid == null) {
-                    return ["success" => false, "message" => "Unrecognized player"];
-                }
-
-                $sql = 'SELECT Locked FROM PlayerCountryBid';
+                $sql = 'SELECT Locked FROM CompetitionPlayerSchedule';
                 $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
-                $rs = new ResultSet($sql, [$competitionID, $playerid, $round]);
+                $rs = new ResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
 
                 $locked = false;
@@ -129,14 +127,14 @@ function HandleRequest($request)
                 }
 
                 $sql = "DELETE FROM PlayerCountryBid WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND `Round` = ?";
-                $rs = new ResultSet($sql, [$competitionID, $playerid, $round]);
+                $rs = new ResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
                 if (!$rs->success) return ["success" => false, "message" => "(clearing) " . $rs->message];
 
                 $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
                 $sql .= ' VALUES (?,?,?,?,?)';
 
                 foreach ($bids as $country => $bid) {
-                    $rs = new ResultSet($sql, [$competitionID, $playerid, $round, CountryNameToID($country), $bid]);
+                    $rs = new ResultSet($sql, [$competitionID, $userinfo->PlayerID, $round, CountryNameToID($country), $bid]);
                     if (!$rs->success) return ["success" => false, "message" => "(adding " . $country . ") " . $rs->message];
                 }
 

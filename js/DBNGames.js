@@ -88,9 +88,15 @@ class bfDataRequestList {
   constructor(url) { this.Url = url; }
 
   Url;
-  Requests = Array.from(Array(0), x => new bfDataRequest());
+
+  /** @type {bfDataRequest[]} */
+  Requests = [];
 
   ErrorMessage;
+
+  get Success() {
+    return this.Requests.length > 0 && (this.Requests.filter(x => !x.Success).length == 0);
+  }
 
   _SetErrorMessageAndLog(s) {
     console.log(s);
