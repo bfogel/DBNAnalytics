@@ -83,17 +83,86 @@ function GetUserInfo($parameters): UserInfo
 // (really you should define a response class with two subclasses SuccessResponse and FailureResponse)
 function HandleRequest($request)
 {
-    $parms = $request["Parameters"];
+    $parameters = $request["Parameters"];
     switch ($request["Key"]) {
         case "userinfo": {
-                $userinfo = GetUserInfo($parms);
+                $userinfo = GetUserInfo($parameters);
                 if ($userinfo != null && $userinfo->PlayerID != 0) return ["success" => true, "content" => $userinfo];
                 if ($userinfo != null && $userinfo->PlayerID == 0) return ["success" => false, "message" => "Could not locate user (" . $userinfo->PlayerName . ")"];
                 return ["success" => false, "message" => "Could not locate user."];
             }
 
+        case "players": {
+                $vars = null;
+                $sql = "SELECT PlayerID, PlayerName FROM Player";
+
+                $token = $parameters["token"];
+                if ($token != null) {
+                    $sql .= ' WHERE Token = ?';
+                    $vars = [$token];
+                }
+                return GetResultsetAsJSON($sql, $vars);
+            }
+
+        case "compseeds": {
+                $userinfo = GetUserInfo($parameters);
+                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
+
+                $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Seed";
+                $sql .= " FROM Competition AS C";
+                $sql .= " INNER JOIN CompetitionPlayerSeed as S on S.Competition_CompetitionID = C.CompetitionID";
+                $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
+
+                $asTD = false;
+                if ($parameters != null && array_key_exists("asTD", $parameters)) $asTD = $parameters["asTD"];
+
+                if ($asTD) {
+                    $sql .= " WHERE C.Director_PlayerID = ?";
+                    $vars = [$userinfo->PlayerID];
+                } else {
+                    $sql .= " WHERE P.PlayerID = ?";
+                    $vars = [$userinfo->PlayerID];
+                }
+
+                $sql .= " ORDER BY C.CompetitionName";
+
+                return GetResultsetAsJSON($sql, $vars);
+            }
+
+        case "compschedule": {
+                $userinfo = GetUserInfo($parameters);
+                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
+
+                $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.BidsLocked";
+                $sql .= " FROM Competition AS C";
+                $sql .= " INNER JOIN CompetitionPlayerSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
+                $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
+
+                if (IsZach("")) {
+                    // $sql .= " WHERE C.CompetitionID = 3051";
+                    $sql .= " WHERE C.CompetitionID = 2038";
+                    $vars = null;
+                } else {
+                    $sql .= " WHERE P.PlayerID = ?";
+                    $vars = [$userinfo->PlayerID];
+                }
+
+                $sql .= " ORDER BY C.CompetitionName";
+
+                return GetResultsetAsJSON($sql, $vars);
+            }
+
+        case "games": {
+                $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
+                $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
+                $games = GetGames($where, [$parameters['p1'], $parameters['p2']]);
+
+                if ($games instanceof ResultSet) return $games->ToJSON();
+                return ["success" => true, "content" => $games];
+            }
+
         case "bids": {
-                $userinfo = GetUserInfo($parms);
+                $userinfo = GetUserInfo($parameters);
                 if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
 
                 $sql = 'SELECT P.PlayerID, CO.CountryName as Country, B.Competition_CompetitionID as CompetitionID';
@@ -106,12 +175,12 @@ function HandleRequest($request)
             }
 
         case "savebid": {
-                $userinfo = GetUserInfo($parms);
+                $userinfo = GetUserInfo($parameters);
                 if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
 
-                $competitionID = $parms["competitionid"];
-                $round = $parms["round"];
-                $bids = json_decode($parms["bids"], true);
+                $competitionID = $parameters["competitionid"];
+                $round = $parameters["round"];
+                $bids = json_decode($parameters["bids"], true);
 
                 $sql = 'SELECT BidsLocked FROM CompetitionPlayerSchedule';
                 $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
@@ -141,72 +210,6 @@ function HandleRequest($request)
                 return ["success" => true, "content" => json_encode(["what" => "yes"])];
             }
 
-        case "players": {
-                $vars = null;
-                $sql = "SELECT PlayerID, PlayerName FROM Player";
-
-                $token = $parms["token"];
-                if ($token != null) {
-                    $sql .= ' WHERE Token = ?';
-                    $vars = [$token];
-                }
-                return GetResultsetAsJSON($sql, $vars);
-            }
-
-        case "compseeds": {
-                $userinfo = GetUserInfo($parms);
-                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
-
-                $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Seed";
-                $sql .= " FROM Competition AS C";
-                $sql .= " INNER JOIN CompetitionPlayerSeed as S on S.Competition_CompetitionID = C.CompetitionID";
-                $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
-
-                if (IsZach("")) {
-                    // $sql .= " WHERE C.CompetitionID = 3051";
-                    $sql .= " WHERE C.CompetitionID = 2038";
-                    $vars = null;
-                } else {
-                    $sql .= " WHERE P.PlayerID = ?";
-                    $vars = [$userinfo->PlayerID];
-                }
-
-                $sql .= " ORDER BY C.CompetitionName";
-
-                return GetResultsetAsJSON($sql, $vars);
-            }
-
-        case "compschedule": {
-                $userinfo = GetUserInfo($parms);
-                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
-
-                $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.BidsLocked";
-                $sql .= " FROM Competition AS C";
-                $sql .= " INNER JOIN CompetitionPlayerSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
-                $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
-
-                if (IsZach("")) {
-                    // $sql .= " WHERE C.CompetitionID = 3051";
-                    $sql .= " WHERE C.CompetitionID = 2038";
-                    $vars = null;
-                } else {
-                    $sql .= " WHERE P.PlayerID = ?";
-                    $vars = [$userinfo->PlayerID];
-                }
-
-                $sql .= " ORDER BY C.CompetitionName";
-
-                return GetResultsetAsJSON($sql, $vars);
-            }
-
-        case "games": {
-                $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
-                $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
-                $games = GetGames($where, [$parms['p1'], $parms['p2']]);
-
-                if ($games instanceof ResultSet) return $games->ToJSON();
-                return ["success" => true, "content" => $games];
-            }
         default:
             return ["success" => false, "message" => "hubget: Unrecognized key (" + $request["Key"] + ")"];
     }

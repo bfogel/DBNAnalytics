@@ -1,6 +1,5 @@
 "use strict";
 
-//Separate DBNISchedule into PlayerSeed and PlayerSchedule.  Do it now and you'll save some trouble later on.
 //Also add a TD_PlayerID field to Competition
 //Add td flag to the relevant data requests
 //Add GetUserPlayerID function to hubget.php, which can be converted to look at wordpress user later
@@ -9,17 +8,19 @@
 function MakePage() {
     var div = dbnHere().addDiv();
 
-    var tdtoken = myHub.UserToken;
-    if (!tdtoken) {
-        div.addBoldText("Invalid token");
-        return;
-    }
-
     var reqs = myHub.MakeRequestList();
-    var reqPlayers = new dbnHubRequest_Players(tdtoken);
-    var reqSchedule = new dbnHubRequest_DBNISchedule(tdtoken);
+    var reqUserInfo = new dbnHubRequest_UserInfo();
+    var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed();
+    // var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule();
+    // var reqBids = new dbnHubRequest_Bids();
 
-    reqs.addRequest([reqPlayers, reqSchedule]);
+    reqs.addRequest([reqUserInfo, reqSeeds]);
+
+    reqs.Send();
+    reqs.ReportToConsole();
+    return;
+
+    reqs.addRequest([reqSchedule]);
 
     if (reqs.Send()) {
         //reqs.ReportToDiv(div);
@@ -32,7 +33,7 @@ function MakePage() {
 
         var tdname = players[0]["PlayerName"];
         div.addTitleCard("DBNI TD Portal: " + tdname);
-        
+
         var allschedules = reqSchedule.ResponseToObjects();
         console.log(allschedules);
 
