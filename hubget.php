@@ -113,7 +113,7 @@ function HandleRequest($request)
                 $round = $parms["round"];
                 $bids = json_decode($parms["bids"], true);
 
-                $sql = 'SELECT Locked FROM CompetitionPlayerSchedule';
+                $sql = 'SELECT BidsLocked FROM CompetitionPlayerSchedule';
                 $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
                 $rs = new ResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
