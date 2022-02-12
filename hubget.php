@@ -43,13 +43,43 @@ function CountryNameToID($country)
     }
 }
 
+class UserInfo
+{
+    public $PlayerID = 0;
+    public $PlayerName = "";
+    function __construct($playerid, $playername)
+    {
+        $this->PlayerID = $playerid;
+        $this->PlayerName = $playername;
+    }
+}
+
+function GetUserInfo($parameters)
+{
+    if (array_key_exists("token", $parameters)) {
+        $rs = new ResultSet("SELECT * FROM Player WHERE Token = ?", [$parameters["token"]]);
+        if ($rs->success) {
+            if (count($rs->data) > 0) {
+                $row = $rs->data[0];
+                return new UserInfo($row[0], $row[1]);
+            }
+        }
+    }
+    return null;
+}
+
 function HandleRequest($request)
 {
     $parms = $request["Parameters"];
     switch ($request["Key"]) {
+        case "userinfo": {
+                $ui = GetUserInfo($parms);
+                if ($ui != null) ["success" => true, "content" => json_encode($ui)];
+                return ["success" => false, "message" => "Could not locate user."];
+            }
         case "bids": {
                 $sql = 'SELECT P.PlayerID, CO.CountryName as Country, B.Competition_CompetitionID as CompetitionID';
-                $sql .= ', B.Round, B.Bid, B.Locked';
+                $sql .= ', B.Round, B.Bid';
                 $sql .= ' FROM Player as P';
                 $sql .= ' INNER JOIN PlayerCountryBid as B on B.Player_PlayerID = P.PlayerID';
                 $sql .= ' INNER JOIN Country as CO on B.Country_CountryID = CO.CountryID';

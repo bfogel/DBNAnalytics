@@ -3,17 +3,20 @@
 function MakePage() {
     var div = dbnHere().addDiv();
 
-    var playertoken = myHub.UserToken;
+    var reqs = myHub.MakeRequestList();
+    var reqUserInfo = new dbnHubRequest_UserInfo();
 
-    if (!playertoken) {
-        div.addBoldText("Invalid player token");
-        return;
+    reqUserInfo.SendAlone();
+    if (reqUserInfo.Success) {
+        console.log(reqUserInfo.UserInfo);
+    } else {
+        console.log("fail", reqUserInfo.Message);
     }
 
-    var reqs = myHub.MakeRequestList();
-    var reqPlayers = new dbnHubRequest_Players(playertoken);
-    var reqSchedule = new dbnHubRequest_DBNISchedule(playertoken);
-    var reqBids = new dbnHubRequest_Bids(playertoken);
+    return;
+
+    var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule();
+    var reqBids = new dbnHubRequest_Bids();
 
     reqs.addRequest([reqPlayers, reqSchedule, reqBids]);
 
@@ -117,9 +120,7 @@ function SaveBids(pbi) {
         return;
     }
 
-    var playertoken = myHub.UserToken;
-
-    var parms = { "token": playertoken, "competitionid": pbi.BidSet.CompetitionID, "round": pbi.BidSet.Round, "bids": JSON.stringify(pbi.BidSet.Bids) };
+    var parms = { "competitionid": pbi.BidSet.CompetitionID, "round": pbi.BidSet.Round, "bids": JSON.stringify(pbi.BidSet.Bids) };
     var req = new bfDataRequest("savebid", parms);
     req.SendAlone();
 

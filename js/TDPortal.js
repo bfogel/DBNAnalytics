@@ -1,5 +1,11 @@
 "use strict";
 
+//Separate DBNISchedule into PlayerSeed and PlayerSchedule.  Do it now and you'll save some trouble later on.
+//Also add a TD_PlayerID field to Competition
+//Add td flag to the relevant data requests
+//Add GetUserPlayerID function to hubget.php, which can be converted to look at wordpress user later
+//PlayerPortal save should check both bids
+
 function MakePage() {
     var div = dbnHere().addDiv();
 

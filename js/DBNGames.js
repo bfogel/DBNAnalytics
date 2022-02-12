@@ -20,7 +20,14 @@ class bfDataSet {
 }
 
 class bfDataRequest {
-  constructor(key, parameters) { this.Key = key; this.Parameters = parameters; }
+  constructor(key, parameters) {
+    this.Key = key;
+    this.Parameters = parameters;
+
+    var src = new URLSearchParams(window.location.search);
+    if (src.has("token")) this.Parameters["token"] = src.get("token");
+
+  }
 
   Key = null;
   Parameters = {};
@@ -170,13 +177,6 @@ class dbnHub {
 
   MakeRequestList() { return new bfDataRequestList("https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php"); }
 
-  get UserToken() {
-    const queryString = window.location.search;
-    var src = new URLSearchParams(queryString);
-    if (src.has("token")) return src.get("token");
-    return null;
-  }
-
   #players = Array.from(Array(0), x => new dbnPlayer());
   get Players() {
     if (this.#players.length = []) {
@@ -207,24 +207,38 @@ var myHub = new dbnHub();
 
 //#region Misc DataRequest classes
 
-class dbnDBNISchedule { PlayerID; CompetitionID; CompetitionName; Seed; InRound1; InRound2; InRound3; InRound4; }
-class dbnHubRequest_DBNISchedule extends bfDataRequest {
-  constructor(token) { super("dbnischedule", { "token": token }); }
-  ResponseToObjects() {
-    var ret = Array.from(Array(0), x => new dbnDBNISchedule());
-    ret = super.ResponseToObjects(() => new dbnDBNISchedule());
-    return ret;
+//---Add PlayerName to these requests for convience
+
+class dbnUserInfo { PlayerID; PlayerName; }
+class dbnHubRequest_UserInfo extends bfDataRequest {
+  constructor() { super("userinfo", null); }
+  /** @returns {dbnUserInfo} */
+  UserInfo() {
+    var objs = super.ResponseToObjects(() => new dbnUserInfo());
+    return objs.length > 0 ? objs[0] : null;
   }
 }
 
-class dbnDBNIBid { PlayerID; Country; CompetitionID; Round; Bid; Locked; }
+class dbnCompetitionPlayerSeed { PlayerID; CompetitionID; CompetitionName; Seed; }
+class dbnHubRequest_CompetitionPlayerSeed extends bfDataRequest {
+  constructor(token) { super("compseeds", { "token": token }); }
+  /** @returns {dbnCompetitionPlayerSeed[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerSeed()); }
+}
+
+class dbnCompetitionPlayerSchedule { PlayerID; CompetitionID; CompetitionName; Round; BidsLocked; }
+class dbnHubRequest_CompetitionPlayerSchedule extends bfDataRequest {
+  constructor(token) { super("compschedule", { "token": token }); }
+  /** @returns {dbnCompetitionPlayerSchedule[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerSchedule()); }
+}
+
+//Rename
+class dbnDBNIBid { PlayerID; Country; CompetitionID; Round; Bid; }
 class dbnHubRequest_Bids extends bfDataRequest {
   constructor(token) { super("bids", { "token": token }); }
-  ResponseToObjects() {
-    var ret = Array.from(Array(0), x => new dbnDBNIBid());
-    ret = super.ResponseToObjects(() => new dbnDBNIBid());
-    return ret;
-  }
+  /** @returns {dbnDBNIBid[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnDBNIBid()); }
 }
 
 class dbnHubRequest_Competitions extends bfDataRequest {
