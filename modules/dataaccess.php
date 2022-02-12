@@ -66,7 +66,6 @@ class ResultSet
 
         if ($statement === false) {
             $this->message = $conn->error;
-            $statement->close();
             return;
         }
 
