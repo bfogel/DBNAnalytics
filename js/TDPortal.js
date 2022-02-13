@@ -1,8 +1,25 @@
 "use strict";
 
-var req = new bfDataRequest("test",null);
+var req = new bfDataRequest("test", null);
 req.SendAlone();
 req.ReportToConsole();
+
+var xmr = new XMLHttpRequest();
+xmr.open('POST', "", false); //false for not-async
+
+var fd = new FormData();
+
+// if (mWPNonce) {
+//     xmr.setRequestHeader('X-WP-Nonce', mWPNonce);
+//     fd.append("_wpnonce", mWPNonce);
+//     console.log("Setting nonce: ", mWPNonce);
+// }
+
+xmr.send(fd);
+console.log("XMR: ", xmr.responseText);
+
+
+///-----------
 
 class CompetitionController {
 

@@ -118,11 +118,11 @@ class bfDataRequestList {
 
     var fd = this.MakeFormData();
 
-    if (mWPNonce) {
-      req.setRequestHeader('X-WP-Nonce', mWPNonce);
-      fd.append("_wpnonce", mWPNonce);
-      console.log("Setting nonce: ", mWPNonce);
-    }
+    // if (mWPNonce) {
+    //   req.setRequestHeader('X-WP-Nonce', mWPNonce);
+    //   fd.append("_wpnonce", mWPNonce);
+    //   console.log("Setting nonce: ", mWPNonce);
+    // }
 
     req.send(fd);
 
