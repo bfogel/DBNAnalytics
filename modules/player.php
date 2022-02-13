@@ -69,10 +69,10 @@ function dbdTest_Create()
 {
     $ret = "Hi there<BR>";
 
-    $nonce = wp_create_nonce('wp_rest');
-    $ret .= "Nonce: " . $nonce . "<br>";
+    // $nonce = wp_create_nonce('wp_rest');
+    // $ret .= "Nonce: " . $nonce . "<br>";
 
-    $ret .= "<script>var mWPNonce2 = '" . $nonce . "';</script>";
+    // $ret .= "<script>var mWPNonce2 = '" . $nonce . "';</script>";
 
 
     return $ret;

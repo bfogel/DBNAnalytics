@@ -115,6 +115,7 @@ class bfDataRequestList {
 
     var req = new XMLHttpRequest();
     req.open('POST', this.Url, false); //false for not-async
+    console.log("Nonce check: ", mWPNonce);
     if (mWPNonce) {
       req.setRequestHeader('X-WP-Nonce', mWPNonce);
       console.log("Found nonce: ", mWPNonce);
