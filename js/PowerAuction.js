@@ -211,7 +211,6 @@ class PowerBidManager {
         bidsets.forEach(bs => {
             var pointsAvailableForThisRound = tot - ((roundsleft - 1) * this.MinimumTotalPerRound);
             bs.Validate(pointsAvailableForThisRound);
-            if (bs.PlayerName == "Jason Mastbaum") console.log(bs.CompetitionID, bs.PlayerName, bs.Round, pointsAvailableForThisRound, bs.LastValidationMessages);
             roundsleft--;
             tot -= bs.Total;
         });
@@ -768,14 +767,6 @@ class PlayerBidInput {
         }
 
         this.UI_BidTotal.domelement.innerHTML = this.BidSet.Total;
-
-
-        if (this.BidSet.PlayerName == "Jason Mastbaum") {
-            console.log("UpdateDisplay", this.BidSet.PlayerName, this.BidSet.Round, this.BidSet.LastValidationMessages);
-            if (this.BidSet.Round == 4 && !this.BidSet.LastValidationMessages) {
-                console.log("Oops");
-            }
-        }
         this.UI_ValidationMessage.domelement.innerHTML = this.BidSet.LastValidationMessages;
     }
 

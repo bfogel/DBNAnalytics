@@ -74,19 +74,27 @@ function GetUserInfo($parameters): UserInfo
     return $_UserInfo;
 }
 
+function VerifyTD($competitionID, $playerid)
+{
+    $sql = "SELECT C.Director_PlayerID";
+    $sql .= " FROM Competition AS C";
+    $sql .= " WHERE C.CompetitionID = ?";
+
+    $rs = new ResultSet($sql, [$competitionID]);
+    $data = $rs->data;
+
+    return count($data) > 0 && $data[0][0] == $playerid;
+}
+
+
 //Should return a JSON object with expected fields set 
 // (really you should define a response class with two subclasses SuccessResponse and FailureResponse)
 function HandleRequest($request)
 {
     $parameters = $request["Parameters"];
-    switch ($request["Key"]) {
-        case "userinfo": {
-                $userinfo = GetUserInfo($parameters);
-                if ($userinfo != null && $userinfo->PlayerID != 0) return ["success" => true, "content" => $userinfo];
-                if ($userinfo != null && $userinfo->PlayerID == 0) return ["success" => false, "message" => "Could not locate user (" . $userinfo->PlayerName . ")"];
-                return ["success" => false, "message" => "Could not locate user."];
-            }
 
+    //requests that don't require a user
+    switch ($request["Key"]) {
         case "players": {
                 $vars = null;
                 $sql = "SELECT PlayerID, PlayerName FROM Player";
@@ -98,10 +106,26 @@ function HandleRequest($request)
                 }
                 return GetResultsetAsJSON($sql, $vars);
             }
+        case "games": {
+                $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
+                $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
+                $games = GetGames($where, [$parameters['p1'], $parameters['p2']]);
+
+                if ($games instanceof ResultSet) return $games->ToJSON();
+                return ["success" => true, "content" => $games];
+            }
+    }
+
+    //Requests that require a user
+    $userinfo = GetUserInfo($parameters);
+    if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
+
+    switch ($request["Key"]) {
+        case "userinfo": {
+                return ["success" => true, "content" => $userinfo];
+            }
 
         case "compseeds": {
-                $userinfo = GetUserInfo($parameters);
-                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
 
                 $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Seed";
                 $sql .= " FROM Competition AS C";
@@ -125,9 +149,6 @@ function HandleRequest($request)
             }
 
         case "compschedule": {
-                $userinfo = GetUserInfo($parameters);
-                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
-
                 $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.BidsLocked";
                 $sql .= " FROM Competition AS C";
                 $sql .= " INNER JOIN CompetitionPlayerSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
@@ -149,19 +170,44 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $vars);
             }
 
-        case "games": {
-                $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
-                $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
-                $games = GetGames($where, [$parameters['p1'], $parameters['p2']]);
+        case "setScheduleLock": {
+                $competitionID = $parameters["competitionid"];
+                $round = $parameters["round"];
 
-                if ($games instanceof ResultSet) return $games->ToJSON();
-                return ["success" => true, "content" => $games];
+                $isTD = VerifyTD($competitionID, $userinfo->PlayerID);
+                return ["success" => true, "content" => ["isTD" => $isTD]];
+
+                $bids = json_decode($parameters["bids"], true);
+
+                $sql = 'SELECT BidsLocked FROM CompetitionPlayerSchedule';
+                $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
+                $rs = new ResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
+                if (!$rs->success) return ["success" => false, "message" => $rs->message];
+
+                $locked = false;
+                foreach ($rs->data as $row) {
+                    if ($row[0] == 1) $locked = true;
+                }
+                if ($locked) {
+                    return ["success" => false, "message" => "Bids for this round are locked.  Contact the TD to unlock."];
+                }
+
+                $sql = "DELETE FROM PlayerCountryBid WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND `Round` = ?";
+                $rs = new ResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
+                if (!$rs->success) return ["success" => false, "message" => "(clearing) " . $rs->message];
+
+                $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
+                $sql .= ' VALUES (?,?,?,?,?)';
+
+                foreach ($bids as $country => $bid) {
+                    $rs = new ResultSet($sql, [$competitionID, $userinfo->PlayerID, $round, CountryNameToID($country), $bid]);
+                    if (!$rs->success) return ["success" => false, "message" => "(adding " . $country . ") " . $rs->message];
+                }
+
+                return ["success" => true, "content" => json_encode(["what" => "yes"])];
             }
 
         case "bids": {
-                $userinfo = GetUserInfo($parameters);
-                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
-
                 $sql = 'SELECT P.PlayerID, CO.CountryName as Country, B.Competition_CompetitionID as CompetitionID';
                 $sql .= ', B.Round, B.Bid';
                 $sql .= ' FROM Player as P';
@@ -184,9 +230,6 @@ function HandleRequest($request)
             }
 
         case "savebid": {
-                $userinfo = GetUserInfo($parameters);
-                if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
-
                 $competitionID = $parameters["competitionid"];
                 $round = $parameters["round"];
                 $bids = json_decode($parameters["bids"], true);
@@ -222,17 +265,6 @@ function HandleRequest($request)
         default:
             return ["success" => false, "message" => "hubget: Unrecognized key (" + $request["Key"] + ")"];
     }
-}
-
-function GetPlayerIDFromToken($token)
-{
-    $vars = [$token];
-    $sql = "SELECT PlayerID, PlayerName FROM Player";
-    $sql .= ' WHERE Token = ?';
-    $rs = new ResultSet($sql, $vars);
-    $data = $rs->data;
-    if (count($data) == 0) return null;
-    return $data[0][0];
 }
 
 function GetGames($where, $params)

@@ -50,6 +50,8 @@ class CompetitionController {
         this.Manager.ValidateBidSets();
     }
 
+    //#region  UI Generation
+
     MakeUI() {
         var card = new dbnCard();
         card.addHeading(1, this.CompetitionName);
@@ -60,6 +62,11 @@ class CompetitionController {
         this.Rounds.forEach((round, i) => {
             var schedules = this.Schedules.filter(x => x.Round == round);
             var divtab = new dbnDiv();
+            var bbar = divtab.addButtonBar();
+            bbar.AddButton("Unlock All", () => this.SetLocked(round, false));
+            bbar.AddButton("Lock All", () => this.SetLocked(round, true));
+            bbar.AddButton("Run Auction", () => this.RunAuction(round));
+
             divtab.add(this.#MakeBidsTableUI(schedules));
             divtab.add(this.#MakeAuctionUI(round));
             tab.addTab("Round " + round, divtab);
@@ -114,6 +121,32 @@ class CompetitionController {
         av.Auction = this.Manager.GetAuction(round);
         return ret;
     }
+
+    //#endregion
+
+    //#region UI Response
+
+    /**
+     * @param {number} round 
+     * @param {boolean} value 
+     */
+    SetLocked(round, value) {
+        var scheds = this.Schedules.filter(x => x.Round == round);
+        if (scheds.every(x => x.BidsLocked == value)) {
+            alert("All bids for Round " + round + " are already " + (value ? "locked" : "unlocked") + ".");
+            return;
+        }
+        
+    }
+
+    /**
+     * @param {number} round 
+     */
+    RunAuction(round) {
+        console.log(round, value);
+    }
+
+    //#endregion
 }
 
 /** @type {dbnUserInfo} */
