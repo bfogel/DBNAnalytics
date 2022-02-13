@@ -65,7 +65,9 @@ add_shortcode('dbnTest', 'dbdTest_Create');
 function dbdTest_Create()
 {
     $ret = "Hi there<BR>";
-    $ret .= json_encode(wp_get_current_user())."<BR>";
-    $ret .= json_encode(wp_get_session_token())."<BR>";
+    wp_localize_script( 'wp-api', 'wpApiSettings', array(
+        'root' => esc_url_raw( rest_url() ),
+        'nonce' => wp_create_nonce( 'wp_rest' )
+    ) );
     return $ret;
 }
