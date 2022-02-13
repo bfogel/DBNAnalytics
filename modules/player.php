@@ -4,9 +4,22 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
+function dbnVersion()
+{
+    return 14;
+}
+
+add_action( 'wp_enqueue_scripts', function() {
+	wp_enqueue_script(
+		'awp-javascript-wp-rest', 
+		get_stylesheet_directory_uri() . '/assets/js/javascript_wp_rest.js', 
+		[ 'jquery', 'wp-api-request' ], 
+		null, 
+		true
+	);
+} );
+
 add_shortcode('dbnPlayerPage', 'dbnPlayer_MainPage');
-
-
 function dbnPlayer_MainPage()
 {
 
@@ -17,11 +30,6 @@ function dbnPlayer_MainPage()
     $ret = dbn_GetHTML('Player', $sPlayerID);
 
     return $ret;
-}
-
-function dbnVersion()
-{
-    return 14;
 }
 
 add_shortcode('dbnPlayerVsPlayer', 'dbnPlayerVsPlayer_Create');
@@ -76,4 +84,16 @@ function dbdTest_Create()
 
 
     return $ret;
+}
+
+add_action( 'rest_api_init', function() {
+	register_rest_route( 'awhitepixel/v1', '/getsomedata', [
+		'method'   => WP_REST_Server::READABLE,
+		'callback' => 'awhitepixel_rest_route_getsomedata',
+	] );
+} );
+
+function awhitepixel_rest_route_getsomedata( $request ) {
+	$response = 'Hello there!';
+	return rest_ensure_response( $response );
 }
