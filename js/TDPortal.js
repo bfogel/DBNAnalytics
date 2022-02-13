@@ -16,7 +16,7 @@ var fd = new FormData();
 // }
 
 xmr.send(fd);
-console.log("XMR: ", xmr.responseText);
+console.log("XMR: ", JSON.parse(xmr.responseText));
 
 
 ///-----------
