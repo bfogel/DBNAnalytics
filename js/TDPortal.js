@@ -50,7 +50,10 @@ class CompetitionController {
         this.Manager.ValidateBidSets();
     }
 
-    //#region  UI Generation
+    //#region UI Generation
+
+    /** @type {Object.<number,Object<number,dbnSpan>>} */
+    #UI_Locked = new Object();
 
     MakeUI() {
         var card = new dbnCard();
@@ -65,20 +68,25 @@ class CompetitionController {
             var bbar = divtab.addButtonBar();
             bbar.AddButton("Unlock All", () => this.SetLocked(round, false));
             bbar.AddButton("Lock All", () => this.SetLocked(round, true));
-            bbar.AddButton("Run Auction", () => this.RunAuction(round));
+            // bbar.AddButton("Run Auction", () => this.RunAuction(round));
 
             divtab.add(this.#MakeBidsTableUI(schedules));
             divtab.add(this.#MakeAuctionUI(round));
             tab.addTab("Round " + round, divtab);
 
-            this.Manager.GetAuction(round).Resolve();
+            if (schedules.every(x => x.BidsLocked)) this.Manager.GetAuction(round).Resolve();
         });
 
-        tab.SelectTabByIndex(1);
+        this.#UpdateDisplay();
+
+        tab.SelectTabByIndex(0);
 
         return card;
     }
 
+    /**
+     * @param {dbnCompetitionPlayerSchedule[]} schedules 
+     */
     #MakeBidsTableUI(schedules) {
         var ret = new dbnTable();
 
@@ -100,7 +108,11 @@ class CompetitionController {
                 var bs = this.Manager.GetBidSetForPlayerAndRound(seed.PlayerName, sched.Round);
                 if (bs) pbi.BidSet = bs;
 
-                row.push(pbi.UI_SeedInRound, pbi.UI_SeedInTourney, pbi.UI_PlayerName, sched.Round, sched.BidsLocked ? "YES" : "NO");
+                var spanLocked = new dbnSpan();
+                if (!this.#UI_Locked.hasOwnProperty(sched.Round)) this.#UI_Locked[sched.Round] = new Object();
+                this.#UI_Locked[sched.Round][sched.PlayerID] = spanLocked;
+
+                row.push(pbi.UI_SeedInRound, pbi.UI_SeedInTourney, pbi.UI_PlayerName, sched.Round, spanLocked);
                 row.push(...Object.values(pbi.UI_Bids));
                 row.push(pbi.UI_BidTotal, pbi.UI_ValidationMessage);
 
@@ -126,6 +138,13 @@ class CompetitionController {
 
     //#region UI Response
 
+    #UpdateDisplay() {
+        this.Schedules.forEach(x => {
+            var span = this.#UI_Locked[x.Round][x.PlayerID];
+            span.innerHTML = x.BidsLocked ? "Locked" : "Open";
+        });
+    }
+
     /**
      * @param {number} round 
      * @param {boolean} value 
@@ -136,16 +155,27 @@ class CompetitionController {
             alert("All bids for Round " + round + " are already " + (value ? "locked" : "unlocked") + ".");
             return;
         }
-        var req = new bfDataRequest("setScheduleLock", { competitionid: this.CompetitionID, round: this.Round, value: value });
-        req.SendAlone();
-        req.ReportToConsole();
-    }
 
-    /**
-     * @param {number} round 
-     */
-    RunAuction(round) {
-        console.log(round, value);
+        var bss = this.Manager.GetBidSetsByRound(round);
+        if (value && !bss.every(x => !x.LastValidationMessages)) {
+            alert("Unable to lock Round " + round + ".  There are invalid bids.")
+            return;
+        }
+
+        var req = new bfDataRequest("setScheduleLock", { competitionid: this.CompetitionID, round: round, value: value });
+        req.SendAlone();
+        if (req.Success) {
+            scheds.forEach(x => x.BidsLocked = value);
+            this.#UpdateDisplay();
+
+            if (value) {
+                this.Manager.GetAuction(round).Resolve();
+            } else {
+                bss.forEach(x => x.ClearAssignments())
+            }
+        } else {
+            alert("Error: " + req.Message);
+        }
     }
 
     //#endregion

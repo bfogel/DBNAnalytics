@@ -264,14 +264,21 @@ class BidSet {
 
     //#region Assignment
 
+    ClearAssignments() {
+        this.BoardIndex = undefined;
+        this.PowerAssignment = undefined;
+    }
+
+    /** @type {number} */
     #BoardIndex = undefined;
     get BoardIndex() { return this.#BoardIndex; }
     set BoardIndex(value) { this.#BoardIndex = value; this.OnBoardOrPowerAssignment.Raise(); }
 
-    _PowerAssignment;
-    get PowerAssignment() { return this._PowerAssignment }
+    /** @type {string} */
+    #PowerAssignment = undefined;
+    get PowerAssignment() { return this.#PowerAssignment }
     set PowerAssignment(value) {
-        this._PowerAssignment = value;
+        this.#PowerAssignment = value;
         var i = 1;
         this.RankOfPowerAssignmentAmongBids = this.PowerNames.length - this.PowersOrderedByBidSize.indexOf(value);
         this.OnBoardOrPowerAssignment.Raise();
@@ -522,8 +529,7 @@ class Auction {
 
         bidsets.sort((a, b) => a.SeedInTourney - b.SeedInTourney);
         bidsets.forEach((x, i) => {
-            x.PowerAssignment = undefined;
-            x.BoardIndex = undefined;
+            x.ClearAssignments();
             if (x.LastValidationMessages) bValid = false;
         });
 
