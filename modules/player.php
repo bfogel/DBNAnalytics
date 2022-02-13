@@ -9,6 +9,19 @@ function dbnVersion()
     return 17;
 }
 
+add_action('rest_api_init', function () {
+    register_rest_route('DBNAnalytics/v1', '/brandon/(?P<id>\d+)', array(
+        'methods' => 'GET',
+        'callback' => 'my_awesome_func',
+    ));
+});
+
+function my_awesome_func($data)
+{
+    return "words words words";
+}
+
+
 add_shortcode('dbnPlayerPage', 'dbnPlayer_MainPage');
 function dbnPlayer_MainPage()
 {
@@ -75,4 +88,3 @@ function dbdTest_Create()
 
     return $ret;
 }
-
