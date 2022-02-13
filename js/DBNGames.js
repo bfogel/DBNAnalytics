@@ -115,7 +115,11 @@ class bfDataRequestList {
 
     var req = new XMLHttpRequest();
     req.open('POST', this.Url, false); //false for not-async
-    if (mWPNonce) req.setRequestHeader('X-WP-Nonce', mWPNonce);
+    if (mWPNonce) {
+      req.setRequestHeader('X-WP-Nonce', mWPNonce);
+      console.log("Found nonce: ", mWPNonce);
+    }
+
     req.send(this.MakeFormData());
 
     if (req.status == 200 && req.responseText != "nope") {
