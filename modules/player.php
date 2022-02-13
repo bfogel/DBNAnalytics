@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 
 function dbnVersion()
 {
-    return 14;
+    return 15;
 }
 
 add_shortcode('dbnPlayerPage', 'dbnPlayer_MainPage');

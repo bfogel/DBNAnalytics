@@ -105,7 +105,7 @@ function HandleRequest($request)
 
                 //$wpuser = wp_get_current_user();
                 $check = check_ajax_referer('wp_rest', '_nonce', false);
-                return ["success" => true, "content" => ["checl" => $check, "sessiontoken" => wp_get_session_token(), "loggedin" => wp_get_current_user()]];
+                return ["success" => true, "content" => ["check" => $check, "sessiontoken" => wp_get_session_token(), "loggedin" => wp_get_current_user()]];
             }
         case "players": {
                 $vars = null;
