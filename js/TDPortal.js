@@ -9,11 +9,11 @@ xmr.open('POST', "https://diplobn.com/wp-json/DBNAnalytics/v1/brandon/2232", fal
 
 var fd = new FormData();
 
-// if (mWPNonce) {
-//     xmr.setRequestHeader('X-WP-Nonce', mWPNonce);
-//     fd.append("_wpnonce", mWPNonce);
-//     console.log("Setting nonce: ", mWPNonce);
-// }
+if (mWPNonce) {
+    xmr.setRequestHeader('X-WP-Nonce', mWPNonce);
+    fd.append("_wpnonce", mWPNonce);
+    console.log("Setting nonce: ", mWPNonce);
+}
 
 xmr.send(fd);
 console.log("XMR: ", JSON.parse(xmr.responseText));
