@@ -104,7 +104,7 @@ function HandleRequest($request)
         case "test": {
 
                 //$wpuser = wp_get_current_user();
-                return ["success" => true, "content" => ["loggedin" => wp_get_current_user()]];
+                return ["success" => true, "content" => ["sessiontoken" => wp_get_session_token(), "loggedin" => wp_get_current_user()]];
             }
         case "players": {
                 $vars = null;
