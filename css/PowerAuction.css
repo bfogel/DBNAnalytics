@@ -1,4 +1,3 @@
-
 input.bid {
     width: 50px;
     text-align: center;
@@ -8,14 +7,20 @@ div.bid {
     width: 50px;
     text-align: center;
 }
+
 .validationCell {
     color: red;
     padding-left: 10px;
     /*white-space: normal;*/
 }
 
-.selected{
+.selected {
     border: black solid 2px;
+}
+
+.bidvalue {
+    white-space: nowrap;
+    text-align: center;
 }
 
 .inlineresult {
@@ -35,4 +40,3 @@ div.outputMessages {
     font-size: 15px;
     border: solid 1px;
 }
-

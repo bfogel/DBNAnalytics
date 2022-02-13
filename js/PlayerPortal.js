@@ -42,7 +42,7 @@ function MakePage() {
 
         var headers = ["Round", "Tourn<br>Seed"];
         headers.push(...manager.PowerNames);
-        headers.push("Total", "Random", "");
+        headers.push("Total", "Note");
         tbl.Headers = headers;
 
         var data = [];
@@ -64,34 +64,46 @@ function MakePage() {
             var thesebids = allbids.filter(bid => bid.CompetitionID == schedule.CompetitionID && bid.Round == schedule.Round);
             thesebids.forEach(bid => bs.Bids[bid.Country] = bid.Bid);
 
-            var pbi = new PlayerBidInput(manager);
+            var pbi = new PlayerBidInput(manager, schedule.BidsLocked);
             pbi.BidsLocked = schedule.BidsLocked;
-            var rowui = pbi.MakeRow();
-            rowui.splice(2, 1); //Remove PlayerNamne
-            rowui.splice(0, 1); //Remove SeedInRound
+
+            row.push(pbi.UI_SeedInTourney);
+
+            /** @type {dbnButton} */
+            var btnSave;
 
             if (!schedule.BidsLocked) {
                 bOneIsUnlocked = true;
                 var bbSave = new dbnButtonBar();
                 bbSave.Compact = true;
-                bbSave.addButton("Save", ((inp) => SaveBids(inp)).bind(undefined, pbi));
-                rowui.splice(1, 0, bbSave);
+                btnSave = bbSave.addButton("Save", null);
+                btnSave.onclick = ((inp, button) => SaveBids(inp, button)).bind(undefined, pbi, btnSave);
+                btnSave.disabled = true;
+                pbi.OnChange = () => btnSave.disabled = false;
+                row.push(bbSave);
             }
 
-            var bbRandom = new dbnButtonBar();
-            bbRandom.Compact = true;
-            bbRandom.addButton("Even", ((inp) => { inp.BidSet.MakeEven(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
-            bbRandom.addButton("Any", ((inp) => { inp.BidSet.MakeRandom(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
-            rowui.splice(rowui.length - 1, 0, bbRandom);
+            row.push(...Object.values(pbi.UI_Bids), pbi.UI_BidTotal);
 
-            row.push(...rowui);
+            if (!schedule.BidsLocked) {
+                var bbRandom = new dbnButtonBar();
+                bbRandom.Compact = true;
+                bbRandom.addButton("Even", ((inp, button) => { inp.BidSet.MakeEven(); button.disabled = false; pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi, btnSave));
+                bbRandom.addButton("Any", ((inp, button) => { inp.BidSet.MakeRandom(); button.disabled = false; pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi, btnSave));
+                row.push(bbRandom);
+            }
+            row.push(pbi.UI_ValidationMessage);
+
             manager.RegisterBidSet(bs);
             pbi.BidSet = bs;
 
             data.push(row);
         });
 
-        if (bOneIsUnlocked) tbl.Headers.splice(2, 0, "Save");
+        if (bOneIsUnlocked) {
+            tbl.Headers.splice(2, 0, "Save");
+            tbl.Headers.splice(tbl.Headers.length - 2, 0, "Random");
+        }
         tbl.CountryColumns = {};
         manager.PowerNames.forEach((x, i) => tbl.CountryColumns[i + 2 + (bOneIsUnlocked ? 1 : 0)] = x);
 
@@ -107,7 +119,7 @@ function MakePage() {
 /**
  * @param {PlayerBidInput} pbi 
  */
-function SaveBids(pbi) {
+function SaveBids(pbi, btn) {
     if (pbi.BidSet.LastValidationMessages) {
         alert("The bid set is not valid:\n" + pbi.BidSet.LastValidationMessages.replace("<br>", "\n"));
         return;
@@ -121,6 +133,7 @@ function SaveBids(pbi) {
         alert("Unable to save: " + req.Message);
     } else {
         alert("Saved");
+        btn.disabled = true;
         // console.log(JSON.stringify(req.ResponseContent));
     }
 }

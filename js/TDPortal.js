@@ -16,41 +16,103 @@ class CompetitionController {
     Schedules;
 
     /** @type {BidSet[]} */
-    BidSets;
+    BidSets = [];
 
-    #ViewDiv;
+    /**
+     * @param {number} playerid
+     * @returns {dbnCompetitionPlayerSchedule[]} 
+     */
+    GetScheduleForPlayer(playerid) {
+        var ret = this.Schedules.filter(x => x.CompetitionID == this.CompetitionID && x.PlayerID == playerid);
+        ret.sort((a, b) => a.Round - b.Round);
+        return ret;
+    }
 
-    MakeBidSets() {
-        this.Schedules.forEach(sched => {
-            var bs = manager.MakeNewBidSet();
-            bs.SeedInTourney = seed.Seed;
-            bs.PlayerName = seed.PlayerName;
-            bs.Round = schedule.Round;
+    /**
+     * @param {dbnPlayerCountryBid[]} bids 
+     */
+    MakeBidSets(bids) {
+        this.Seeds.forEach(seed => {
+            this.GetScheduleForPlayer(seed.PlayerID).forEach(sched => {
+                var thesebids = bids.filter(x => x.CompetitionID == this.CompetitionID && x.PlayerID == sched.PlayerID && x.Round == sched.Round);
+                var bs = this.Manager.MakeNewBidSet();
+                bs.SeedInTourney = seed.Seed;
+                bs.PlayerName = seed.PlayerName;
+                bs.Round = sched.Round;
 
-            var thesebids = allbids.filter(bid => bid.CompetitionID == schedule.CompetitionID && bid.Round == schedule.Round);
-            thesebids.forEach(bid => bs.Bids[bid.Country] = bid.Bid);
+                var thesebids = bids.filter(bid => bid.CompetitionID == sched.CompetitionID && bid.PlayerID == seed.PlayerID && bid.Round == sched.Round);
+                thesebids.forEach(bid => bs.Bids[bid.Country] = bid.Bid);
 
+                this.BidSets.push(bs);
+                this.Manager.RegisterBidSet(bs);
+            });
         });
+        this.Manager.ValidateBidSets();
     }
 
     MakeUI() {
         var card = new dbnCard();
-
         card.addHeading(1, this.CompetitionName);
-        var bbRounds = card.addButtonBar();
-        bbRounds.addButton("All bids", () => alert("yep" + round));
+
+        var tab = new dbnTabs();
+        card.appendChild(tab);
+        tab.addTab("All bids", this.#MakeBidsTableUI(this.Schedules));
         this.Rounds.forEach((round, i) => {
-            bbRounds.addButton("Round " + round, () => alert("yep" + round));
+            var schedules = this.Schedules.filter(x => x.Round == round);
+            var divtab = new dbnDiv();
+            divtab.add(this.#MakeBidsTableUI(schedules));
+            divtab.add(this.#MakeAuctionUI(round));
+            tab.addTab("Round " + round, divtab);
+
+            this.Manager.GetAuction(round).Resolve();
         });
 
-        this.#ViewDiv = card.addDiv();
+        tab.SelectTabByIndex(1);
+
         return card;
     }
 
-    #MakeAllBidsUI() {
+    #MakeBidsTableUI(schedules) {
         var ret = new dbnTable();
 
+        var data = [];
+        ret.Headers = ["Round<br>Seed", "Tourn<br>Seed", "Player", "Round", "Locked"];
+        ret.Headers.push(...  this.Manager.PowerNames);
+        ret.Headers.push("Total", "Note");
 
+        ret.CountryColumns = new Object();
+        this.Manager.PowerNames.forEach((cc, i) => ret.CountryColumns[i + 5] = cc);
+
+        this.Seeds.forEach(seed => {
+            var schedForPlayer = schedules.filter(x => x.PlayerID == seed.PlayerID);
+            schedForPlayer.sort((a, b) => a.Round - b.Round);
+            schedForPlayer.forEach(sched => {
+                var row = [];
+                var pbi = new PlayerBidInput(this.Manager, true);
+
+                var bs = this.Manager.GetBidSetForPlayerAndRound(seed.PlayerName, sched.Round);
+                if (bs) pbi.BidSet = bs;
+
+                row.push(pbi.UI_SeedInRound, pbi.UI_SeedInTourney, pbi.UI_PlayerName, sched.Round, sched.BidsLocked ? "YES" : "NO");
+                row.push(...Object.values(pbi.UI_Bids));
+                row.push(pbi.UI_BidTotal, pbi.UI_ValidationMessage);
+
+                data.push(row);
+            });
+        });
+
+        ret.Data = data;
+        ret.Generate();
+        return ret;
+    }
+
+    #MakeAuctionUI(round) {
+        var ret = new dbnDiv();
+        var av = new AuctionView(this.Manager, round);
+        ret.addRange(av.UI_Boards);
+        ret.add(av.UI_AuditTrail);
+        av.Auction = this.Manager.GetAuction(round);
+        return ret;
     }
 }
 
@@ -72,7 +134,6 @@ function MakePage() {
     reqs.addRequest([reqUserInfo, reqSeeds, reqSchedule, reqBids]);
 
     reqs.Send();
-      reqs.ReportToConsole(); return;
 
     myUserInfo = reqUserInfo.UserInfo;
     if (!myUserInfo) { div.addBoldText("Could not locate user"); return; }
@@ -84,7 +145,7 @@ function MakePage() {
 
     var allseeds = reqSeeds.ResponseToObjects();
     var allschedules = reqSchedule.ResponseToObjects();
-    // var allbids = reqBids.ResponseToObjects();
+    var allbids = reqBids.ResponseToObjects();
 
     //Collect competitions
     allseeds.forEach(x => {
@@ -106,82 +167,13 @@ function MakePage() {
         allschedules.forEach(x => { if (!comp.Rounds.includes(x.Round)) comp.Rounds.push(x.Round); });
         comp.Rounds.sort();
 
+        comp.Schedules = allschedules.filter(x => x.CompetitionID == comp.CompetitionID);
+
+        comp.MakeBidSets(allbids);
+
         div.appendChild(comp.MakeUI());
 
     });
-    // allschedules.forEach(schedule => {
-    //     var manager = PowerBidManager.GetManagerForCompetition(schedule.CompetitionID);
-    //     var card = div.addCard();
-
-    //     card.addHeading(1, schedule.CompetitionName);
-
-    //     var tbl = card.addTable();
-
-    //     var headers = ["Round", "Tourn<br>Seed"];
-    //     headers.push(...manager.PowerNames);
-    //     headers.push("Total", "Random", "");
-    //     tbl.Headers = headers;
-
-    //     var data = [];
-    //     var bOneIsUnlocked = false;
-
-    //     for (let iRound = 1; iRound < manager.RoundCount + 1; iRound++) {
-    //         if (schedule["InRound" + iRound]) {
-    //             var row = [];
-    //             row.push("Round " + iRound);
-
-    //             var bs = manager.MakeNewBidSet();
-    //             bs.SeedInTourney = schedule.Seed;
-    //             bs.PlayerName = playername;
-    //             bs.Round = iRound;
-
-    //             var locked = false;
-    //             allbids.filter(bid => {
-    //                 if (bid.CompetitionID == schedule.CompetitionID && bid.Round == iRound) {
-    //                     bs.Bids[bid.Country] = bid.Bid;
-    //                     if (bid.Locked) locked = true;
-    //                 }
-    //             });
-
-    //             var pbi = new PlayerBidInput(manager);
-    //             pbi.Locked = locked;
-    //             var rowui = pbi.MakeRow();
-    //             rowui.splice(2, 1); //Remove PlayerNamne
-    //             rowui.splice(0, 1); //Remove SeedInRound
-
-    //             if (!locked) {
-    //                 bOneIsUnlocked = true;
-    //                 var bbSave = new dbnButtonBar();
-    //                 bbSave.Compact = true;
-    //                 bbSave.addButton("Save", ((inp) => SaveBids(inp)).bind(undefined, pbi));
-    //                 rowui.splice(1, 0, bbSave);
-    //             }
-
-    //             var bbRandom = new dbnButtonBar();
-    //             bbRandom.Compact = true;
-    //             bbRandom.addButton("Even", ((inp) => { inp.BidSet.MakeEven(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
-    //             bbRandom.addButton("Any", ((inp) => { inp.BidSet.MakeRandom(); pbi.Manager.ValidateBidSets(); }).bind(undefined, pbi));
-    //             rowui.splice(rowui.length - 1, 0, bbRandom);
-
-    //             row.push(...rowui);
-    //             manager.RegisterBidSet(bs);
-    //             pbi.BidSet = bs;
-
-    //             data.push(row);
-    //         }
-    //     }
-
-    //     if (bOneIsUnlocked) tbl.Headers.splice(2, 0, "Save");
-    //     tbl.CountryColumns = {};
-    //     manager.PowerNames.forEach((x, i) => tbl.CountryColumns[i + 2 + (bOneIsUnlocked ? 1 : 0)] = x);
-
-    //     tbl.Data = data;
-    //     tbl.Generate();
-    //     manager.ValidateBidSets();
-
-    //     if (bOneIsUnlocked) card.appendChild(manager.MakeInstructions());
-
-    // });
 }
 
 /**

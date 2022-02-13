@@ -24,7 +24,7 @@ class dbnElement {
     set id(value) { this.domelement.id = value; }
 
     get className() { return this.domelement.className; }
-    set className(value) { this.domelement.className = value; }
+    set className(value) { this.domelement.className = value ?? ""; }
 
     get style() { return this.domelement.style; }
     set style(value) { this.domelement.style = value; }
@@ -35,6 +35,11 @@ class dbnElement {
     get innerHTML() { return this.domelement.innerHTML; }
     set innerHTML(value) { this.domelement.innerHTML = value; }
 
+    /**
+     * @param {dbnElement} element 
+     */
+    add(element) { this.appendChild(element); }
+    addRange(elements) { elements.forEach(x => this.add(x)); }
     appendChild(element) { this.domelement.appendChild(element instanceof dbnElement ? element.domelement : element); }
     createAndAppendElement(tagname) { var ret = new dbnElement(document.createElement(tagname)); this.appendChild(ret); return ret; }
 
@@ -42,6 +47,8 @@ class dbnElement {
     addCard() { var ret = new dbnCard(this); return ret; }
     addTitleCard(title) { var ret = new dbnCard(this); var x = ret.createAndAppendElement("h1"); x.addText(title); return ret; }
     addSpan() { var ret = new dbnSpan(this); return ret; }
+
+    addTabs() { var ret = new dbnTabs(this); return ret; }
 
     addButton(text, onclick = null, className = null) { var ret = new dbnButton(text, onclick, className, this); return ret; }
     addButtonBar() { var ret = new dbnButtonBar(this); return ret; }
@@ -137,8 +144,18 @@ class dbnButton extends dbnElement {
         this.className = className;
     }
 
+    /** @type {function} */
     get onclick() { return this.domelement.onclick; }
     set onclick(value) { this.domelement.onclick = value; }
+
+    /** @type {boolean} */
+    get disabled() { return this.domelement.disabled; }
+    set disabled(value) {
+        this.domelement.disabled = value;
+        if (this.className == null) this.className = "";
+        this.className = this.className.replace(" dbnDisabled", "");
+        if (value) this.className += " dbnDisabled";
+    }
 }
 
 class dbnButtonBar extends dbnDiv {
@@ -285,10 +302,10 @@ class dbnTable extends dbnElement {
 
     /** @type {object[][]} */
     Data = null;
-    
+
     /** @type {string[]} */
     Headers = null;
-    
+
     /** @type {string} */
     Title = null;
     ClickHeaderToSort = false;
@@ -529,5 +546,76 @@ class dbnTable extends dbnElement {
     }
 
 }
+
+//#endregion
+
+//#region Events
+
+class dbnEvent {
+
+    /** @type {Object.<number,function>} */
+    #Listeners = new Object();
+
+    #LastID = 0;
+
+    /**
+     * @param {function} fn 
+     * @returns {number}
+     */
+    AddListener(fn) {
+        this.#LastID++;
+        var ret = this.#LastID;
+        this.#Listeners[ret] = fn;
+        return ret;
+    }
+
+    RemoveListener(id) {
+        if (this.#Listeners.hasOwnProperty(id)) delete this.#Listeners[id];
+    }
+
+    Raise(args) {
+        Object.values(this.#Listeners).forEach(x => x(args));
+    }
+}
+
+//Event Sample
+
+// class A {
+
+//     OnTest = new dbnEvent("Test");
+
+//     RaiseTestEvent() {
+//         this.OnTest.Raise(null);
+//     }
+// }
+
+// class B {
+
+//     constructor(name) { this.Name = name; }
+//     Name = "";
+
+//     /** @type {A} */
+//     #aa;
+//     #SinkID_aaTest;
+//     get A() { return this.#aa; }
+//     set A(value) {
+//         if (this.#aa) this.#aa.OnTest.RemoveListener(this.#SinkID_aaTest);
+//         this.#aa = value;
+//         if (this.#aa) this.#SinkID_aaTest = this.#aa.OnTest.AddListener((e) => { console.log(this.Name + "Here") });
+//     }
+// }
+
+
+// var aa = new A();
+// var bb = new B("Pooky");
+// bb.A = aa;
+// var cc = new B("Kooky");
+// cc.A = aa;
+
+// aa.RaiseTestEvent();
+
+// cc.A = null;
+// aa.RaiseTestEvent();
+
 
   //#endregion

@@ -23,7 +23,8 @@ class PowerBidManager {
             mgr.IdenticalBidsProhibited = true;
 
             for (let iRound = 1; iRound < mgr.RoundCount + 1; iRound++) {
-                mgr.BoardNamesByRound[iRound] = Array.from(Array(mgr.BoardsPerRound), (x, i) => "R" + iRound + "B" + (i + 1));
+                var names = Array.from(Array(mgr.BoardsPerRound), (x, i) => "R" + iRound + "B" + (i + 1));
+                mgr.SetBoardNamesForRound(iRound, names);
             }
 
             this.Managers[competitionid] = mgr;
@@ -48,7 +49,7 @@ class PowerBidManager {
     ReseedByRound = true;
 
     /** @type {Object.<number,string[]>} */
-    BoardNamesByRound = {};
+    #BoardNames = {};
 
     /**
      * 
@@ -67,18 +68,36 @@ class PowerBidManager {
     get MaximumTotalPerRound() { return this.TotalPointsPerPlayer - ((this.BoardsPerPlayer - 1) * this.MinimumTotalPerRound); }
     get MaximumIndividualBid() { return this.TotalPointsPerPlayer - (this.BoardsPerPlayer * this.MinimumTotalPerRound) + (this.MinimumIndividualBid + this.PowerNames.length - 1); }
 
-    MakeNewBidSet() { return new BidSet(this.CompetitionID); }
     /**
-     * 
      * @param {number} round 
-     * @returns 
+     * @param {string[]} names 
      */
-    MakeNewAuction(round) {
-        var bss = [];
-        Object.values(this.RegisteredBidSetsByPlayerAndRound).forEach(x => {
-            Object.values(x).forEach(bs => { if (bs.Round == round) bss.push(bs) });
-        });
-        return new Auction(this, bss, this.BoardNamesByRound[round]);
+    SetBoardNamesForRound(round, names) {
+        if (names.length != this.BoardsPerRound) throw "Number of names does not match BoardsPerRound";
+        this.#BoardNames[round] = names.slice();
+    }
+
+    GetBoardNamesForRound(round) {
+        if (this.#BoardNames.hasOwnProperty(round)) return this.#BoardNames[round];
+        var ret = [];
+        for (let i = 0; i < this.BoardsPerRound; i++) {
+            ret.push("Board " + i);
+        }
+        return ret;
+    }
+
+    MakeNewBidSet() { return new BidSet(this.CompetitionID); }
+
+    /** @type {Object.<number,Auction>} */
+    #Auctions = {};
+
+    /**
+     * @param {number} round 
+     * @returns {Auction}
+     */
+    GetAuction(round) {
+        if (!this.#Auctions.hasOwnProperty(round)) this.#Auctions[round] = new Auction(this, round);
+        return this.#Auctions[round];
     }
 
     MakeInstructions() {
@@ -117,6 +136,25 @@ class PowerBidManager {
             this.RegisteredBidSetsByPlayerAndRound[bidset.PlayerName] = {};
         }
         this.RegisteredBidSetsByPlayerAndRound[bidset.PlayerName][bidset.Round] = bidset;
+        this.#ReseedByRound(bidset.Round);
+    }
+
+    #ReseedByRound(round) {
+        var bss = this.GetBidSetsByRound(round);
+        bss.sort((a, b) => a.SeedInTourney - b.SeedInTourney);
+        bss.forEach((x, i) => x.SeedInRound = i + 1);
+    }
+
+    /**
+     * @param {number} round 
+     * @returns {BidSet[]}
+     */
+    GetBidSetsByRound(round) {
+        var ret = [];
+        Object.values(this.RegisteredBidSetsByPlayerAndRound).forEach(x => {
+            Object.values(x).forEach(bs => { if (bs.Round == round) ret.push(bs) });
+        });
+        return ret;
     }
 
     /**
@@ -171,7 +209,9 @@ class PowerBidManager {
         var roundsleft = this.BoardsPerPlayer;
 
         bidsets.forEach(bs => {
-            bs.Validate(tot - ((roundsleft - 1) * this.MinimumTotalPerRound));
+            var pointsAvailableForThisRound = tot - ((roundsleft - 1) * this.MinimumTotalPerRound);
+            bs.Validate(pointsAvailableForThisRound);
+            if (bs.PlayerName == "Jason Mastbaum") console.log(bs.CompetitionID, bs.PlayerName, bs.Round, pointsAvailableForThisRound, bs.LastValidationMessages);
             roundsleft--;
             tot -= bs.Total;
         });
@@ -186,6 +226,9 @@ class BidSet {
         this.CompetitionID = competitionid;
         this.ClearBids();
     }
+
+    OnValidate = new dbnEvent();
+    OnBoardOrPowerAssignment = new dbnEvent();
 
     /** @type {number} */
     CompetitionID;
@@ -222,7 +265,9 @@ class BidSet {
 
     //#region Assignment
 
-    BoardIndex = undefined;
+    #BoardIndex = undefined;
+    get BoardIndex() { return this.#BoardIndex; }
+    set BoardIndex(value) { this.#BoardIndex = value; this.OnBoardOrPowerAssignment.Raise(); }
 
     _PowerAssignment;
     get PowerAssignment() { return this._PowerAssignment }
@@ -230,6 +275,7 @@ class BidSet {
         this._PowerAssignment = value;
         var i = 1;
         this.RankOfPowerAssignmentAmongBids = this.PowerNames.length - this.PowersOrderedByBidSize.indexOf(value);
+        this.OnBoardOrPowerAssignment.Raise();
     }
 
     RankOfPowerAssignmentAmongBids;
@@ -330,15 +376,8 @@ class BidSet {
 
     //#region Validation
 
-    OnValidate;
-
-    _LastValidationMessages = "";
-    get LastValidationMessages() { return this._LastValidationMessages };
-
-    ValidateAndGetMessages() {
-        this.Validate();
-        return this.LastValidationMessages;
-    }
+    #LastValidationMessages = "";
+    get LastValidationMessages() { return this.#LastValidationMessages };
 
     /**
      * @param {number} maxavailable 
@@ -388,9 +427,9 @@ class BidSet {
         var max = maxavailable ?? manager.MaximumTotalPerRound;
         if (tot > max) s += 'Only ' + max + ' points are available for this round.<br>';
 
-        this._LastValidationMessages = s;
+        this.#LastValidationMessages = s;
 
-        if (this.OnValidate) this.OnValidate();
+        this.OnValidate.Raise(null);
 
         return s == '';
     };
@@ -404,56 +443,56 @@ class Auction {
     /**
      * 
      * @param {PowerBidManager} manager 
-     * @param {BidSet[]} pBidSets 
-     * @param {string[]} boardnames 
+     * @param {number} round 
      */
-    constructor(manager, pBidSets, boardnames) {
+    constructor(manager, round) {
         this.Manager = manager;
-        this.BidSets = pBidSets.slice();
-        this.BoardNames = boardnames;
-
-        if (this.BidSets.length != manager.PlayersPerRound) throw "Incorrect number of bidsets for resolution";
+        this.Round = round;
     }
 
     /** @type {PowerBidManager} */
     Manager;
 
-    /** @type {string[]} */
-    BoardNames;
-
-    /** @type {BidSet[]} */
-    BidSets;
+    /** @type {number} */
+    Round;
 
     ResolutionFailed = false;
 
-    /** @type {BidSet[]} */
-    _remainingBidSets;
-    _powerAssignmentCounts;
+    OnResolve = new dbnEvent();
 
-    _auditlinecount;
-    _audittrail = "";
+    /** @type {BidSet[]} */
+    #remainingBidSets;
+    #powerAssignmentCounts;
+
+    #auditlinecount;
+    #audittrail = "Awaiting auction";
 
     GetAuditTrail() {
-        return this._audittrail;
+        return this.#audittrail;
     }
 
     AddToAuditTrail(pLine) {
-        if (this._audittrail == "") this._auditlinecount = 0;
-        this._auditlinecount++;
-        this._audittrail += this._auditlinecount + ": " + pLine + "<br>";
+        if (this.#audittrail == "") this.#auditlinecount = 0;
+        this.#auditlinecount++;
+        this.#audittrail += this.#auditlinecount + ": " + pLine + "<br>";
     }
 
     get remainingPowers() {
+        /** @type {string[]} */
         var ret = [];
         this.Manager.PowerNames.forEach(powername => {
-            if (this._powerAssignmentCounts[powername] < this.BoardNames.length) ret.push(powername);
+            if (this.#powerAssignmentCounts[powername] < this.Manager.BoardsPerRound) ret.push(powername);
         });
         return ret;
     }
 
-    get BoardSeedAverages() {
-        var ret = this.BoardNames.map((name, i) => []);
-        this.BidSets.forEach(bs => {
+    /**
+     * @param {BidSet[]} bidsets 
+     * @returns {number[]}
+     */
+    GetBoardSeedAverages(bidsets) {
+        var ret = Array.from(Array(this.Manager.BoardsPerRound), x => []);
+        bidsets.forEach(bs => {
             if (!isNaN(bs.BoardIndex)) ret[bs.BoardIndex].push(bs.SeedForBoardAssignment);
         });
 
@@ -467,103 +506,109 @@ class Auction {
     }
 
     Resolve() {
-        this._audittrail = "";
-        this._remainingBidSets = this.BidSets.slice();
 
-        this._powerAssignmentCounts = {};
-        this.Manager.PowerNames.forEach(powername => this._powerAssignmentCounts[powername] = 0);
+        var bidsets = this.Manager.GetBidSetsByRound(this.Round);
+
+        if (bidsets.length != this.Manager.PlayersPerRound) throw "Incorrect number of bidsets for resolution";
+
+        this.#audittrail = "";
+        this.#remainingBidSets = bidsets.slice();
+
+        this.#powerAssignmentCounts = {};
+        this.Manager.PowerNames.forEach(powername => this.#powerAssignmentCounts[powername] = 0);
 
         var bValid = true;
 
-        this.BidSets.sort((a, b) => a.SeedInTourney - b.SeedInTourney);
-        this.BidSets.forEach((x, i) => {
+        this.Manager.ValidateBidSets();
+
+        bidsets.sort((a, b) => a.SeedInTourney - b.SeedInTourney);
+        bidsets.forEach((x, i) => {
             x.PowerAssignment = undefined;
             x.BoardIndex = undefined;
-            x.SeedInRound = i + 1
-            var msg = x.ValidateAndGetMessages();
-            if (msg != '') bValid = false;
+            if (x.LastValidationMessages) bValid = false;
         });
 
         if (!bValid) {
             this.ResolutionFailed = true;
             this.AddToAuditTrail("There are invalid bids.");
-            return;
-        }
+        } else {
 
-        while (this._remainingBidSets.length > 0) {
+            while (this.#remainingBidSets.length > 0) {
 
-            var highestBid = -1;
-            var powersWithHighestBid;
-            var bidsetsWithHighestBid;
-            var lowestSeedOfPowersWithHighestBid;
+                var highestBid = -1;
+                var powersWithHighestBid;
 
-            this.remainingPowers.forEach(powername => {
-                this._remainingBidSets.forEach(bs => {
-                    var bid = bs.Bids[powername];
-                    if (bid > highestBid) {
-                        highestBid = bid;
-                        powersWithHighestBid = [];
-                        bidsetsWithHighestBid = {};
-                        lowestSeedOfPowersWithHighestBid = {};
-                    }
-                    if (bid == highestBid) {
-                        if (!powersWithHighestBid.includes(powername)) {
-                            powersWithHighestBid.push(powername);
-                            bidsetsWithHighestBid[powername] = [];
-                            lowestSeedOfPowersWithHighestBid[powername] = 0;
+                /** @type {Object.<string,BidSet[]>} */
+                var bidsetsWithHighestBid;
+                var lowestSeedOfPowersWithHighestBid;
+
+                this.remainingPowers.forEach(powername => {
+                    this.#remainingBidSets.forEach(bs => {
+                        var bid = bs.Bids[powername];
+                        if (bid > highestBid) {
+                            highestBid = bid;
+                            powersWithHighestBid = [];
+                            bidsetsWithHighestBid = {};
+                            lowestSeedOfPowersWithHighestBid = {};
                         }
-                        bidsetsWithHighestBid[powername].push(bs);
-                        if (lowestSeedOfPowersWithHighestBid[powername] < bs.SeedInRound) lowestSeedOfPowersWithHighestBid[powername] = bs.SeedInRound;
+                        if (bid == highestBid) {
+                            if (!powersWithHighestBid.includes(powername)) {
+                                powersWithHighestBid.push(powername);
+                                bidsetsWithHighestBid[powername] = [];
+                                lowestSeedOfPowersWithHighestBid[powername] = 0;
+                            }
+                            bidsetsWithHighestBid[powername].push(bs);
+                            if (lowestSeedOfPowersWithHighestBid[powername] < bs.SeedInRound) lowestSeedOfPowersWithHighestBid[powername] = bs.SeedInRound;
+                        }
+                    })
+
+                });
+
+                //Assign power
+                powersWithHighestBid.sort((a, b) => -(lowestSeedOfPowersWithHighestBid[a] - lowestSeedOfPowersWithHighestBid[b]));
+                var selectedPower = powersWithHighestBid[0];
+                var selectedBidsets = bidsetsWithHighestBid[selectedPower];
+                selectedBidsets.sort((a, b) => a.SeedInRound - b.SeedInRound);
+
+                var selectedBidset = selectedBidsets[0];
+                selectedBidset.PowerAssignment = selectedPower;
+                this.#powerAssignmentCounts[selectedPower] += 1;
+
+                this.AddToAuditTrail("Assign " + selectedPower + " to seed " + selectedBidset.SeedInRound
+                    + "  (" + highestBid + " pts, #" + selectedBidset.RankOfPowerAssignmentAmongBids + ") ---- ");
+
+                this.#remainingBidSets = this.#remainingBidSets.filter(bs => bs != selectedBidset);
+
+
+                //Assign to boards
+                if (this.#powerAssignmentCounts[selectedPower] == this.Manager.BoardsPerRound) {
+                    //collect players
+                    var bidsetsWithPower = bidsets.filter(bs => bs.PowerAssignment == selectedPower);
+                    bidsetsWithPower.sort((a, b) => a.SeedInRound - b.SeedInRound);
+
+                    var avgs = this.GetBoardSeedAverages(bidsets);
+                    var boardinds = avgs.map((x, i) => i);
+
+                    boardinds.sort((a, b) => -(avgs[a] - avgs[b]));
+
+                    for (let i = 0; i < boardinds.length; i++) {
+                        var bs = bidsetsWithPower[i];
+                        bs.BoardIndex = boardinds[i];
+                        this.AddToAuditTrail(" ---- Seed " + bs.SeedForBoardAssignment + " (" + bs.PowerAssignment + ") to board " + (bs.BoardIndex + 1) + "  (" + avgs[boardinds[i]].toFixed(1) + " avg seed)");
                     }
-                })
 
-            });
-
-            //Assign power
-            powersWithHighestBid.sort((a, b) => -(lowestSeedOfPowersWithHighestBid[a] - lowestSeedOfPowersWithHighestBid[b]));
-            var selectedPower = powersWithHighestBid[0];
-            var selectedBidsets = bidsetsWithHighestBid[selectedPower];
-            selectedBidsets.sort((a, b) => a.SeedInRound - b.SeedInRound);
-
-            var selectedBidset = selectedBidsets[0];
-            selectedBidset.PowerAssignment = selectedPower;
-            this._powerAssignmentCounts[selectedPower] += 1;
-
-            this.AddToAuditTrail("Assign " + selectedPower + " to seed " + selectedBidset.SeedInRound
-                + "  (" + highestBid + " pts, #" + selectedBidset.RankOfPowerAssignmentAmongBids + ") ---- ");
-
-            this._remainingBidSets = this._remainingBidSets.filter(bs => bs != selectedBidset);
-
-
-            //Assign to boards
-            if (this._powerAssignmentCounts[selectedPower] == this.BoardNames.length) {
-                //collect players
-                var bidsetsWithPower = this.BidSets.filter(bs => bs.PowerAssignment == selectedPower);
-                bidsetsWithPower.sort((a, b) => a.SeedInRound - b.SeedInRound);
-
-                var avgs = this.BoardSeedAverages;
-                var boardinds = [];
-                this.BoardNames.map((x, i) => boardinds.push(i));
-
-                boardinds.sort((a, b) => -(avgs[a] - avgs[b]));
-
-                for (let i = 0; i < boardinds.length; i++) {
-                    var bs = bidsetsWithPower[i];
-                    bs.BoardIndex = boardinds[i];
-                    this.AddToAuditTrail(" ---- Seed " + bs.SeedForBoardAssignment + " (" + bs.PowerAssignment + ") to board " + (bs.BoardIndex + 1) + "  (" + avgs[boardinds[i]].toFixed(1) + " avg seed)");
                 }
 
             }
 
+            var finalavgs = this.GetBoardSeedAverages(bidsets);
+            finalavgs.forEach((x, i) => {
+                this.AddToAuditTrail("Board " + (i + 1) + " seed avg: " + x.toFixed(1));
+            });
+
+            this.ResolutionFailed = false;
         }
-
-        var finalavgs = this.BoardSeedAverages;
-        finalavgs.forEach((x, i) => {
-            this.AddToAuditTrail("Board " + (i + 1) + " seed avg: " + x.toFixed(1));
-        });
-
-        this.ResolutionFailed = false;
-
+        this.OnResolve.Raise(null);
     }
 
 }
@@ -573,82 +618,83 @@ class Auction {
 class PlayerBidInput {
 
     /**
-     * 
      * @param {PowerBidManager} manager 
      */
-    constructor(manager) { this.Manager = manager; }
+    constructor(manager, bidslocked = false) {
+        this.Manager = manager;
+        this.#BidsLocked = bidslocked;
+        this.#MakeUIElements();
+    }
 
     /** @type {PowerBidManager} */
     Manager;
 
-    inputs = {};
-
     /** @type {Object.<string,dbnDiv>} */
-    #bidDivs = {};
+    UI_Bids = {};
     /** @type {Object.<string,dbnElement>} */
-    #bidElements = {};
+    #BidValueElements = {};
+    #inputs = {};
 
-    seedInRoundSpan = null;
-    seedInTourneySpan = null;
-    playerNameSpan = null;
-    totalSpan = null;
-    validateSpan = null;
+    /** @type {dbnSpan} */
+    UI_SeedInRound = null;
+    /** @type {dbnSpan} */
+    UI_SeedInTourney = null;
+    /** @type {dbnSpan} */
+    UI_PlayerName = null;
+
+    /** @type {dbnSpan} */
+    UI_BidTotal = null;
+    /** @type {dbnSpan} */
+    UI_ValidationMessage = null;
+
+    /** @type {dbnSpan} */
     resultSpans = {};
 
     OnChange;
 
-    #Locked = false;
-    get Locked() { return this.#Locked; }
-    set Locked(value) {
-        this.#Locked = value;
+    #BidsLocked = false;
+    get BidsLocked() { return this.#BidsLocked; }
+    set BidsLocked(value) {
+        this.#BidsLocked = value;
         this.Manager.PowerNames.forEach(x => this.#MakeBidElement(x));
         this.UpdateDisplay();
     }
 
-    MakeRow() {
-        /** @type {dbnElement[]} */
-        var row = [];
-
-        this.seedInRoundSpan = new dbnSpan();
-        this.seedInTourneySpan = new dbnSpan();
-        this.playerNameSpan = new dbnSpan();
-
-        row.push(this.seedInRoundSpan, this.seedInTourneySpan, this.playerNameSpan);
+    #MakeUIElements() {
+        this.UI_SeedInRound = new dbnSpan();
+        this.UI_SeedInTourney = new dbnSpan();
+        this.UI_PlayerName = new dbnSpan();
 
         this.Manager.PowerNames.forEach(powername => {
             var div = new dbnDiv();
-            this.#bidDivs[powername] = div;
+            div.className = "bidvalue";
+            this.UI_Bids[powername] = div;
             this.#MakeBidElement(powername);
-            row.push(div);
         });
 
         var spanTotal = new dbnSpan();
         spanTotal.addText(0);
-        row.push(spanTotal);
-        this.totalSpan = spanTotal;
+        this.UI_BidTotal = spanTotal;
 
         var spanValidate = new dbnSpan();
         spanValidate.className = "validationCell";
-        this.validateSpan = spanValidate;
-        row.push(spanValidate);
-
-        return row;
+        this.UI_ValidationMessage = spanValidate;
     }
 
     /**
      * @param {string} powername 
      */
     #MakeBidElement(powername) {
-        if (!this.#bidDivs.hasOwnProperty(powername)) return;
+        if (!this.UI_Bids.hasOwnProperty(powername)) return;
 
-        var div = this.#bidDivs[powername];
+        var div = this.UI_Bids[powername];
         div.innerHTML = "";
 
-        if (this.Locked) {
-            var bid = div.addDiv();
+        if (this.BidsLocked) {
+            var bid = div.addSpan();
             bid.className = "bid";
             div.appendChild(bid);
-            this.#bidElements[powername] = bid;
+            this.#BidValueElements[powername] = bid;
         } else {
             var input = div.createAndAppendElement("input");
             input.className = "bid";
@@ -658,8 +704,8 @@ class PlayerBidInput {
             input.domelement.min = this.Manager.MinimumIndividualBid;
             input.domelement.oninput = () => this.OnInput(powername);
 
-            this.inputs[powername] = input;
-            this.#bidElements[powername] = input;
+            this.#inputs[powername] = input;
+            this.#BidValueElements[powername] = input;
         }
 
         var spanResult = div.addSpan();
@@ -668,7 +714,7 @@ class PlayerBidInput {
     }
 
     OnInput(powername) {
-        var val = this.inputs[powername].domelement.value;
+        var val = this.#inputs[powername].domelement.value;
         if (!isNaN(val)) this.BidSet.Bids[powername] = Number(val);
         this.BidSet.Manager.ValidateBidSets();
         this.#HandleChange();
@@ -680,40 +726,57 @@ class PlayerBidInput {
 
     /** @type {BidSet} */
     #BidSet;
+    #SinkID_BidSet_OnValidate; #SinkID_BidSet_OnAssign;
     get BidSet() { return this.#BidSet; }
     set BidSet(value) {
-        if (this.#BidSet) this.#BidSet.OnValidate = null;
+        if (this.#BidSet) {
+            this.#BidSet.OnValidate.RemoveListener(this.#SinkID_BidSet_OnValidate);
+            this.#BidSet.OnBoardOrPowerAssignment.RemoveListener(this.#SinkID_BidSet_OnAssign);
+        }
         this.#BidSet = value; this.UpdateDisplay();
-        this.#BidSet.OnValidate = () => { this.UpdateDisplay(); };
+        if (this.#BidSet) {
+            this.#SinkID_BidSet_OnValidate = this.#BidSet.OnValidate.AddListener(() => { this.UpdateDisplay() });
+            this.#SinkID_BidSet_OnAssign = this.#BidSet.OnBoardOrPowerAssignment.AddListener(() => { this.UpdateDisplay() });
+        }
     }
 
     UpdateDisplay() {
-        if (this.seedInRoundSpan == null) return;
-        
-        this.seedInRoundSpan.domelement.innerHTML = this.BidSet.SeedInRound;
-        this.seedInTourneySpan.domelement.innerHTML = this.BidSet.SeedInTourney ? this.BidSet.SeedInTourney : this.BidSet.SeedInRound;
-        this.playerNameSpan.domelement.innerHTML = this.BidSet.PlayerName;
+        if (this.UI_SeedInRound == null) return;
+        if (!this.#BidSet) return;
+
+        this.UI_SeedInRound.domelement.innerHTML = this.BidSet.SeedInRound;
+        this.UI_SeedInTourney.domelement.innerHTML = this.BidSet.SeedInTourney ? this.BidSet.SeedInTourney : this.BidSet.SeedInRound;
+        this.UI_PlayerName.domelement.innerHTML = this.BidSet.PlayerName;
 
         this.Manager.PowerNames.forEach(powername => {
-            if (this.Locked) {
-                this.#bidElements[powername].innerHTML = this.BidSet.Bids[powername];
+            if (this.BidsLocked) {
+                this.#BidValueElements[powername].innerHTML = this.BidSet.Bids[powername];
             } else {
-                this.#bidElements[powername].domelement.value = this.BidSet.Bids[powername];
+                this.#BidValueElements[powername].domelement.value = this.BidSet.Bids[powername];
             }
         });
 
-        if (!isNaN(this.BidSet.BoardIndex)) {
-            this.Manager.PowerNames.forEach(x => {
-                var spx = this.resultSpans[x].domelement.parentNode;
-                spx.className = spx.className.replace(" selected", "");
-            });
-            var span = this.resultSpans[this.BidSet.PowerAssignment].domelement;
-            span.innerHTML = " " + (this.BidSet.BoardIndex + 1);
-            span.parentNode.className += " selected";
+        this.Manager.PowerNames.forEach(x => {
+            var elm = this.UI_Bids[x];
+            elm.className = elm.className.replace(" selected", "");
+            this.resultSpans[x].innerHTML = "";
+        });
+
+        if (!isNaN(this.BidSet.BoardIndex) && this.BidSet.PowerAssignment) {
+            this.resultSpans[this.BidSet.PowerAssignment].innerHTML = " " + (this.BidSet.BoardIndex + 1);
+            this.UI_Bids[this.BidSet.PowerAssignment].className += " selected";
         }
 
-        this.totalSpan.domelement.innerHTML = this.BidSet.Total;
-        this.validateSpan.domelement.innerHTML = this.BidSet.LastValidationMessages;
+        this.UI_BidTotal.domelement.innerHTML = this.BidSet.Total;
+
+
+        if (this.BidSet.PlayerName == "Jason Mastbaum") {
+            console.log("UpdateDisplay", this.BidSet.PlayerName, this.BidSet.Round, this.BidSet.LastValidationMessages);
+            if (this.BidSet.Round == 4 && !this.BidSet.LastValidationMessages) {
+                console.log("Oops");
+            }
+        }
+        this.UI_ValidationMessage.domelement.innerHTML = this.BidSet.LastValidationMessages;
     }
 
     ClearResults() {
@@ -722,4 +785,81 @@ class PlayerBidInput {
 
 }
 
-//#endregion
+class AuctionView {
+
+    /** @param {PowerBidManager} manager 
+    */
+    constructor(manager) {
+        this.Manager = manager;
+        this.#MakeUIElements();
+    }
+
+    /** @type {PowerBidManager} */
+    Manager;
+
+    /** @type {dbnDiv} */
+    UI_AuditTrail;
+
+    /** @type {dbnDiv[]]} */
+    UI_Boards = [];
+
+    get Round() { return this.Auction.Round; }
+
+    /** @type {Auction} */
+    #Auction;
+    #SinkID_Auction_OnResolve;
+    get Auction() { return this.#Auction; }
+    set Auction(value) {
+        if (this.#Auction) { this.#Auction.OnResolve.RemoveListener(this.#SinkID_Auction_OnResolve); }
+        this.#Auction = value; this.UpdateDisplay();
+        if (this.#Auction) { this.#SinkID_Auction_OnResolve = this.#Auction.OnResolve.AddListener(() => { this.UpdateDisplay() }); }
+    }
+
+    #MakeUIElements() {
+
+        this.UI_AuditTrail = new dbnDiv();
+        this.UI_AuditTrail.className = "board outputMessages";
+
+        this.UI_Boards = Array.from(Array(this.Manager.BoardsPerRound), (x, boardi) => {
+            var tbl = new dbnDiv(); tbl.className = "board"; return tbl;
+        });
+    }
+
+    UpdateDisplay() {
+        var auction = this.Manager.GetAuction(this.Round);
+        this.UI_AuditTrail.innerHTML = auction.GetAuditTrail();
+
+        var bidsets = this.Manager.GetBidSetsByRound(this.Round);
+        var boardnames = this.Manager.GetBoardNamesForRound(this.Round);
+
+        boardnames.forEach((name, boardi) => {
+            var div = this.UI_Boards[boardi];
+            div.innerHTML = null;
+            var tbl = div.addTable();
+            tbl.CountryRows = this.Manager.PowerNames.slice();
+            tbl.Title = (boardi + 1) + ". " + name;
+
+            var data = [];
+
+            this.Manager.PowerNames.forEach((powername, iRow) => {
+                var bssearch = bidsets.filter(x => x.BoardIndex == boardi && x.PowerAssignment == powername);
+                var bidset = bssearch.length == 1 ? bssearch[0] : null;
+                var row = [];
+
+                row.push(powername + ":");
+
+                if (bidset == null) {
+                    row.push("--");
+                } else {
+                    row.push(bidset.PlayerName + " (" + bidset.SeedInTourney + ")");
+                }
+                row.push((bidset == null) ? "--" : "(#" + bidset.RankOfPowerAssignmentAmongBids + ", " + bidset.Bids[powername] + ")");
+
+                data.push(row);
+            });
+            tbl.Data = data;
+            tbl.Generate();
+        });
+
+    }
+}

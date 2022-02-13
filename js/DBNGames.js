@@ -256,11 +256,11 @@ class dbnHubRequest_CompetitionPlayerSchedule extends bfDataRequest {
 }
 
 //Rename
-class dbnDBNIBid { PlayerID; Country; CompetitionID; Round; Bid; }
+class dbnPlayerCountryBid { PlayerID; Country; CompetitionID; Round; Bid; }
 class dbnHubRequest_Bids extends bfDataRequest {
   constructor(pAsTD = false) { super("bids", { "asTD": pAsTD }); }
-  /** @returns {dbnDBNIBid[]} */
-  ResponseToObjects() { return super.ResponseToObjects(() => new dbnDBNIBid()); }
+  /** @returns {dbnPlayerCountryBid[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnPlayerCountryBid()); }
 }
 
 class dbnCompetition { CompetitionID; CompetitionName; }
