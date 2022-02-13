@@ -52,4 +52,8 @@ function dbnTDPortal_Create() {
     return $ret;
 }
 
-?>
+add_shortcode( 'dbnTest', 'dbdTest_Create' );
+function dbdTest_Create() {
+    $ret = "Hi there";
+    return $ret;
+}
