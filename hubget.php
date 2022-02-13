@@ -95,6 +95,10 @@ function HandleRequest($request)
 
     //requests that don't require a user
     switch ($request["Key"]) {
+        case "test": {
+                $wpuser = wp_get_current_user();
+                return ["success" => true, "content" => $wpuser];
+            }
         case "players": {
                 $vars = null;
                 $sql = "SELECT PlayerID, PlayerName FROM Player";
