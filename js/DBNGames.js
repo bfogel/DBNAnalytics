@@ -120,7 +120,7 @@ class bfDataRequestList {
 
     if (mWPNonce) {
       req.setRequestHeader('X-WP-Nonce', mWPNonce);
-      fd.append("_nonce", mWPNonce);
+      fd.append("_wpnonce", mWPNonce);
       console.log("Setting nonce: ", mWPNonce);
     }
 
