@@ -71,6 +71,7 @@ class ResultSet
 
         if ($parameters != null) {
             $types = "";
+            $index = 0;
             foreach ($parameters as $value) {
                 switch (gettype($value)) {
                     case 'string':
@@ -83,10 +84,11 @@ class ResultSet
                         $types .= "d";
                         break;
                     default:
-                        $this->message = "Unsupported parameter type: " . gettype($value) . "(" . $value . ")";
+                        $this->message = "Unsupported parameter type: " . gettype($value) . "(i = " . $index . ")";
                         $statement->close();
                         return;
                 }
+                $index++;
             }
 
             if (($statement->bind_param($types, ...$parameters)) === false) {
