@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 
 function dbnVersion()
 {
-    return 17;
+    return 18;
 }
 
 add_action('rest_api_init', function () {
