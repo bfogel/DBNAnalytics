@@ -8,6 +8,9 @@ include("/home/customer/www/diplobn.com/public_html/wp-includes/user.php");
 include("/home/customer/www/diplobn.com/public_html/wp-includes/plugin.php");
 include("/home/customer/www/diplobn.com/public_html/wp-includes/class-wp-user.php");
 
+//still trying
+include("/home/customer/www/diplobn.com/public_html/wp-includes/option.php");
+
 header("Access-Control-Allow-Origin: *");
 
 $requests = $_POST['requests'];
