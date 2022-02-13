@@ -21,7 +21,7 @@ function dbnPlayer_MainPage()
 
 function dbnVersion()
 {
-    return 13;
+    return 14;
 }
 
 add_shortcode('dbnPlayerVsPlayer', 'dbnPlayerVsPlayer_Create');
