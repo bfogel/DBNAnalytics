@@ -11,8 +11,8 @@ include("/home/customer/www/diplobn.com/public_html/wp-includes/class-wp-user.ph
 //still trying
 include("/home/customer/www/diplobn.com/public_html/wp-includes/option.php");
 include("/home/customer/www/diplobn.com/public_html/wp-includes/load.php");
-include("/home/customer/www/diplobn.com/public_html/wp-includes/class-wp-object-cache.php");
 include("/home/customer/www/diplobn.com/public_html/wp-includes/cache.php");
+include("/home/customer/www/diplobn.com/public_html/wp-includes/class-wp-object-cache.php");
 
 
 header("Access-Control-Allow-Origin: *");
