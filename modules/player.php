@@ -1,25 +1,32 @@
 <?
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
 }
 
-add_shortcode( 'dbnPlayerPage', 'dbnPlayer_MainPage' );
+add_shortcode('dbnPlayerPage', 'dbnPlayer_MainPage');
 
 
-function dbnPlayer_MainPage() {
+function dbnPlayer_MainPage()
+{
 
-	$sPlayerID = $_GET["pid"];
-	if ($sPlayerID == null) {$sPlayerID = "None";}
-	$ret = dbn_GetHTML('Player', $sPlayerID);
+    $sPlayerID = $_GET["pid"];
+    if ($sPlayerID == null) {
+        $sPlayerID = "None";
+    }
+    $ret = dbn_GetHTML('Player', $sPlayerID);
 
     return $ret;
 }
 
-function dbnVersion(){return 13;}
+function dbnVersion()
+{
+    return 13;
+}
 
-add_shortcode( 'dbnPlayerVsPlayer', 'dbnPlayerVsPlayer_Create' );
-function dbnPlayerVsPlayer_Create() {
+add_shortcode('dbnPlayerVsPlayer', 'dbnPlayerVsPlayer_Create');
+function dbnPlayerVsPlayer_Create()
+{
     $ret = "";
     $ret .= "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/DBNAnalytics.css?x=" . dbnVersion() . "'>";
     $ret .= "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/PowerAuction.css?x=" . dbnVersion() . "'>";
@@ -29,8 +36,9 @@ function dbnPlayerVsPlayer_Create() {
     return $ret;
 }
 
-add_shortcode( 'dbnPowerAuctionDemo', 'dbnPowerAuctionDemo_Create' );
-function dbnPowerAuctionDemo_Create() {
+add_shortcode('dbnPowerAuctionDemo', 'dbnPowerAuctionDemo_Create');
+function dbnPowerAuctionDemo_Create()
+{
     $ret = "";
     $ret .= "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/DBNAnalytics.css?x=" . dbnVersion() . "'>";
     $ret .= "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/PowerAuction.css?x=" . dbnVersion() . "'>";
@@ -40,8 +48,9 @@ function dbnPowerAuctionDemo_Create() {
     return $ret;
 }
 
-add_shortcode( 'dbnTDPortal', 'dbnTDPortal_Create' );
-function dbnTDPortal_Create() {
+add_shortcode('dbnTDPortal', 'dbnTDPortal_Create');
+function dbnTDPortal_Create()
+{
     $ret = "";
     $ret .= "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/DBNAnalytics.css?x=" . dbnVersion() . "'>";
     $ret .= "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/PowerAuction.css?x=" . dbnVersion() . "'>";
@@ -52,8 +61,10 @@ function dbnTDPortal_Create() {
     return $ret;
 }
 
-add_shortcode( 'dbnTest', 'dbdTest_Create' );
-function dbdTest_Create() {
-    $ret = "Hi there";
+add_shortcode('dbnTest', 'dbdTest_Create');
+function dbdTest_Create()
+{
+    $ret = "Hi there<BR>";
+    $ret .= json_encode(wp_get_current_user());
     return $ret;
 }
