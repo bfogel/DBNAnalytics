@@ -5,7 +5,7 @@ req.SendAlone();
 req.ReportToConsole();
 
 var xmr = new XMLHttpRequest();
-xmr.open('POST', "", false); //false for not-async
+xmr.open('POST', "https://diplobn.com/wp-json/DBNAnalytics/v1/brandon/2232", false); //false for not-async
 
 var fd = new FormData();
 

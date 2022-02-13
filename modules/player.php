@@ -11,7 +11,7 @@ function dbnVersion()
 
 add_action('rest_api_init', function () {
     register_rest_route('DBNAnalytics/v1', '/brandon/(?P<id>\d+)', array(
-        'methods' => 'GET',
+        'methods' => 'POST',
         'callback' => 'my_awesome_func',
     ));
 });
