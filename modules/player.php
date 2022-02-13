@@ -18,7 +18,7 @@ add_action('rest_api_init', function () {
 
 function my_awesome_func($data)
 {
-    return "words words words";
+    return "words words words:" + $data["id"];
 }
 
 
