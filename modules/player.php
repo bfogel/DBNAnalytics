@@ -72,7 +72,7 @@ function dbdTest_Create()
     $nonce = wp_create_nonce('wp_rest');
     $ret .= "Nonce: " . $nonce . "<br>";
 
-    $ret .= "<script>var mWPNonce = '" . $nonce . "';</script>";
+    $ret .= "<script>var mWPNonce2 = '" . $nonce . "';</script>";
 
 
     return $ret;
