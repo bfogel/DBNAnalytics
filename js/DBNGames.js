@@ -115,8 +115,8 @@ class bfDataRequestList {
 
     var req = new XMLHttpRequest();
     req.open('POST', this.Url, false); //false for not-async
+
     var fd = this.MakeFormData();
-    fd.append("requests", JSON.stringify(data));
 
     if (mWPNonce) {
       req.setRequestHeader('X-WP-Nonce', mWPNonce);
