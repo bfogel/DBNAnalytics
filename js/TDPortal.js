@@ -1,5 +1,9 @@
 "use strict";
 
+var req = new bfDataRequest("test",null);
+req.SendAlone();
+req.ReportToConsole();
+
 class CompetitionController {
 
     CompetitionID = 0;
