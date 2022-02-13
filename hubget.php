@@ -4,6 +4,7 @@ include("modules/dataaccess.php");
 include("/home/customer/www/diplobn.com/public_html/wp-includes/pluggable.php");
 include("/home/customer/www/diplobn.com/public_html/wp-includes/user.php");
 include("/home/customer/www/diplobn.com/public_html/wp-includes/plugin.php");
+include("/home/customer/www/diplobn.com/public_html/wp-includes/class-wp-user.php");
 
 header("Access-Control-Allow-Origin: *");
 
