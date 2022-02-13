@@ -96,8 +96,9 @@ function HandleRequest($request)
     //requests that don't require a user
     switch ($request["Key"]) {
         case "test": {
+
                 //$wpuser = wp_get_current_user();
-                return ["success" => true, "content" => ["stuff" => "yes"]];
+                return ["success" => true, "content" => ["loggedin" => is_user_logged_in()]];
             }
         case "players": {
                 $vars = null;
