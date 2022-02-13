@@ -68,6 +68,10 @@ class bfDataRequest {
   ResponseToObjects(objectfunction = null) { return this.ResponseIsDataSet ? this.ReponseToDataSet().DataToObjects(objectfunction) : null; }
   GetFirstObject(objectfunction = null) { var objs = this.ResponseToObjects(objectfunction); return objs == null ? null : objs[0]; }
 
+  ReportToConsole() {
+    console.log("Request", this.Key, !this.Success ? "fail " + this.Message : (this.ResponseIsDataSet ? this.ResponseToObjects() : this.ResponseContent));
+  }
+
   ReportToDiv(div) {
     div.addText((this.constructor.name) + " Success: " + this.Success);
     div.addLineBreak();
@@ -150,10 +154,7 @@ class bfDataRequestList {
 
   ReportToConsole() {
     if (this.ErrorMessage) console.log("List ErrorMessage: " + this.ErrorMessage);
-
-    this.Requests.forEach(req => {
-      console.log("Request", req.Key, !req.Success ? "fail " + req.Message : (req.ResponseIsDataSet ? req.ResponseToObjects() : req.ResponseContent));
-    });
+    this.Requests.forEach(req => req.ReportToConsole());
   }
 
   ReportToDiv(div) {

@@ -177,7 +177,7 @@ function HandleRequest($request)
 
                 if (!VerifyTD($competitionID, $userinfo->PlayerID)) return ["success" => false, "message" => "User not authorized"];
 
-                $sql = 'UPDATE CompetitionPlayerSchedule SET BidsLocked = ?';
+                $sql = 'UPDATE CompetitionPlayerSchedule SET BidsLocked = ? ';
                 $sql .= 'WHERE Competition_CompetitionID = ? AND Round = ?';
                 $rs = new ResultSet($sql, [$value, $competitionID, $round]);
 

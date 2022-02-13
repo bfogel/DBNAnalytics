@@ -138,7 +138,7 @@ class CompetitionController {
         }
         var req = new bfDataRequest("setScheduleLock", { competitionid: this.CompetitionID, round: this.round, value: value });
         req.SendAlone();
-        console.log(req);
+        req.ReportToConsole();
     }
 
     /**
