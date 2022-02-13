@@ -136,7 +136,7 @@ class CompetitionController {
             alert("All bids for Round " + round + " are already " + (value ? "locked" : "unlocked") + ".");
             return;
         }
-        var req = new bfDataRequest("setScheduleLock", { competitionid: this.CompetitionID, round: this.round, value: value });
+        var req = new bfDataRequest("setScheduleLock", { competitionid: this.CompetitionID, round: this.Round, value: value });
         req.SendAlone();
         req.ReportToConsole();
     }

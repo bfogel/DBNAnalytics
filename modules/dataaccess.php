@@ -84,7 +84,7 @@ class ResultSet
                         $types .= "d";
                         break;
                     default:
-                        $this->message = "Unsupported parameter type: " . gettype($value) . "(i = " . $index . ")";
+                        $this->message = "Unsupported parameter type: " . gettype($value) . " (i = " . $index . ")";
                         $statement->close();
                         return;
                 }
