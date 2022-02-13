@@ -179,7 +179,7 @@ function HandleRequest($request)
 
                 $sql = 'UPDATE CompetitionPlayerSchedule SET BidsLocked = ? ';
                 $sql .= 'WHERE Competition_CompetitionID = ? AND Round = ?';
-                $rs = new ResultSet($sql, [$value, $competitionID, $round]);
+                $rs = new ResultSet($sql, [$value ? 1 : 0, $competitionID, $round]);
 
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
                 return ["success" => true, "content" => ["RecordsAffected" => $rs->affected_rows]];
