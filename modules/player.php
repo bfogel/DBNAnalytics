@@ -16,7 +16,7 @@ function dbnPlayer_MainPage() {
     return $ret;
 }
 
-function dbnVersion(){return 12;}
+function dbnVersion(){return 13;}
 
 add_shortcode( 'dbnPlayerVsPlayer', 'dbnPlayerVsPlayer_Create' );
 function dbnPlayerVsPlayer_Create() {
@@ -37,6 +37,18 @@ function dbnPowerAuctionDemo_Create() {
     $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/DBNUI.js?x=" . dbnVersion() . "'></script>";
     $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/PowerAuction.js?x=" . dbnVersion() . "'></script>";
     $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/PowerAuctionDemo.js?x=" . dbnVersion() . "'></script>";
+    return $ret;
+}
+
+add_shortcode( 'dbnTDPortal', 'dbnTDPortal_Create' );
+function dbnTDPortal_Create() {
+    $ret = "";
+    $ret .= "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/DBNAnalytics.css?x=" . dbnVersion() . "'>";
+    $ret .= "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/PowerAuction.css?x=" . dbnVersion() . "'>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/DBNUI.js?x=" . dbnVersion() . "'></script>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/DBNGames.js?x=" . dbnVersion() . "'></script>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/PowerAuction.js?x=" . dbnVersion() . "'></script>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/TDPortal.js?x=" . dbnVersion() . "'></script>";
     return $ret;
 }
 
