@@ -99,7 +99,7 @@ function HandleRequest($request)
         case "test": {
 
                 //$wpuser = wp_get_current_user();
-                return ["success" => true, "content" => ["loggedin" => is_user_logged_in()]];
+                return ["success" => true, "content" => ["loggedin" => wp_get_current_user()]];
             }
         case "players": {
                 $vars = null;
