@@ -18,7 +18,7 @@ add_action('rest_api_init', function () {
 
 function my_awesome_func($data)
 {
-    return "words words words:" . $data["id"];
+    return ["success" => true, "content" => ["user" => wp_get_current_user(), "id" => $data["id"]]];
 }
 
 
