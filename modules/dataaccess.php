@@ -83,7 +83,7 @@ class ResultSet
                         $types .= "d";
                         break;
                     default:
-                        $this->message = "Unsupported parameter type: " . gettype($value);
+                        $this->message = "Unsupported parameter type: " . gettype($value) . "(" . $value . ")";
                         $statement->close();
                         return;
                 }
