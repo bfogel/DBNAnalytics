@@ -1,6 +1,7 @@
 <?php
 
 include("modules/dataaccess.php");
+include("/wp-includes/user.php");
 
 header("Access-Control-Allow-Origin: *");
 
