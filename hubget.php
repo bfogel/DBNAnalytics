@@ -173,9 +173,10 @@ function HandleRequest($request)
         case "setScheduleLock": {
                 $competitionID = $parameters["competitionid"];
                 $round = $parameters["round"];
+                $value = $parameters["value"];
 
                 $isTD = VerifyTD($competitionID, $userinfo->PlayerID);
-                return ["success" => true, "content" => ["isTD" => $isTD]];
+                return ["success" => true, "content" => ["isTD" => $isTD, "value" => $value]];
 
                 $bids = json_decode($parameters["bids"], true);
 
