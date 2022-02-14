@@ -8,14 +8,32 @@ include("/home/customer/www/diplobn.com/public_html/wp-includes/user.php");
 include("/home/customer/www/diplobn.com/public_html/wp-includes/plugin.php");
 include("/home/customer/www/diplobn.com/public_html/wp-includes/class-wp-user.php");
 
-//still trying
-// include("/home/customer/www/diplobn.com/public_html/wp-includes/option.php");
-// include("/home/customer/www/diplobn.com/public_html/wp-includes/load.php");
-// include("/home/customer/www/diplobn.com/public_html/wp-includes/cache.php");
-// include("/home/customer/www/diplobn.com/public_html/wp-includes/class-wp-object-cache.php");
-
-
 header("Access-Control-Allow-Origin: *");
+
+//REST API endpoint---------------------------
+add_action('rest_api_init', function () {
+    // register_rest_route('DBNAnalytics/v1', '/hubget/(?P<id>\d+)', array(
+    register_rest_route('DBNAnalytics/v1', '/hubget', array(
+        'methods' => 'POST',
+        'callback' => 'hubget_respond',
+    ));
+});
+
+function hubget_respond($data)
+{
+    $myrequests = $_POST['requests'];
+
+    if ($myrequests != "") {
+        $list = json_decode($myrequests, true);
+        $ret = [];
+        foreach ($list as $item) {
+            array_push($ret, HandleRequest($item));
+        }
+        return json_encode($ret);
+    }
+}
+//---------------------------------------------
+
 
 $requests = $_POST['requests'];
 

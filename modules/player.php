@@ -4,24 +4,6 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-function dbnVersion()
-{
-    return 19;
-}
-
-add_action('rest_api_init', function () {
-    register_rest_route('DBNAnalytics/v1', '/brandon/(?P<id>\d+)', array(
-        'methods' => 'POST',
-        'callback' => 'my_awesome_func',
-    ));
-});
-
-function my_awesome_func($data)
-{
-    $sPlayerID = $_POST["pid"];
-    return ["success" => true, "content" => ["user" => wp_get_current_user(), "id" => $data["id"], "pid" => $sPlayerID]];
-}
-
 //Remove this once you've converted the player page to full dynamic
 add_shortcode('dbnPlayerPage', 'dbnPlayer_MainPage');
 function dbnPlayer_MainPage()
@@ -35,6 +17,7 @@ function dbnPlayer_MainPage()
 
     return $ret;
 }
+//-----------------
 
 class dbnResponder
 {
@@ -98,8 +81,6 @@ class dbnResponder
         return $ret;
     }
 }
-
-
 
 add_shortcode('dbnPlayerVsPlayer', 'dbnPlayerVsPlayer_Create');
 function dbnPlayerVsPlayer_Create()
