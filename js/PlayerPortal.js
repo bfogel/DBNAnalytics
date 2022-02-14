@@ -64,7 +64,7 @@ function MakePage() {
             var thesebids = allbids.filter(bid => bid.CompetitionID == schedule.CompetitionID && bid.Round == schedule.Round);
             thesebids.forEach(bid => bs.Bids[bid.Country] = bid.Bid);
 
-            var pbi = new PlayerBidInput(manager, schedule.BidsLocked);
+            var pbi = new BidSetView(manager, schedule.BidsLocked);
             pbi.BidsLocked = schedule.BidsLocked;
 
             row.push(pbi.UI_SeedInTourney);
@@ -117,7 +117,7 @@ function MakePage() {
 }
 
 /**
- * @param {PlayerBidInput} pbi 
+ * @param {BidSetView} pbi 
  */
 function SaveBids(pbi, btn) {
     if (pbi.BidSet.LastValidationMessages) {

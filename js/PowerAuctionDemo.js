@@ -7,7 +7,9 @@ var myManager = PowerBidManager.GetManagerForCompetition(3051);//DBNI 2022
 var cardTitle = dbnHere().addCard();
 var cardDemo = dbnHere().addCard();
 
-var mPlayerBidInputs = Array.from(Array(0), x => new PlayerBidInput());
+/** @type {BidSetView[]} */
+var mPlayerBidInputs = [];
+/** @type {AuctionView} */
 var mAuctionView;
 
 function MakePage() {
@@ -69,7 +71,7 @@ function MakeInputTable() {
     var data = [];
 
     Array.from(Array(myManager.PlayersPerRound), (x, iSeed) => {
-        var pbi = new PlayerBidInput(myManager);
+        var pbi = new BidSetView(myManager);
         mPlayerBidInputs.push(pbi);
 
         var row = [pbi.UI_SeedInRound, pbi.UI_SeedInTourney, pbi.UI_PlayerName];

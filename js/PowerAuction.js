@@ -620,7 +620,7 @@ class Auction {
 
 //#region UI
 
-class PlayerBidInput {
+class BidSetView {
 
     /**
      * @param {PowerBidManager} manager 

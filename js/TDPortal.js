@@ -103,7 +103,7 @@ class CompetitionController {
             schedForPlayer.sort((a, b) => a.Round - b.Round);
             schedForPlayer.forEach(sched => {
                 var row = [];
-                var pbi = new PlayerBidInput(this.Manager, true);
+                var pbi = new BidSetView(this.Manager, true);
 
                 var bs = this.Manager.GetBidSetForPlayerAndRound(seed.PlayerName, sched.Round);
                 if (bs) pbi.BidSet = bs;
@@ -242,7 +242,7 @@ function MakePage() {
 }
 
 /**
- * @param {PlayerBidInput} pbi 
+ * @param {BidSetView} pbi 
  */
 function SaveBids(pbi) {
     if (pbi.BidSet.LastValidationMessages) {
