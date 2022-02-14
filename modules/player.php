@@ -84,7 +84,7 @@ class dbnResponder
         }
 
         foreach ($js_system as $value) {
-            $ret .= "<script src =  = '" . $mainpath . "js/" . $value . ".js?x=" . $this->Version . "'></script>";
+            $ret .= "<script src = '" . $mainpath . "js/" . $value . ".js?x=" . $this->Version . "'></script>";
         }
 
         if ($this->JS_PlayerPortal || $this->JS_TDPortal) {
@@ -92,7 +92,7 @@ class dbnResponder
         }
 
         foreach ($js_page as $value) {
-            $ret .= "<script src =  = '" . $mainpath . "js/" . $value . ".js?x=" . $this->Version . "'></script>";
+            $ret .= "<script src = '" . $mainpath . "js/" . $value . ".js?x=" . $this->Version . "'></script>";
         }
 
         return $ret;
