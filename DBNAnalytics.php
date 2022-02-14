@@ -20,6 +20,6 @@ include("modules/system.php");
 include("modules/competition.php");
 include("modules/player.php");
 include("modules/scoringcalculator.php");
-include("modules/hubget.php");
+include("hubget.php");
 
 ?>
