@@ -6,6 +6,10 @@
 // include("/home/customer/www/diplobn.com/public_html/wp-includes/plugin.php");
 // include("/home/customer/www/diplobn.com/public_html/wp-includes/class-wp-user.php");
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
 header("Access-Control-Allow-Origin: *");
 
 //REST API endpoint---------------------------
