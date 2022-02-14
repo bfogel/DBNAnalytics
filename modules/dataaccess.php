@@ -21,11 +21,11 @@ function dbn_GetConnection()
 
 function GetResultsetAsJSON($sql, $parameters = null)
 {
-    $rs = new ResultSet($sql, $parameters);
+    $rs = new dbnResultSet($sql, $parameters);
     return $rs->ToJSON();
 }
 
-class ResultSet
+class dbnResultSet
 {
     public $success = false;
     public $fields = [];

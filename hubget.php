@@ -111,7 +111,7 @@ function GetUserInfo($parameters): UserInfo
     if ($_UserInfo == null) {
 
         if (array_key_exists("token", $parameters)) {
-            $rs = new ResultSet("SELECT * FROM Player WHERE Token = ?", [$parameters["token"]]);
+            $rs = new dbnResultSet("SELECT * FROM Player WHERE Token = ?", [$parameters["token"]]);
             if ($rs->success) {
                 if (count($rs->data) > 0) {
                     $row = $rs->data[0];
@@ -135,7 +135,7 @@ function VerifyTD($competitionID, $playerid)
     $sql .= " FROM Competition AS C";
     $sql .= " WHERE C.CompetitionID = ?";
 
-    $rs = new ResultSet($sql, [$competitionID]);
+    $rs = new dbnResultSet($sql, [$competitionID]);
     $data = $rs->data;
 
     return count($data) > 0 && $data[0][0] == $playerid;
@@ -171,7 +171,7 @@ function HandleRequest($request)
                 $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                 $games = GetGames($where, [$parameters['p1'], $parameters['p2']]);
 
-                if ($games instanceof ResultSet) return $games->ToJSON();
+                if ($games instanceof dbnResultSet) return $games->ToJSON();
                 return ["success" => true, "content" => $games];
             }
     }
@@ -239,7 +239,7 @@ function HandleRequest($request)
 
                 $sql = 'UPDATE CompetitionPlayerSchedule SET BidsLocked = ? ';
                 $sql .= 'WHERE Competition_CompetitionID = ? AND Round = ?';
-                $rs = new ResultSet($sql, [$value ? 1 : 0, $competitionID, $round]);
+                $rs = new dbnResultSet($sql, [$value ? 1 : 0, $competitionID, $round]);
 
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
                 return ["success" => true, "content" => ["RecordsAffected" => $rs->affected_rows]];
@@ -274,7 +274,7 @@ function HandleRequest($request)
 
                 $sql = 'SELECT BidsLocked FROM CompetitionPlayerSchedule';
                 $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
-                $rs = new ResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
+                $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
 
                 $locked = false;
@@ -286,14 +286,14 @@ function HandleRequest($request)
                 }
 
                 $sql = "DELETE FROM PlayerCountryBid WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND `Round` = ?";
-                $rs = new ResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
+                $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
                 if (!$rs->success) return ["success" => false, "message" => "(clearing) " . $rs->message];
 
                 $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
                 $sql .= ' VALUES (?,?,?,?,?)';
 
                 foreach ($bids as $country => $bid) {
-                    $rs = new ResultSet($sql, [$competitionID, $userinfo->PlayerID, $round, CountryNameToID($country), $bid]);
+                    $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round, CountryNameToID($country), $bid]);
                     if (!$rs->success) return ["success" => false, "message" => "(adding " . $country . ") " . $rs->message];
                 }
 
@@ -324,7 +324,7 @@ function GetGames($where, $params)
     $sql .= ' WHERE ' . $where;
     $sql .= ' ORDER BY G.GameID, CO.CountryName';
 
-    $rs = new ResultSet($sql, $params);
+    $rs = new dbnResultSet($sql, $params);
 
     if (!$rs->success) return $rs;
 
