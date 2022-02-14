@@ -89,20 +89,35 @@ class dbnUserInfo
 function GetUserInfo($parameters): dbnUserInfo
 {
     if (array_key_exists("token", $parameters)) {
-        $rs = new dbnResultSet("SELECT * FROM Player WHERE Token = ?", [$parameters["token"]]);
-        if ($rs->success) {
-            if (count($rs->data) > 0) {
+        $rs = new dbnResultSet("SELECT PlayerID, PlayerName FROM Player WHERE Token = ?", [$parameters["token"]]);
+        if (!$rs->success) {
+            return new dbnUserInfo(0, $rs->message);
+        } else {
+            if (count($rs->data) == 0) {
+                return new dbnUserInfo(0, "no data");
+            } else {
                 $row = $rs->data[0];
                 return new dbnUserInfo($row[0], $row[1]);
-            } else {
-                return new dbnUserInfo(0, "no data");
             }
-        } else {
-            return new dbnUserInfo(0, $rs->message);
         }
     } else {
         $wpuser = wp_get_current_user();
-        return new dbnUserInfo(0, json_encode($wpuser));
+        if (!$wpuser) {
+            return new dbnUserInfo(0, "no user");
+        } else {
+            $wpusername = $wpuser->user_login;
+            $rs = new dbnResultSet("SELECT PlayerID, PlayerName FROM Player WHERE DiploBNUser = ?", [$wpusername]);
+            if (!$rs->success) {
+                return new dbnUserInfo(0, $rs->message);
+            } else {
+                if (count($rs->data) == 0) {
+                    return new dbnUserInfo(0, "user " . $wpusername . " not registered");
+                } else {
+                    $row = $rs->data[0];
+                    return new dbnUserInfo($row[0], $row[1]);
+                }
+            }
+        }
     }
 }
 
