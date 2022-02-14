@@ -1,8 +1,8 @@
 <?php
 
-// if ( ! defined( 'ABSPATH' ) ) {
-// 	exit; // Exit if accessed directly.
-// }
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 header("Access-Control-Allow-Origin: *");
 
@@ -55,17 +55,17 @@ function hubget_respond($data)
 //---------------------------------------------
 
 
-$requests = $_POST['requests'];
+// $requests = $_POST['requests'];
 
-if ($requests != "") {
-    $list = json_decode($requests, true);
-    $ret = [];
-    foreach ($list as $item) {
-        array_push($ret, HandleRequest($item));
-    }
-    echo json_encode($ret);
-    return;
-}
+// if ($requests != "") {
+//     $list = json_decode($requests, true);
+//     $ret = [];
+//     foreach ($list as $item) {
+//         array_push($ret, HandleRequest($item));
+//     }
+//     echo json_encode($ret);
+//     return;
+// }
 
 function CountryNameToID($country)
 {
