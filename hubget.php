@@ -39,7 +39,7 @@ add_action('rest_api_init', function () {
 
 function hubget_respond($data)
 {
-    $myrequests = $_POST['requests'];
+    $myrequests = stripcslashes($_POST['requests']);
 
     //return json_decode($myrequests, true);
     $mylist = json_decode($myrequests, true);
