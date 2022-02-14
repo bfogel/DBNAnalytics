@@ -200,7 +200,7 @@ function MakePage() {
 
     reqs.Send();
 
-    console.log(reqUserInfo.ResponseContent);
+    console.log("User: ", reqUserInfo.ResponseContent);
 
     myUserInfo = reqUserInfo.UserInfo;
     if (!myUserInfo) { div.addBoldText("Could not locate user"); return; }
