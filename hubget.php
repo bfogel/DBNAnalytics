@@ -4,22 +4,22 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-header("Access-Control-Allow-Origin: *");
-
 //REST API endpoint---------------------------
-function initCors($value)
-{
-    $origin = get_http_origin();
-    $allowed_origins = ['site1.example.com', 'site2.example.com', 'localhost:3000'];
 
-    if ($origin && in_array($origin, $allowed_origins)) {
-        header('Access-Control-Allow-Origin: ' . esc_url_raw($origin));
-        header('Access-Control-Allow-Methods: GET');
-        header('Access-Control-Allow-Credentials: true');
-    }
+//NOTE: If you want to tailor CORS, here's a template.  Would go into the add_filter function
+// function initCors($value)
+// {
+//     $origin = get_http_origin();
+//     $allowed_origins = ['site1.example.com', 'site2.example.com', 'localhost:3000'];
 
-    return $value;
-}
+//     if ($origin && in_array($origin, $allowed_origins)) {
+//         header('Access-Control-Allow-Origin: ' . esc_url_raw($origin));
+//         header('Access-Control-Allow-Methods: GET');
+//         header('Access-Control-Allow-Credentials: true');
+//     }
+
+//     return $value;
+// }
 
 add_action('rest_api_init', function () {
     // register_rest_route('DBNAnalytics/v1', '/hubget/(?P<id>\d+)', array(
@@ -33,7 +33,7 @@ add_action('rest_api_init', function () {
     remove_filter('rest_pre_serve_request', 'rest_send_cors_headers');
 
     add_filter('rest_pre_serve_request', function ($value) {
-        header("Access-Control-Allow-Origin: *");
+        //header("Access-Control-Allow-Origin: *");
     });
 }, 15);
 
@@ -52,19 +52,6 @@ function hubget_respond($data)
     return "";
 }
 //---------------------------------------------
-
-
-// $requests = $_POST['requests'];
-
-// if ($requests != "") {
-//     $list = json_decode($requests, true);
-//     $ret = [];
-//     foreach ($list as $item) {
-//         array_push($ret, HandleRequest($item));
-//     }
-//     echo json_encode($ret);
-//     return;
-// }
 
 function CountryNameToID($country)
 {

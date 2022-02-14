@@ -125,9 +125,6 @@ class bfDataRequestList {
 
     req.send(fd);
 
-    console.log(req.responseText);
-    console.log(JSON.parse(req.responseText));
-
     if (req.status == 200 && req.responseText != "nope") {
       var resp;
       try {
