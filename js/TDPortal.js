@@ -1,27 +1,5 @@
 "use strict";
 
-// var req = new bfDataRequest("test", null);
-// req.SendAlone();
-// req.ReportToConsole();
-
-// var xmr = new XMLHttpRequest();
-// xmr.open('POST', "https://diplobn.com/wp-json/DBNAnalytics/v1/brandon/2232", false); //false for not-async
-
-// var fd = new FormData();
-// fd.set("pid", "aaa");
-
-// // if (mWPNonce) {
-// //     xmr.setRequestHeader('X-WP-Nonce', mWPNonce);
-// //     fd.append("_wpnonce", mWPNonce);
-// //     console.log("Setting nonce: ", mWPNonce);
-// // }
-
-// xmr.send(fd);
-// console.log("XMR: ", JSON.parse(xmr.responseText));
-
-
-///-----------
-
 class CompetitionController {
 
     CompetitionID = 0;
@@ -221,6 +199,8 @@ function MakePage() {
     reqs.addRequest([reqUserInfo, reqSeeds, reqSchedule, reqBids]);
 
     reqs.Send();
+
+    console.log(reqUserInfo.ResponseContent);
 
     myUserInfo = reqUserInfo.UserInfo;
     if (!myUserInfo) { div.addBoldText("Could not locate user"); return; }
