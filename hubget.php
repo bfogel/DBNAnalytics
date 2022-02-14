@@ -41,7 +41,7 @@ function hubget_respond($data)
 {
     $myrequests = $_POST['requests'];
 
-    return json_decode($myrequests);
+    return ["iwant" => "stuff"];
 
     if ($myrequests != "") {
         $list = json_decode($myrequests, true);
