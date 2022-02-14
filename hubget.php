@@ -101,7 +101,8 @@ function GetUserInfo($parameters): dbnUserInfo
             return new dbnUserInfo(0, $rs->message);
         }
     } else {
-        return new dbnUserInfo(0, "no token");
+        $wpuser = wp_get_current_user();
+        return new dbnUserInfo(0, json_encode($wpuser));
     }
 }
 
