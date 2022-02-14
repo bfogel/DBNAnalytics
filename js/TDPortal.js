@@ -200,10 +200,8 @@ function MakePage() {
 
     reqs.Send();
 
-    reqUserInfo.ReportToConsole();
-
     myUserInfo = reqUserInfo.UserInfo;
-    if (!myUserInfo) { div.addBoldText("Could not locate user"); return; }
+    if (!myUserInfo) { div.addBoldText("Could not locate user (" + reqUserInfo.Message + ")"); return; }
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
 
     //Passed user and data retrieval
