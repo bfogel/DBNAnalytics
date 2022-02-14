@@ -13,7 +13,7 @@ header("Access-Control-Allow-Origin: *");
 //REST API endpoint---------------------------
 add_action('rest_api_init', function () {
     // register_rest_route('DBNAnalytics/v1', '/hubget/(?P<id>\d+)', array(
-    register_rest_route('DBNAnalytics/v1', '/hubget', array(
+    register_rest_route('DBNAnalytics/v1', '/hubget/(?P<id>\d+)', array(
         'methods' => 'POST',
         'callback' => 'hubget_respond',
     ));
