@@ -120,7 +120,7 @@ class bfDataRequestList {
 
     if (myHub.Ticket) {
       req.setRequestHeader('X-WP-Nonce', myHub.Ticket);
-      //fd.append("_wpnonce", myHub.Ticket);
+      fd.append("_wpnonce", myHub.Ticket);
     }
 
     req.send(fd);
