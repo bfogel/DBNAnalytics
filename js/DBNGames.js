@@ -118,11 +118,10 @@ class bfDataRequestList {
 
     var fd = this.MakeFormData();
 
-    // if (mWPNonce) {
-    //   req.setRequestHeader('X-WP-Nonce', mWPNonce);
-    //   fd.append("_wpnonce", mWPNonce);
-    //   console.log("Setting nonce: ", mWPNonce);
-    // }
+    if (myHub.Ticket) {
+      req.setRequestHeader('X-WP-Nonce', myHub.Ticket);
+      //fd.append("_wpnonce", myHub.Ticket);
+    }
 
     req.send(fd);
 
@@ -204,6 +203,8 @@ class bfDataRequestList {
 class dbnHub {
 
   MakeRequestList() { return new bfDataRequestList("https://diplobn.com/wp-content/plugins/DBNAnalytics/hubget.php"); }
+
+  Ticket;
 
   #players = Array.from(Array(0), x => new dbnPlayer());
   get Players() {
