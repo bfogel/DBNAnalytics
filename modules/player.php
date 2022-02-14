@@ -19,7 +19,7 @@ add_action('rest_api_init', function () {
 function my_awesome_func($data)
 {
     $sPlayerID = $_POST["pid"];
-    return ["success" => true, "content" => ["user" => wp_get_current_user(), "id" => $data["id"], "id" => $sPlayerID]];
+    return ["success" => true, "content" => ["user" => wp_get_current_user(), "id" => $data["id"], "pid" => $sPlayerID]];
 }
 
 
