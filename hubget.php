@@ -34,7 +34,6 @@ add_action('rest_api_init', function () {
 
     add_filter('rest_pre_serve_request', function ($value) {
         header("Access-Control-Allow-Origin: *");
-        //header('Access-Control-Allow-Methods: PUT');
     });
 }, 15);
 
@@ -43,6 +42,7 @@ function hubget_respond($data)
     $myrequests = $_POST['requests'];
 
     //return json_decode($myrequests, true);
+    $mylist = json_decode($myrequests, true);
     return [["iwant" => $myrequests], ["iwant" => "morestuff"], ["iwant" => "stuff2"], ["iwant" => "morestuff2"]];
 
     if ($myrequests != "") {
