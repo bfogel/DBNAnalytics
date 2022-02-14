@@ -130,6 +130,7 @@ class bfDataRequestList {
       try {
         resp = JSON.parse(req.responseText);
       } catch (error) {
+        console.log(req.responseText);
         this._SetErrorMessageAndLog("Error in dbnHubRequestList.Send(1): " + error + "\n" + req.responseText);
         return false;
       }
