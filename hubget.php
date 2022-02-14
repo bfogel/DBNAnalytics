@@ -1,10 +1,10 @@
 <?php
 
 //For some unknown reason, these need to be included so we can get user info
-include("/home/customer/www/diplobn.com/public_html/wp-includes/pluggable.php");
-include("/home/customer/www/diplobn.com/public_html/wp-includes/user.php");
-include("/home/customer/www/diplobn.com/public_html/wp-includes/plugin.php");
-include("/home/customer/www/diplobn.com/public_html/wp-includes/class-wp-user.php");
+// include("/home/customer/www/diplobn.com/public_html/wp-includes/pluggable.php");
+// include("/home/customer/www/diplobn.com/public_html/wp-includes/user.php");
+// include("/home/customer/www/diplobn.com/public_html/wp-includes/plugin.php");
+// include("/home/customer/www/diplobn.com/public_html/wp-includes/class-wp-user.php");
 
 header("Access-Control-Allow-Origin: *");
 
