@@ -31,6 +31,7 @@ function hubget_respond($data)
         }
         return json_encode($ret);
     }
+    return "";
 }
 //---------------------------------------------
 
