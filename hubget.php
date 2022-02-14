@@ -11,12 +11,32 @@ include("/home/customer/www/diplobn.com/public_html/wp-includes/class-wp-user.ph
 header("Access-Control-Allow-Origin: *");
 
 //REST API endpoint---------------------------
+function initCors($value)
+{
+    $origin = get_http_origin();
+    $allowed_origins = ['site1.example.com', 'site2.example.com', 'localhost:3000'];
+
+    if ($origin && in_array($origin, $allowed_origins)) {
+        header('Access-Control-Allow-Origin: ' . esc_url_raw($origin));
+        header('Access-Control-Allow-Methods: GET');
+        header('Access-Control-Allow-Credentials: true');
+    }
+
+    return $value;
+}
+
 add_action('rest_api_init', function () {
     // register_rest_route('DBNAnalytics/v1', '/hubget/(?P<id>\d+)', array(
     register_rest_route('DBNAnalytics/v1', '/hubget/(?P<id>\d+)', array(
         'methods' => 'POST',
         'callback' => 'hubget_respond',
     ));
+
+    remove_filter('rest_pre_serve_request', 'rest_send_cors_headers');
+
+    add_filter('rest_pre_serve_request', function ($value) {
+        header("Access-Control-Allow-Origin: *");
+    });
 });
 
 function hubget_respond($data)
