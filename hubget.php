@@ -75,7 +75,7 @@ function CountryNameToID($country)
     }
 }
 
-class UserInfo
+class dbnUserInfo
 {
     public $PlayerID = 0;
     public $PlayerName = "";
@@ -86,29 +86,23 @@ class UserInfo
     }
 }
 
-$_UserInfo = null;
-function GetUserInfo($parameters): UserInfo
+function GetUserInfo($parameters): dbnUserInfo
 {
-    global $_UserInfo;
-    if ($_UserInfo == null) {
-
-        if (array_key_exists("token", $parameters)) {
-            $rs = new dbnResultSet("SELECT * FROM Player WHERE Token = ?", [$parameters["token"]]);
-            if ($rs->success) {
-                if (count($rs->data) > 0) {
-                    $row = $rs->data[0];
-                    $_UserInfo = new UserInfo($row[0], $row[1]);
-                } else {
-                    $_UserInfo = new UserInfo(0, "no data");
-                }
+    if (array_key_exists("token", $parameters)) {
+        $rs = new dbnResultSet("SELECT * FROM Player WHERE Token = ?", [$parameters["token"]]);
+        if ($rs->success) {
+            if (count($rs->data) > 0) {
+                $row = $rs->data[0];
+                return new dbnUserInfo($row[0], $row[1]);
             } else {
-                $_UserInfo = new UserInfo(0, $rs->message);
+                return new dbnUserInfo(0, "no data");
             }
         } else {
-            $_UserInfo = new UserInfo(0, "no token");
+            return new dbnUserInfo(0, $rs->message);
         }
+    } else {
+        return new dbnUserInfo(0, "no token");
     }
-    return $_UserInfo;
 }
 
 function VerifyTD($competitionID, $playerid)
