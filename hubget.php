@@ -1,7 +1,7 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
 }
 
 header("Access-Control-Allow-Origin: *");
@@ -27,23 +27,22 @@ add_action('rest_api_init', function () {
         'methods' => 'POST',
         'callback' => 'hubget_respond',
     ));
-
 });
 
-add_action( 'rest_api_init', function() {
+add_action('rest_api_init', function () {
     remove_filter('rest_pre_serve_request', 'rest_send_cors_headers');
 
     add_filter('rest_pre_serve_request', function ($value) {
         header("Access-Control-Allow-Origin: *");
     });
-}, 15 );
+}, 15);
 
 function hubget_respond($data)
 {
     $myrequests = $_POST['requests'];
 
-    return $myrequests;
-    
+    return json_encode($myrequests);
+
     if ($myrequests != "") {
         $list = json_decode($myrequests, true);
         $ret = [];
