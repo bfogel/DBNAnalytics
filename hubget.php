@@ -40,6 +40,8 @@ add_action( 'rest_api_init', function() {
 
 function hubget_respond($data)
 {
+    return "I see you";
+    
     $myrequests = $_POST['requests'];
 
     if ($myrequests != "") {
