@@ -850,7 +850,7 @@ class AuctionView {
                 } else {
                     row.push(bidset.PlayerName + " (" + bidset.SeedInTourney + ")");
                 }
-                row.push((bidset == null) ? "--" : "(#" + bidset.RankOfPowerAssignmentAmongBids + ", " + bidset.Bids[powername] + ")");
+                row.push((bidset == null) ? "--" : "(#" + bidset.RankOfPowerAssignmentAmongBids + ")");
 
                 data.push(row);
             });

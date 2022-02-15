@@ -1,4 +1,8 @@
 
+/* to do: 
+    - dbnTable: Replace style properties with registration functions.  Current requires too much insider knowledge
+*/
+
 //#region Common
 
 class dbnElement {
