@@ -22,7 +22,7 @@ function dbnPlayer_MainPage()
 class dbnResponder
 {
 
-    public $Version = 26;
+    public $Version = 27;
 
     public $CSS_DBNAnalytics = true;
     public $CSS_PowerAuction = false;
