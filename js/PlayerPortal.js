@@ -102,7 +102,7 @@ function MakePage() {
 
         if (bOneIsUnlocked) {
             tbl.Headers.splice(2, 0, "Save");
-            tbl.Headers.splice(tbl.Headers.length - 2, 0, "Random");
+            tbl.Headers.splice(tbl.Headers.length - 1, 0, "Random");
         }
         tbl.CountryColumns = {};
         manager.PowerNames.forEach((x, i) => tbl.CountryColumns[i + 2 + (bOneIsUnlocked ? 1 : 0)] = x);

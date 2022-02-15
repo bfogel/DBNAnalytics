@@ -241,27 +241,4 @@ function MakePage() {
     });
 }
 
-/**
- * @param {BidSetView} pbi 
- */
-function SaveBids(pbi) {
-    if (pbi.BidSet.LastValidationMessages) {
-        alert("The bid set is not valid:\n" + pbi.BidSet.LastValidationMessages.replace("<br>", "\n"));
-        return;
-    }
-
-    var playertoken = myHub.PlayerToken;
-
-    var parms = { "token": playertoken, "competitionid": pbi.BidSet.CompetitionID, "round": pbi.BidSet.Round, "bids": JSON.stringify(pbi.BidSet.Bids) };
-    var req = new bfDataRequest("savebid", parms);
-    req.SendAlone();
-
-    if (!req.Success) {
-        alert("Unable to save: " + req.Message);
-    } else {
-        alert("Saved");
-        // console.log(JSON.stringify(req.ResponseContent));
-    }
-}
-
 MakePage();
