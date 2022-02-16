@@ -22,4 +22,10 @@ include("modules/player.php");
 include("modules/scoringcalculator.php");
 include("hubget.php");
 
+
+function disable_elementor_overview_widget() {
+	remove_meta_box( 'e-dashboard-overview', 'dashboard', 'normal');
+}
+add_action('wp_dashboard_setup', 'disable_elementor_overview_widget', 40);
+
 ?>
