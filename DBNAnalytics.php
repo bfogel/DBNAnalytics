@@ -28,4 +28,8 @@ function disable_elementor_overview_widget() {
 }
 add_action('wp_dashboard_setup', 'disable_elementor_overview_widget', 40);
 
+function disable_owp_dashboard_news_widget() {
+	remove_meta_box( 'owp_dashboard_news', 'dashboard', 'normal');
+}
+add_action('wp_dashboard_setup', 'disable_owp_dashboard_news_widget', 40);
 ?>
