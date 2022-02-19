@@ -72,7 +72,9 @@ function MakePage() {
             /** @type {dbnButton} */
             var btnSave;
 
-            if (!schedule.BidsLocked) {
+            if (schedule.BidsLocked) {
+                row.push("Locked");
+            } else {
                 bOneIsUnlocked = true;
                 var bbSave = new dbnButtonBar();
                 bbSave.Compact = true;
