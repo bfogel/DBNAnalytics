@@ -40,7 +40,7 @@ function MakePage() {
 
         var tbl = card.addTable();
 
-        var headers = ["Round", "Tourn<br>Seed"];
+        var headers = ["Round", "Tourn<br>Seed", "Save"];
         headers.push(...manager.PowerNames);
         headers.push("Total", "Note");
         tbl.Headers = headers;
@@ -103,7 +103,6 @@ function MakePage() {
         });
 
         if (bOneIsUnlocked) {
-            tbl.Headers.splice(2, 0, "Save");
             tbl.Headers.splice(tbl.Headers.length - 1, 0, "Random");
         }
         tbl.CountryColumns = {};
