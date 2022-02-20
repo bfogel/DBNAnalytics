@@ -107,7 +107,7 @@ function MakePage() {
             tbl.Headers.splice(tbl.Headers.length - 1, 0, "Random");
         }
         tbl.CountryColumns = {};
-        manager.PowerNames.forEach((x, i) => tbl.CountryColumns[i + 2 + (bOneIsUnlocked ? 1 : 0)] = x);
+        manager.PowerNames.forEach((x, i) => tbl.CountryColumns[i + 3] = x);
 
         tbl.Data = data;
         tbl.Generate();
