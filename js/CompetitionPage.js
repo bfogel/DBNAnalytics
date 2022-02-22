@@ -1,29 +1,28 @@
 "use strict";
 
-/** @type {dbnUserInfo} */
-var myUserInfo;
+/**
+ * @typedef {import('./DBNUI.js')}
+ * @typedef {import('./DBNGames.js')}
+ */
 
-/** @type {CompetitionAuctionController[]} */
-var myCompetitions = [];
+/** @type {CompetitionController} */
+var myCompetition;
 
 function MakePage() {
     var div = dbnHere().addDiv();
 
     var reqs = myHub.MakeRequestList();
-    var reqUserInfo = new dbnHubRequest_UserInfo();
     var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed(true);
     var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule(true);
     var reqBids = new dbnHubRequest_Bids(true);
 
-    reqs.addRequest([reqUserInfo, reqSeeds, reqSchedule, reqBids]);
+    reqs.addRequest([reqSeeds, reqSchedule, reqBids]);
 
     reqs.Send();
 
-    myUserInfo = reqUserInfo.UserInfo;
-    if (!myUserInfo) { div.addBoldText("Could not locate user (" + reqUserInfo.Message + ")"); return; }
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
 
-    //Passed user and data retrieval
+    //Passed data retrieval
 
     div.addTitleCard("DBN TD Portal: " + myUserInfo.PlayerName);
 
@@ -34,7 +33,7 @@ function MakePage() {
     //Collect competitions
     allseeds.forEach(x => {
         if (!myCompetitions.hasOwnProperty(x.CompetitionID)) {
-            var comp = new CompetitionAuctionController();
+            var comp = new CompetitionController();
             comp.CompetitionID = x.CompetitionID;
             comp.CompetitionName = x.CompetitionName;
             myCompetitions[x.CompetitionID] = comp;
