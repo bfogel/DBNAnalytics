@@ -169,7 +169,7 @@ function HandleRequest($request)
     }
 
     //Requests that require a user
-    $parameters["token"] = "b10a9bcf-9e4a-4d4a-8389-02d938edb3d5";
+    if ($request["Key"] != "userinfo") $parameters["token"] = "b10a9bcf-9e4a-4d4a-8389-02d938edb3d5";
     $userinfo = GetUserInfo($parameters);
     if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
 
