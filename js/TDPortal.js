@@ -34,9 +34,7 @@ function MakePage() {
     //Collect competitions
     allseeds.forEach(x => {
         if (!myCompetitions.hasOwnProperty(x.CompetitionID)) {
-            var comp = new CompetitionAuctionController();
-            comp.CompetitionID = x.CompetitionID;
-            comp.CompetitionName = x.CompetitionName;
+            var comp = new CompetitionAuctionController(x.CompetitionID, x.CompetitionName);
             myCompetitions[x.CompetitionID] = comp;
         }
     });
@@ -55,7 +53,11 @@ function MakePage() {
 
         comp.MakeBidSets(allbids);
 
-        div.appendChild(comp.MakeUI());
+        var card = new dbnCard();
+        card.addHeading(1, comp.CompetitionName);
+        card.add(comp.MakeUI());
+
+        div.appendChild(card);
 
     });
 }

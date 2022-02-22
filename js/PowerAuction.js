@@ -875,8 +875,20 @@ class AuctionView {
 
 class CompetitionAuctionController {
 
-    CompetitionID = 0;
-    CompetitionName = "";
+    /**
+     * 
+     * @param {number} competitionId 
+     * @param {string} competitionName 
+     */
+    constructor(competitionId, competitionName) {
+        this.CompetitionID = competitionId;
+        this.CompetitionName = competitionName;
+    }
+
+    /** @type {number} */
+    CompetitionID;
+    /** @type {string} */
+    CompetitionName;
 
     /** @type {PowerBidManager} */
     Manager;
@@ -890,6 +902,8 @@ class CompetitionAuctionController {
 
     /** @type {BidSet[]} */
     BidSets = [];
+
+    ShowLockingButtons = false;
 
     /**
      * @param {number} playerid
@@ -932,19 +946,19 @@ class CompetitionAuctionController {
     UI_AllRounds;
 
     MakeUI() {
-        var card = new dbnCard();
-        card.addHeading(1, this.CompetitionName);
-
         var tab = new dbnTabs();
-        card.appendChild(tab);
+
         tab.addTab("All bids", this.#MakeBidsTableUI(this.Schedules));
         this.Rounds.forEach((round, i) => {
             var schedules = this.Schedules.filter(x => x.Round == round);
             var divtab = new dbnDiv();
-            var bbar = divtab.addButtonBar();
-            bbar.AddButton("Unlock All", () => this.SetLocked(round, false));
-            bbar.AddButton("Lock All", () => this.SetLocked(round, true));
-            // bbar.AddButton("Run Auction", () => this.RunAuction(round));
+
+            if (this.ShowLockingButtons) {
+                var bbar = divtab.addButtonBar();
+                bbar.AddButton("Unlock All", () => this.SetLocked(round, false));
+                bbar.AddButton("Lock All", () => this.SetLocked(round, true));
+                // bbar.AddButton("Run Auction", () => this.RunAuction(round));
+            }
 
             divtab.add(this.#MakeBidsTableUI(schedules));
             divtab.add(this.#MakeAuctionUI(round));
@@ -957,7 +971,7 @@ class CompetitionAuctionController {
 
         tab.SelectTabByIndex(0);
 
-        return card;
+        return tab;
     }
 
     /**

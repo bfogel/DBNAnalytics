@@ -3,14 +3,16 @@
 /**
  * @typedef {import('./DBNUI.js')}
  * @typedef {import('./DBNGames.js')}
+ * @typedef {import('./PowerAuction')}
  */
 
 /** @type {CompetitionController} */
 var myCompetition;
 
-function MakePage() {
-    var div = dbnHere().addDiv();
+function MakeAuctionTab(competitionid) {
+    var ret = dbnHere().addDiv();
 
+    //NOTE: These requests should be modified to take a CompetitionID
     var reqs = myHub.MakeRequestList();
     var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed(true);
     var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule(true);
@@ -24,39 +26,30 @@ function MakePage() {
 
     //Passed data retrieval
 
-    div.addTitleCard("DBN TD Portal: " + myUserInfo.PlayerName);
-
     var allseeds = reqSeeds.ResponseToObjects();
     var allschedules = reqSchedule.ResponseToObjects();
     var allbids = reqBids.ResponseToObjects();
 
-    //Collect competitions
-    allseeds.forEach(x => {
-        if (!myCompetitions.hasOwnProperty(x.CompetitionID)) {
-            var comp = new CompetitionController();
-            comp.CompetitionID = x.CompetitionID;
-            comp.CompetitionName = x.CompetitionName;
-            myCompetitions[x.CompetitionID] = comp;
-        }
-    });
+    //Get competition
+    var seeds = allseeds.filter(x => x.CompetitionID == competitionid);
+    if (seeds.length == 0) return;
 
-    myCompetitions.forEach(comp => {
-        comp.Manager = PowerBidManager.GetManagerForCompetition(comp.CompetitionID);
+    myCompetition = new CompetitionAuctionController(seeds[0].CompetitionID, seeds[0].CompetitionName);
 
-        comp.Seeds = allseeds.filter(x => x.CompetitionID == comp.CompetitionID);
-        comp.Seeds.sort((a, b) => a.Seed - b.Seed);
+    myCompetition.Manager = PowerBidManager.GetManagerForCompetition(myCompetition.CompetitionID);
 
-        comp.Rounds = [];
-        allschedules.forEach(x => { if (!comp.Rounds.includes(x.Round)) comp.Rounds.push(x.Round); });
-        comp.Rounds.sort();
+    myCompetition.Seeds = allseeds.filter(x => x.CompetitionID == myCompetition.CompetitionID);
+    myCompetition.Seeds.sort((a, b) => a.Seed - b.Seed);
 
-        comp.Schedules = allschedules.filter(x => x.CompetitionID == comp.CompetitionID);
+    myCompetition.Rounds = [];
+    allschedules.forEach(x => { if (!myCompetition.Rounds.includes(x.Round)) myCompetition.Rounds.push(x.Round); });
+    myCompetition.Rounds.sort();
 
-        comp.MakeBidSets(allbids);
+    myCompetition.Schedules = allschedules.filter(x => x.CompetitionID == myCompetition.CompetitionID);
 
-        div.appendChild(comp.MakeUI());
+    myCompetition.MakeBidSets(allbids);
 
-    });
+    ret.appendChild(myCompetition.MakeUI());
+
+    return ret;
 }
-
-MakePage();
