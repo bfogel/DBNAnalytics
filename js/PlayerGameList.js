@@ -75,8 +75,9 @@ function LoadComparison() {
     }
 
     var games = myHub.GetGamesForPlayers(p1.PlayerID, p2.PlayerID);
+    console.log(games);
 
-    if (games == null) {
+    if (games == null || games.length == 0) {
         divGamesStatus.domelement.innerHTML = "None";
     } else {
         MakeSummary([p1, p2], games);
@@ -101,9 +102,10 @@ function MakeSummary(players, games) {
     tblSummary.Headers.push("Centers");
 
     myHub.Countries.forEach((cc, iCol) => {
-        tblSummary.Headers.push(cc.substring(0, 1)+ " ts", "ctrs");
-        tblSummary.SetCountryForColumn(2 * iCol + 5, cc);
-        tblSummary.SetCountryForColumn(2 * iCol + 6, cc);
+        tblSummary.Headers.push(cc.substring(0, 1) + "#", "ts", "ctrs");
+        tblSummary.SetCountryForColumn(3 * iCol + 5, cc);
+        tblSummary.SetCountryForColumn(3 * iCol + 6, cc);
+        tblSummary.SetCountryForColumn(3 * iCol + 7, cc);
     });
 
     tblSummary.Data = uniqueplayers.map((player, iRow) => {
@@ -129,8 +131,9 @@ function MakeSummary(players, games) {
         for (const cc in linesByCC) {
             var cclines = linesByCC[cc];
             if (cclines.length == 0) {
-                row.push("", "");
+                row.push("", "", "");
             } else {
+                row.push(cclines.length);
                 var ccts = 100 * cclines.reduce((prev, x) => prev + x.TopShare, 0) / cclines.length;
                 row.push(ccts.toFixed() + "%");
                 var cccenters = cclines.reduce((prev, x) => prev + x.CenterCount, 0) / cclines.length;
