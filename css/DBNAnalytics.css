@@ -48,7 +48,7 @@
     padding: 4px;
     font-weight: 700;
     border-bottom: solid 1px #aaaaaa60;
-    background-color: #aaaaaa60;
+    background-color: rgba(170, 170, 170, 0.376);
     vertical-align: middle;
 }
 
@@ -95,30 +95,58 @@ tr.bfTest:hover {
 }
 
 .bfAustriaBack {
-    background-color: rgba(220, 20, 60, 0.70) !important;
+    background-color: rgb(230, 90, 118) !important;
 }
 
 .bfEnglandBack {
-    background-color: rgba(0, 0, 255, 0.60) !important;
+    background-color: rgb(102, 102, 255) !important;
 }
 
 .bfFranceBack {
-    background-color: rgba(0, 191, 255, 0.50) !important;
+    background-color: rgb(128, 223, 255) !important;
 }
 
 .bfGermanyBack {
-    background-color: rgba(0, 0, 0, 0.5) !important;
+    background-color: rgb(128, 128, 128) !important;
 }
 
 .bfItalyBack {
-    background-color: rgba(25, 180, 25, 0.60) !important;
+    background-color: rgb(117, 210, 117) !important;
 }
 
 .bfRussiaBack {
-    background-color: rgba(128, 128, 128, 0.15) !important;
+    background-color: rgb(210, 210, 210) !important;
 }
 
 .bfTurkeyBack {
+    background-color: rgb(255, 231, 102) !important;
+}
+
+.bfAustriaBackOLD {
+    background-color: rgba(220, 20, 60, 0.70) !important;
+}
+
+.bfEnglandBackOLD {
+    background-color: rgba(0, 0, 255, 0.60) !important;
+}
+
+.bfFranceBackOLD {
+    background-color: rgba(0, 191, 255, 0.50) !important;
+}
+
+.bfGermanyBackOLD {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.bfItalyBackOLD {
+    background-color: rgba(25, 180, 25, 0.60) !important;
+}
+
+.bfRussiaBackOLD {
+    background-color: rgba(128, 128, 128, 0.15) !important;
+}
+
+.bfTurkeyBackOLD {
     background-color: rgba(255, 215, 0, 0.60) !important;
 }
 
@@ -262,12 +290,46 @@ div.dbnButtonBar button:hover {
     top: -1px;
 }
 
-div.dbnButtonBar button.dbnDisabled{
+div.dbnButtonBar button.dbnDisabled {
     color: darkgray !important;
 }
 
-div.dbnButtonBar button.dbnDisabled:hover{
+div.dbnButtonBar button.dbnDisabled:hover {
     position: relative;
     top: 0px;
 }
 
+td.GamePlayer_Player {
+    margin: 0;
+    padding: 0;
+}
+
+div.GamePlayer_Player {
+    margin: 0;
+    padding-left: 5px;
+    padding-right: 2px;
+    padding-bottom: 0px;
+    padding-top: 0px;
+}
+
+div.GamePlayer_Selected {
+    font-weight: bold;
+}
+
+table.GamePlayer th {
+    background-color: rgb(220, 220, 220);
+}
+
+table.GamePlayer tr:nth-child(even) {
+    background-color: rgba(241, 228, 255, 0.7);
+    border-bottom: solid 3px;
+}
+
+table.GamePlayer tr:nth-child(odd) {
+    background-color: rgba(228, 241, 255, 0.7);
+    border-bottom: solid 3px;
+}
+
+table.GamePlayer tr:last-child {
+    border-bottom: 0;
+}

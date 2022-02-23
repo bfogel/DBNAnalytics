@@ -325,7 +325,10 @@ class dbnTable extends dbnElement {
     RowUrls = null;
     CellUrls = null;
 
-    CellClasses = null;
+
+    /** @type {[[number,number,string]]} */
+    CellClasses = [];
+    SetCellClass(row, column, className) { this.CellClasses.push([row, column, className]) };
 
     #rows = null;
     #lastSortIndex = null;

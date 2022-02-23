@@ -1,4 +1,8 @@
 
+/**
+ * @typedef {import('./DBNUI.js')}
+ */
+
 //#region DataRequest classes
 
 class bfDataSet {
@@ -207,6 +211,8 @@ class dbnHub {
 
   Ticket;
 
+  Countries = ["Austria", "England", "France", "Germany", "Italy", "Russia", "Turkey"];
+
   #players = Array.from(Array(0), x => new dbnPlayer());
   get Players() {
     if (this.#players.length = []) {
@@ -217,6 +223,7 @@ class dbnHub {
     return this.#players;
   }
 
+
   GetGamesForPlayers(player1id, player2id = null) {
     var vals = { "p1": player1id };
     if (player2id != null) vals["p2"] = player2id;
@@ -226,9 +233,11 @@ class dbnHub {
 
     if (!req.Success) return null;
 
-    var games = req.ResponseContent.map(x => new dbnGame(x));
+    if (req.ResponseContent instanceof Array) {
+      return req.ResponseContent.map(x => new dbnGame(x));
+    }
 
-    return games;
+    return null;
   }
 }
 var myHub = new dbnHub();
@@ -288,7 +297,9 @@ class dbnHubRequest_Competitions extends bfDataRequest {
 
 class dbnPlayer {
   constructor(playerid, playername) { this.PlayerID = parseInt(playerid); this.PlayerName = playername; }
+  /** @type {number} */
   PlayerID = null;
+  /** @type {string} */
   PlayerName = null;
   toString() { return "{Player " + this.PlayerID + ": " + this.PlayerName + "}"; }
 }
@@ -355,6 +366,8 @@ class dbnGame {
   Platform = null;
   URL = null;
   Competition = null;
+
+  /** @type {Object.<string,dbnGameResultLine>} */
   ResultLines = {};
 
   //constructor(gameid) { this.GameID = parseInt(gameid); }
@@ -386,12 +399,27 @@ class dbnGame {
     return null;
   }
 
+  GetResultLinesByRank() {
+    /** @type {Object.<number,dbnGameResultLine[]>} */
+    var ret = {};
+
+    Object.values(this.ResultLines).forEach(line => {
+      if (!ret.hasOwnProperty(line.Rank)) ret[line.Rank] = [];
+      ret[line.Rank].push(line);
+    });
+
+    return ret;
+  }
+
 }
 
 class dbnGameResultLine {
 
   Country = null;
+
+  /**@type {dbnPlayer} */
   Player = null;
+
   Note = null;
   CenterCount = null;
   InGameAtEnd = null;
@@ -404,7 +432,7 @@ class dbnGameResultLine {
 
   constructor(json) {
     this.Country = json.Country;
-    this.Player = { PlayerID: parseInt(json.Player.PlayerID), PlayerName: json.Player.PlayerName };
+    this.Player = new dbnPlayer(parseInt(json.Player.PlayerID), json.Player.PlayerName);
     this.Note = json.Note;
     this.CenterCount = parseInt(json.CenterCount);
     this.YearOfElimination = json.YearOfElimination != null ? parseInt(json.YearOfElimination) : null;
