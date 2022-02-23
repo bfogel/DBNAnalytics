@@ -22,7 +22,7 @@ function dbnPlayer_MainPage()
 class dbnResponder
 {
 
-    public $Version = 31;
+    public $Version = 32;
 
     public $CSS_DBNAnalytics = true;
     public $CSS_PowerAuction = false;
@@ -30,7 +30,7 @@ class dbnResponder
     public $JS_DBNUI = true;
     public $JS_DBNGames = true;
 
-    public $JS_PlayerComparison = false;
+    public $JS_PlayerGameList = false;
 
     public $JS_PowerAuction = false;
     public $JS_PowerAuctionDemo = false;
@@ -53,7 +53,7 @@ class dbnResponder
         if ($this->JS_DBNGames) array_push($js_system, "DBNGames");
 
         $js_page = [];
-        if ($this->JS_PlayerComparison) array_push($js_page, "PlayerComparison");
+        if ($this->JS_PlayerGameList) array_push($js_page, "PlayerGameList");
 
         if ($this->JS_PowerAuction) array_push($js_page, "PowerAuction");
         if ($this->JS_PowerAuctionDemo) array_push($js_page, "PowerAuctionDemo");
@@ -87,7 +87,7 @@ function dbnPlayerVsPlayer_Create()
 {
     $responder = new dbnResponder();
     $responder->CSS_PowerAuction = true; //Is this really needed?
-    $responder->JS_PlayerComparison = true;
+    $responder->JS_PlayerGameList = true;
     return $responder->Generate();
 }
 
