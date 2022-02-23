@@ -54,9 +54,9 @@ function MakePage() {
 
     divGamesStatus = cardPlayerComparison.addDiv();
 
-    // selPlayer1.domelement.value = 203;
-    // selPlayer2.domelement.value = 222;
-    // LoadComparison();
+    selPlayer1.domelement.value = 203;
+    selPlayer2.domelement.value = 222;
+    LoadComparison();
 
 }
 MakePage();
@@ -93,22 +93,50 @@ function LoadComparison() {
 function MakeSummary(players, games) {
     tblSummary = divSummary.addTable();
 
-    tblSummary.Headers = ["Player", "Games", "Avg Length", "TopShare", "Avg Centers", "Avg Rank"];
-    tblSummary.Data = players.map((player, iRow) => {
+    /** @type {dbnPlayer[]} */
+    var uniqueplayers = [];
+    players.forEach(x => { if (!uniqueplayers.some(y => y.PlayerID == x.PlayerID)) uniqueplayers.push(x); });
+
+    tblSummary.Headers = ["Player", "Games", "Rank", "TopShare"];
+    tblSummary.Headers.push("Centers");
+
+    myHub.Countries.forEach((cc, iCol) => {
+        tblSummary.Headers.push(cc.substring(0, 1)+ " ts", "ctrs");
+        tblSummary.SetCountryForColumn(2 * iCol + 5, cc);
+        tblSummary.SetCountryForColumn(2 * iCol + 6, cc);
+    });
+
+    tblSummary.Data = uniqueplayers.map((player, iRow) => {
         var row = [player.PlayerName, games.length];
+        var lines = games.map(x => x.GetResultLineForPlayer(player.PlayerID));
 
-        var year = 1900 + games.reduce((prev, x) => prev + x.GameYearsCompleted, 0) / games.length;
-        row.push(year.toFixed(1));
+        var rank = lines.reduce((prev, x) => prev + x.Rank, 0) / lines.length;
+        row.push(rank.toFixed(1));
 
-        var ts = games.reduce((prev, x) => prev + x.GetResultLineForPlayer(player.PlayerID).TopShare, 0);
-        ts = 100 * ts / games.length;
+        var ts = lines.reduce((prev, x) => prev + x.TopShare, 0);
+        ts = 100 * ts / lines.length;
         row.push(ts.toFixed() + "%");
 
-        var centers = games.reduce((prev, x) => prev + x.GetResultLineForPlayer(player.PlayerID).CenterCount, 0) / games.length;
+        var centers = lines.reduce((prev, x) => prev + x.CenterCount, 0) / lines.length;
         row.push(centers.toFixed(1));
 
-        var rank = games.reduce((prev, x) => prev + x.GetResultLineForPlayer(player.PlayerID).Rank, 0) / games.length;
-        row.push(rank.toFixed(1));
+        /** @type {Object.<string,dbnGameResultLine[]>} */
+        var linesByCC = {};
+        myHub.Countries.forEach(cc => {
+            linesByCC[cc] = lines.filter(x => x.Country == cc);
+        });
+
+        for (const cc in linesByCC) {
+            var cclines = linesByCC[cc];
+            if (cclines.length == 0) {
+                row.push("", "");
+            } else {
+                var ccts = 100 * cclines.reduce((prev, x) => prev + x.TopShare, 0) / cclines.length;
+                row.push(ccts.toFixed() + "%");
+                var cccenters = cclines.reduce((prev, x) => prev + x.CenterCount, 0) / cclines.length;
+                row.push(cccenters.toFixed(1));
+            }
+        }
 
         return row;
     });

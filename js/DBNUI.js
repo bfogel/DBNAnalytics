@@ -318,7 +318,9 @@ class dbnTable extends dbnElement {
     HighlightedRows = null;
 
     /** @type {Object.<number,string>} */
-    CountryColumns = null;
+    CountryColumns = {};
+    SetCountryForColumn(column, country) { this.CountryColumns[column] = country; }
+
     CountryRows = null;
     CountryCells = null;
 
@@ -328,7 +330,7 @@ class dbnTable extends dbnElement {
 
     /** @type {[[number,number,string]]} */
     CellClasses = [];
-    SetCellClass(row, column, className) { this.CellClasses.push([row, column, className]) };
+    SetCellClass(row, column, className) { this.CellClasses.push([row, column, className]); }
 
     #rows = null;
     #lastSortIndex = null;
