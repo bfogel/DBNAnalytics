@@ -234,7 +234,6 @@ class dbnHub {
     req.SendAlone();
 
     if (!req.Success) return null;
-req.ReportToConsole();
 
     if (req.ResponseContent instanceof Array) {
       return req.ResponseContent.map(x => new dbnGame(x));
@@ -361,7 +360,7 @@ class dbnGame {
   URL = null;
   Competition = null;
 
-  /** @type {number} */
+  /** @type {number|null} */
   DBNIYear;
 
   /** @type {Object.<string,dbnGameResultLine>} */
@@ -377,7 +376,7 @@ class dbnGame {
     this.Platform = json.Platform;
     this.URL = json.URL;
     this.Competition = { CompetitionID: parseInt(json.Competition.CompetitionID), CompetitionName: json.Competition.CompetitionName };
-    this.DBNIYear = parseInt(json.DBNIYear);
+    this.DBNIYear = json.DBNIYear == null ? null : parseInt(json.DBNIYear);
 
     if (json.ResultLines != null) {
       for (const key in json.ResultLines) {

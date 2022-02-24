@@ -76,8 +76,12 @@ class PlayerSelectionView extends dbnDiv {
 var cardPlayerComparison = null;
 
 var _PlayerSelection = new PlayerSelectionView();
+/** @type {dbnGame[]} */
+var _Games;
 
 var divFilter = new dbnDiv();
+/** @type {dbnSelect} */
+var selFilter;
 
 /** @type {dbnDiv} */
 var divGames = null;
@@ -120,8 +124,6 @@ MakePage();
 
 function LoadComparison() {
     divGamesStatus.domelement.innerHTML = "Loading...";
-    divGames.domelement.innerHTML = "";
-    divSummary.domelement.innerHTML = "";
 
     var players = _PlayerSelection.Players;
 
@@ -130,15 +132,15 @@ function LoadComparison() {
         return;
     }
 
-    var games = myHub.GetGamesForPlayers(players.map(x => x.PlayerID));
+    _Games = myHub.GetGamesForPlayers(players.map(x => x.PlayerID));
 
-    if (games == null || games.length == 0) {
+    if (_Games == null || _Games.length == 0) {
         divGamesStatus.domelement.innerHTML = "None";
     } else {
-        //MakeFilter(games);
-        MakeSummary(players, games);
-        MakeGameList(players, games);
+        MakeFilter(_Games);
+        MakeDataTables();
     }
+
 }
 
 /**
@@ -151,15 +153,35 @@ function MakeFilter(games) {
     games.forEach(x => { if (!DBNIYears.includes(x.DBNIYear)) DBNIYears.push(x.DBNIYear); });
     DBNIYears.sort();
 
-    console.log(games);
+    divFilter.addText("Filter: ")
+    selFilter = divFilter.addSelect();
+    selFilter.AddOption("All", 0);
+    DBNIYears.forEach(x => {
+        if (x == null) {
+            selFilter.AddOption("DBNI", x);
+        } else {
+            selFilter.AddOption(x + " DBNI Qualifying", x);
+        }
+    });
 
-    divFilter.addText("DBNI Season: ")
-    var select = divFilter.addSelect();
-    select.AddOption("All", null);
-    DBNIYears.forEach(x => select.AddOption(x, x));
+    selFilter.onchange = MakeDataTables;
 
     divFilter.addLineBreak();
     divFilter.addLineBreak();
+}
+
+function MakeDataTables() {
+    var filter = selFilter.SelectedValue;
+    if (filter == "null") filter = null;
+
+    var games = _Games;
+
+    if (!(filter == 0)) {
+        games = games.filter(x => x.DBNIYear == filter);
+    }
+
+    MakeSummary(_PlayerSelection.Players, games);
+    MakeGameList(_PlayerSelection.Players, games);
 }
 
 /**
@@ -167,6 +189,8 @@ function MakeFilter(games) {
 * @param {dbnGame[]} games 
 */
 function MakeSummary(players, games) {
+    divSummary.domelement.innerHTML = "";
+
     tblSummary = divSummary.addTable();
 
     /** @type {dbnPlayer[]} */
@@ -224,12 +248,16 @@ function MakeSummary(players, games) {
 
 }
 
+
+
 /**
 * 
 * @param {dbnPlayer[]} players 
 * @param {dbnGame[]} games 
 */
 function MakeGameList(players, games) {
+    divGames.domelement.innerHTML = "";
+
     var playerids = players.map(x => x.PlayerID);
 
     divGamesStatus.domelement.innerHTML = "";
