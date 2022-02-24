@@ -136,6 +136,7 @@ function VerifyTD($competitionID, $playerid)
 
 //Should return a JSON object with expected fields set 
 // (really you should define a response class with two subclasses SuccessResponse and FailureResponse)
+// ALSO: All parameters should be sent as json and decoded prior to the switch
 function HandleRequest($request)
 {
     $parameters = $request["Parameters"];
@@ -168,7 +169,7 @@ function HandleRequest($request)
             //     }
         case "games": {
                 if (!array_key_exists("PlayerIDs", $parameters)) return ["success" => false, "message" => "No players"];
-                $playerids = $parameters["PlayerIDs"];
+                $playerids = json_decode($parameters["PlayerIDs"]);
                 if (!is_array($playerids)) return ["success" => false, "message" => "No players"];
 
                 $where = "";

@@ -225,13 +225,13 @@ class dbnHub {
 
 
   GetGamesForPlayers(playerids) {
-    var vals = { "PlayerIDs": playerids };
+    var vals = { "PlayerIDs": JSON.stringify(playerids) };
 
     var req = new bfDataRequest("games", vals);
     req.SendAlone();
 
     req.ReportToConsole();
-    
+
     if (!req.Success) return null;
 
     if (req.ResponseContent instanceof Array) {
