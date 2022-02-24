@@ -169,7 +169,6 @@ function HandleRequest($request)
             //     }
         case "games": {
                 if (!array_key_exists("PlayerIDs", $parameters)) return ["success" => false, "message" => "No players"];
-                return ["success" => false, "message" => $parameters["PlayerIDs"]];
                 $playerids = json_decode($parameters["PlayerIDs"]);
                 if (!is_array($playerids)) return ["success" => false, "message" => "No players"];
 

@@ -48,7 +48,7 @@ class PlayerSelectionView extends dbnDiv {
         var line = new PlayerSelectionLine(this.SelectorDiv);
         line.Selector.onchange = this.#raiseOnChanged.bind(this);
         line.RemoveButton.onclick = this.#RemoveLine.bind(this, line);
-        this.SelectorLines.push[line];
+        this.SelectorLines.push(line);
     }
 
     /**
@@ -73,11 +73,6 @@ class PlayerSelectionView extends dbnDiv {
 var cardPlayerComparison = null;
 
 var _PlayerSelection = new PlayerSelectionView();
-
-/** @type {dbnPlayerSelector} */
-var selPlayer1 = null;
-/** @type {dbnPlayerSelector} */
-var selPlayer2 = null;
 
 /** @type {dbnDiv} */
 var divGames = null;
@@ -122,6 +117,8 @@ function LoadComparison() {
     divSummary.domelement.innerHTML = "";
 
     var players = _PlayerSelection.Players;
+    console.log(players);
+
     if (players.some(x => x == null)) {
         divGamesStatus.domelement.innerHTML = "No selection";
         return;

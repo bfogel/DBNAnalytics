@@ -223,7 +223,10 @@ class dbnHub {
     return this.#players;
   }
 
-
+/**
+ * @param {number[]} playerids 
+ * @returns 
+ */
   GetGamesForPlayers(playerids) {
     var vals = { "PlayerIDs": JSON.stringify(playerids) };
 
