@@ -233,8 +233,6 @@ class dbnHub {
     var req = new bfDataRequest("games", vals);
     req.SendAlone();
 
-    req.ReportToConsole();
-
     if (!req.Success) return null;
 
     if (req.ResponseContent instanceof Array) {

@@ -8,11 +8,14 @@
 //#region Player selection
 
 class PlayerSelectionLine extends dbnDiv {
-    Selector = new dbnPlayerSelector(this);
-    RemoveButton = new dbnButton("Remove", this.OnClick, null, this);
+    Selector = new dbnPlayerSelector();
+    RemoveButton = new dbnButton("Remove", this.OnClick, null);
 
     constructor(parent) {
         super(parent);
+        this.add(this.Selector);
+        this.addText(" ");
+        this.add(this.RemoveButton);
     }
 
     OnClick() {
@@ -96,6 +99,7 @@ function MakePage() {
     var ss = cardPlayerComparison.createAndAppendElement("style");
 
     cardPlayerComparison.add(_PlayerSelection);
+    cardPlayerComparison.addLineBreak();
 
     _PlayerSelection.OnSelectionChanged = LoadComparison.bind(this);
 
@@ -117,7 +121,6 @@ function LoadComparison() {
     divSummary.domelement.innerHTML = "";
 
     var players = _PlayerSelection.Players;
-    console.log(players);
 
     if (players.some(x => x == null)) {
         divGamesStatus.domelement.innerHTML = "No selection";
