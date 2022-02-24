@@ -224,9 +224,8 @@ class dbnHub {
   }
 
 
-  GetGamesForPlayers(player1id, player2id = null) {
-    var vals = { "p1": player1id };
-    if (player2id != null) vals["p2"] = player2id;
+  GetGamesForPlayers(playerids) {
+    var vals = { "PlayerIDs": playerids };
 
     var req = new bfDataRequest("games", vals);
     req.SendAlone();
@@ -326,6 +325,7 @@ class dbnPlayerSelector extends dbnElement {
 
   constructor(parent = null) {
     super(document.createElement("select"), parent);
+    this.className = "PlayerSelector";
     this.LoadPlayers();
   }
 

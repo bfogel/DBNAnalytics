@@ -7,6 +7,7 @@
 
 class dbnElement {
 
+    /** @type {HTMLElement} */
     domelement = null;
 
     constructor(pDomElement, parent = null) {

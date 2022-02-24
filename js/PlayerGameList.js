@@ -5,7 +5,74 @@
  * @typedef {import('./DBNGames.js')}
  */
 
+//#region Player selection
+
+class PlayerSelectionLine extends dbnDiv {
+    Selector = new dbnPlayerSelector(this);
+    RemoveButton = new dbnButton("Remove", this.OnClick, null, this);
+
+    constructor(parent) {
+        super(parent);
+    }
+
+    OnClick() {
+        alert("did it");
+    }
+
+}
+
+class PlayerSelectionView extends dbnDiv {
+
+    OnSelectionChanged;
+
+    /** @type {PlayerSelectionLine[]} */
+    SelectorLines = [];
+
+    SelectorDiv = new dbnDiv();
+    AddLineButton = new dbnButton("Add Player", this.OnClick, null);
+
+    constructor() {
+        super(null);
+        this.className = "PlayerSelectionView";
+
+        this.add(this.SelectorDiv);
+        this.add(this.AddLineButton);
+        this.AddLineButton.onclick = this.#AddLine.bind(this);;
+
+        this.#AddLine();
+    }
+
+    #raiseOnChanged() { if (this.OnSelectionChanged) this.OnSelectionChanged(); }
+
+    #AddLine() {
+        var line = new PlayerSelectionLine(this.SelectorDiv);
+        line.Selector.onchange = this.#raiseOnChanged.bind(this);
+        line.RemoveButton.onclick = this.#RemoveLine.bind(this, line);
+        this.SelectorLines.push[line];
+    }
+
+    /**
+     * @param {PlayerSelectionLine} line 
+     */
+    #RemoveLine(line) {
+        var i = this.SelectorLines.indexOf(line);
+        this.SelectorLines.splice(i, 1);
+        line.domelement.remove();
+
+        this.#raiseOnChanged();
+    }
+
+    get Players() {
+        var ret = this.SelectorLines.map(x => x.Selector.SelectedPlayer);
+        return ret;
+    }
+}
+
+//#endregion
+
 var cardPlayerComparison = null;
+
+var _PlayerSelection = new PlayerSelectionView();
 
 /** @type {dbnPlayerSelector} */
 var selPlayer1 = null;
@@ -32,22 +99,10 @@ function MakePage() {
     cardPlayerComparison = dbnHere().addCard();
 
     var ss = cardPlayerComparison.createAndAppendElement("style");
-    ss.addText(".otherPlayers {font-size: 15px !important; line-height: 130%; margin-bottom: 5px;}");
 
-    cardPlayerComparison.addText("Player 1: ");
-    selPlayer1 = new dbnPlayerSelector(cardPlayerComparison);
+    cardPlayerComparison.add(_PlayerSelection);
 
-    cardPlayerComparison.createAndAppendElement("br");
-
-    cardPlayerComparison.addText("Player 2: ");
-    selPlayer2 = new dbnPlayerSelector(cardPlayerComparison);
-
-    selPlayer1.onchange = LoadComparison;
-    selPlayer2.onchange = LoadComparison;
-
-    var style = "width: 300px; margin-bottom: 10px;";
-    selPlayer1.domelement.style = style;
-    selPlayer2.domelement.style = style;
+    _PlayerSelection.OnSelectionChanged = LoadComparison.bind(this);
 
     divSummary = cardPlayerComparison.addDiv();
     divGames = cardPlayerComparison.addDiv();
@@ -66,24 +121,20 @@ function LoadComparison() {
     divGames.domelement.innerHTML = "";
     divSummary.domelement.innerHTML = "";
 
-    var p1 = selPlayer1.SelectedPlayer;
-    var p2 = selPlayer2.SelectedPlayer;
-
-    if (p1 == null || p2 == null) {
+    var players = _PlayerSelection.Players;
+    if (players.some(x => x == null)) {
         divGamesStatus.domelement.innerHTML = "No selection";
         return;
     }
 
-    var games = myHub.GetGamesForPlayers(p1.PlayerID, p2.PlayerID);
-    console.log(games);
+    var games = myHub.GetGamesForPlayers(players.map(x => x.PlayerID));
 
     if (games == null || games.length == 0) {
         divGamesStatus.domelement.innerHTML = "None";
     } else {
-        MakeSummary([p1, p2], games);
-        MakeGameList([p1, p2], games);
+        MakeSummary(players, games);
+        MakeGameList(players, games);
     }
-
 }
 
 /**

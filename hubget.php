@@ -158,10 +158,27 @@ function HandleRequest($request)
                 }
                 return GetResultsetAsJSON($sql, $vars);
             }
+            // case "games": {
+            //         $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
+            //         $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
+            //         $games = GetGames($where, [$parameters['p1'], $parameters['p2']]);
+
+            //         if ($games instanceof dbnResultSet) return $games->ToJSON();
+            //         return ["success" => true, "content" => $games];
+            //     }
         case "games": {
-                $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
-                $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
-                $games = GetGames($where, [$parameters['p1'], $parameters['p2']]);
+                if (!array_key_exists("PlayerIDs", $parameters)) return ["success" => false, "message" => "No players"];
+                $playerids = $parameters["PlayerIDs"];
+                if (!is_array($playerids)) return ["success" => false, "message" => "No players"];
+
+                $where = "";
+                $vals = [];
+                foreach ($playerids as $pid) {
+                    if ($where != "") $where .= " AND ";
+                    $where .= 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
+                    array_push($vals, $pid);
+                }
+                $games = GetGames($where, $vals);
 
                 if ($games instanceof dbnResultSet) return $games->ToJSON();
                 return ["success" => true, "content" => $games];

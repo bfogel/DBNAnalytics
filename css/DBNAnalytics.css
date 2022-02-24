@@ -256,6 +256,11 @@ tr.bfTest:hover {
 }
 
 
+button {
+    background-color: lightgray !important;
+    color: black !important;
+}
+
 .dbnButtonBar {
     width: fit-content;
     background-color: #555;
@@ -270,8 +275,6 @@ div.dbnButtonBar button {
     font-size: 17px;
     text-align: center;
     white-space: nowrap;
-    background-color: lightgray !important;
-    color: black !important;
 }
 
 .dbnButtonBarCompact {
@@ -297,6 +300,11 @@ div.dbnButtonBar button.dbnDisabled {
 div.dbnButtonBar button.dbnDisabled:hover {
     position: relative;
     top: 0px;
+}
+
+select.PlayerSelector  {
+    width: 300px;
+    margin-bottom: 10px
 }
 
 td.GamePlayer_Player {
