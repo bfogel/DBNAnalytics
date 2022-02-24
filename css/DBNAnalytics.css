@@ -302,8 +302,11 @@ div.dbnButtonBar button.dbnDisabled:hover {
     top: 0px;
 }
 
-select.PlayerSelector  {
+select  {
     width: 300px;
+}
+
+select.PlayerSelector  {
     margin-bottom: 10px
 }
 

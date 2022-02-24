@@ -77,6 +77,8 @@ var cardPlayerComparison = null;
 
 var _PlayerSelection = new PlayerSelectionView();
 
+var divFilter = new dbnDiv();
+
 /** @type {dbnDiv} */
 var divGames = null;
 /** @type {dbnDiv} */
@@ -103,6 +105,7 @@ function MakePage() {
 
     _PlayerSelection.OnSelectionChanged = LoadComparison.bind(this);
 
+    cardPlayerComparison.add(divFilter);
     divSummary = cardPlayerComparison.addDiv();
     divGames = cardPlayerComparison.addDiv();
 
@@ -132,15 +135,37 @@ function LoadComparison() {
     if (games == null || games.length == 0) {
         divGamesStatus.domelement.innerHTML = "None";
     } else {
+        //MakeFilter(games);
         MakeSummary(players, games);
         MakeGameList(players, games);
     }
 }
 
 /**
- * @param {dbnPlayer[]} players 
  * @param {dbnGame[]} games 
  */
+function MakeFilter(games) {
+    divFilter.innerHTML = "";
+
+    var DBNIYears = [];
+    games.forEach(x => { if (!DBNIYears.includes(x.DBNIYear)) DBNIYears.push(x.DBNIYear); });
+    DBNIYears.sort();
+
+    console.log(games);
+
+    divFilter.addText("DBNI Season: ")
+    var select = divFilter.addSelect();
+    select.AddOption("All", null);
+    DBNIYears.forEach(x => select.AddOption(x, x));
+
+    divFilter.addLineBreak();
+    divFilter.addLineBreak();
+}
+
+/**
+* @param {dbnPlayer[]} players 
+* @param {dbnGame[]} games 
+*/
 function MakeSummary(players, games) {
     tblSummary = divSummary.addTable();
 

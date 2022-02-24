@@ -234,6 +234,7 @@ class dbnHub {
     req.SendAlone();
 
     if (!req.Success) return null;
+req.ReportToConsole();
 
     if (req.ResponseContent instanceof Array) {
       return req.ResponseContent.map(x => new dbnGame(x));

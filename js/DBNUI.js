@@ -60,6 +60,7 @@ class dbnElement {
     addTable() { var ret = new dbnTable(this); return ret; }
 
     addOrderedList() { var ret = new dbnOrderedList(this); return ret; }
+    addSelect() { var ret = new dbnSelect(this); return ret; }
 
     addLineBreak() { var ret = new dbnElement("br", this); return ret; }
     addHardRule() { var ret = new dbnElement("hr", this); return ret; }
