@@ -169,6 +169,7 @@ function HandleRequest($request)
             //     }
         case "games": {
                 if (!array_key_exists("PlayerIDs", $parameters)) return ["success" => false, "message" => "No players"];
+                return ["success" => false, "message" => $parameters["PlayerIDs"]];
                 $playerids = json_decode($parameters["PlayerIDs"]);
                 if (!is_array($playerids)) return ["success" => false, "message" => "No players"];
 
@@ -179,7 +180,6 @@ function HandleRequest($request)
                     $where .= 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                     array_push($vals, $pid);
                 }
-                return ["success" => false, "message" => $playerids[0]];
                 $games = GetGames($where, $vals);
 
                 if ($games instanceof dbnResultSet) return $games->ToJSON();
