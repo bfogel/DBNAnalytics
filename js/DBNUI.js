@@ -201,6 +201,39 @@ class dbnOrderedList extends dbnElement {
 
 //#endregion
 
+//#region Select
+
+class dbnSelect extends dbnElement {
+
+    constructor(parent = null) {
+        super(document.createElement("select"), parent);
+    }
+
+    get SelectedPlayer() {
+        var i = this.domelement.value;
+        if (i == null) return null;
+        return myHub.Players.find(x => x.PlayerID == i);
+    }
+
+    AddOption(text, value) {
+        var option = document.createElement("option");
+        option.text = text;
+        option.value = value;
+        this.domelement.add(option);
+    }
+
+    get SelectedValue() {
+        return this.domelement.value;
+    }
+
+    // get SelectedText(){
+    //   return this.domelement.value;
+    // }
+
+}
+
+//#endregion
+
 //#region Tabs
 
 class dbnTabs extends dbnCard {

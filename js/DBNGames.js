@@ -223,10 +223,10 @@ class dbnHub {
     return this.#players;
   }
 
-/**
- * @param {number[]} playerids 
- * @returns 
- */
+  /**
+   * @param {number[]} playerids 
+   * @returns 
+   */
   GetGamesForPlayers(playerids) {
     var vals = { "PlayerIDs": JSON.stringify(playerids) };
 
@@ -324,33 +324,23 @@ class dbnHubRequest_Players extends bfDataRequest {
   }
 }
 
-class dbnPlayerSelector extends dbnElement {
+class dbnPlayerSelector extends dbnSelect {
 
   constructor(parent = null) {
-    super(document.createElement("select"), parent);
+    super(parent);
     this.className = "PlayerSelector";
     this.LoadPlayers();
   }
 
   get SelectedPlayer() {
-    var i = this.domelement.value;
+    var i = this.SelectedValue;
     if (i == null) return null;
     return myHub.Players.find(x => x.PlayerID == i);
   }
 
   LoadPlayers() {
-    var optionNull = document.createElement("option");
-    optionNull.text = "(none)";
-    optionNull.value = null;
-    this.domelement.add(optionNull);
-
-    myHub.Players.forEach(x => {
-      var option = document.createElement("option");
-      option.text = x.PlayerName;
-      option.value = x.PlayerID;
-      this.domelement.add(option);
-    }
-    );
+    this.AddOption("(none)", null);
+    myHub.Players.forEach(x => this.AddOption(x.PlayerName, x.PlayerID));
   }
 
 }
@@ -370,6 +360,9 @@ class dbnGame {
   URL = null;
   Competition = null;
 
+  /** @type {number} */
+  DBNIYear;
+
   /** @type {Object.<string,dbnGameResultLine>} */
   ResultLines = {};
 
@@ -383,6 +376,7 @@ class dbnGame {
     this.Platform = json.Platform;
     this.URL = json.URL;
     this.Competition = { CompetitionID: parseInt(json.Competition.CompetitionID), CompetitionName: json.Competition.CompetitionName };
+    this.DBNIYear = parseInt(json.DBNIYear);
 
     if (json.ResultLines != null) {
       for (const key in json.ResultLines) {

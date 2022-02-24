@@ -138,7 +138,6 @@ function LoadComparison() {
 }
 
 /**
- * 
  * @param {dbnPlayer[]} players 
  * @param {dbnGame[]} games 
  */

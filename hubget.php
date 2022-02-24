@@ -148,6 +148,7 @@ function HandleRequest($request)
                 //$wpuser = wp_get_current_user();
                 return ["success" => true, "content" => ["loggedin" => wp_get_current_user()]];
             }
+
         case "players": {
                 $vars = null;
                 $sql = "SELECT PlayerID, PlayerName FROM Player";
@@ -159,14 +160,7 @@ function HandleRequest($request)
                 }
                 return GetResultsetAsJSON($sql, $vars);
             }
-            // case "games": {
-            //         $where = 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
-            //         $where .= ' AND GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
-            //         $games = GetGames($where, [$parameters['p1'], $parameters['p2']]);
 
-            //         if ($games instanceof dbnResultSet) return $games->ToJSON();
-            //         return ["success" => true, "content" => $games];
-            //     }
         case "games": {
                 if (!array_key_exists("PlayerIDs", $parameters)) return ["success" => false, "message" => "No players"];
                 $playerids = json_decode($parameters["PlayerIDs"]);
@@ -321,7 +315,7 @@ function HandleRequest($request)
 function GetGames($where, $params)
 {
     $sql = 'SELECT G.GameID, G.Label, G.EndDate, G.DrawSize, G.GameYearsCompleted, G.GamePlatform_GamePlatformID, G.GamePlatformIdentifier';
-    $sql .= ', C.CompetitionID, C.CompetitionName';
+    $sql .= ', C.CompetitionID, C.CompetitionName, C.DBNIYear';
     $sql .= ', P.PlayerID, P.PlayerName';
     $sql .= ', CO.CountryName, GCP.Note';
     $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, GCR.YearOfElimination, GCR.UnexcusedResignation';
@@ -362,6 +356,7 @@ function GetGames($where, $params)
     $cRank = $rs->GetFieldIndex("Rank");
     $cRankScore = $rs->GetFieldIndex("RankScore");
     $cTopShare = $rs->GetFieldIndex("TopShare");
+    $cDBNIYear = $rs->GetFieldIndex("DBNIYear");
 
     $games = [];
     $game = null;
@@ -395,7 +390,7 @@ function GetGames($where, $params)
         }
 
         $line = [
-            "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote], "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination], "UnexcusedResignation" => $row[$cUnexcusedResignation], "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
+            "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote], "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination], "UnexcusedResignation" => $row[$cUnexcusedResignation], "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare], "DBNIYear" => $row[$cDBNIYear]
         ];
 
         $lines[$line["Country"]] = $line;
