@@ -178,7 +178,7 @@ function HandleRequest($request)
                     $where .= 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                     array_push($vals, $pid);
                 }
-                return ["success" => false, "message" => $where];
+                return ["success" => false, "message" => $playerids];
                 $games = GetGames($where, $vals);
 
                 if ($games instanceof dbnResultSet) return $games->ToJSON();
