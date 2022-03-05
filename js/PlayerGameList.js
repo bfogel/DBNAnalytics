@@ -123,6 +123,7 @@ function MakePage() {
 MakePage();
 
 function LoadComparison() {
+    ClearTables();
     divGamesStatus.domelement.innerHTML = "Loading...";
 
     var players = _PlayerSelection.Players;
@@ -170,7 +171,17 @@ function MakeFilter(games) {
     divFilter.addLineBreak();
 }
 
+//----------------------
+
+function ClearTables() {
+    divGames.domelement.innerHTML = "";
+    divSummary.domelement.innerHTML = "";
+
+}
+
 function MakeDataTables() {
+    ClearTables();
+
     var filter = selFilter.SelectedValue;
     if (filter == "null") filter = null;
 
@@ -179,6 +190,8 @@ function MakeDataTables() {
     if (!(filter == 0)) {
         games = games.filter(x => x.DBNIYear == filter);
     }
+
+    //games.sort((a, b) => (a.EndDate ?? "0").localeCompare(b.EndDate ?? "0"));
 
     MakeSummary(_PlayerSelection.Players, games);
     MakeGameList(_PlayerSelection.Players, games);
@@ -189,8 +202,6 @@ function MakeDataTables() {
 * @param {dbnGame[]} games 
 */
 function MakeSummary(players, games) {
-    divSummary.domelement.innerHTML = "";
-
     tblSummary = divSummary.addTable();
 
     /** @type {dbnPlayer[]} */
@@ -256,8 +267,6 @@ function MakeSummary(players, games) {
 * @param {dbnGame[]} games 
 */
 function MakeGameList(players, games) {
-    divGames.domelement.innerHTML = "";
-
     var playerids = players.map(x => x.PlayerID);
 
     divGamesStatus.domelement.innerHTML = "";
