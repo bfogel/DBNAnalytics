@@ -186,7 +186,7 @@ tr.bfTest:hover {
 }
 
 .bftab button {
-    background-color: inherit;
+    background-color: #ccc !important;
     float: left;
     border: none;
     outline: none;
@@ -195,7 +195,6 @@ tr.bfTest:hover {
     margin: 5px;
     transition: 0.3s;
     font-size: 17px;
-    background-color: #ccc;
 }
 
 .bftab button:hover {
