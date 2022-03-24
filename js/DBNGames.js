@@ -286,12 +286,24 @@ class dbnHubRequest_Bids extends bfDataRequest {
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnPlayerCountryBid()); }
 }
 
-class dbnCompetition { CompetitionID; CompetitionName; }
-class dbnHubRequest_Competitions extends bfDataRequest {
-  constructor(compids) {
-    super("competitions", { "compids": compids });
-  }
+//#endregion
+
+//#region Competition
+
+class dbnCompetition { PlayerID; PlayerName; CompetitionID; CompetitionName; }
+
+class dbnHubRequest_CompetitionParticipationList extends bfDataRequest {
+  constructor(pAsTD = false) { super("competitionList", { "asTD": pAsTD }); }
+  /** @returns {dbnCompetition[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetition()); }
 }
+
+// class dbnCompetition { CompetitionID; CompetitionName; }
+// class dbnHubRequest_Competitions extends bfDataRequest {
+//   constructor(compids) {
+//     super("competitions", { "compids": compids });
+//   }
+// }
 
 //#endregion
 

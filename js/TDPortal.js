@@ -17,6 +17,22 @@ function MakePage() {
 
     var reqs = myHub.MakeRequestList();
     var reqUserInfo = new dbnHubRequest_UserInfo();
+    var reqCompListTD = new dbnHubRequest_CompetitionParticipationList(true);
+    var reqCompList = new dbnHubRequest_CompetitionParticipationList(false);
+
+    reqs.addRequest([reqUserInfo, reqCompListTD, reqCompList]);
+
+    reqs.Send();
+
+    reqs.ReportToConsole();
+
+}
+
+function MakePageOLD() {
+    var div = dbnHere().addDiv();
+
+    var reqs = myHub.MakeRequestList();
+    var reqUserInfo = new dbnHubRequest_UserInfo();
     var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed(true);
     var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule(true);
     var reqBids = new dbnHubRequest_Bids(true);

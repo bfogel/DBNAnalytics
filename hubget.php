@@ -191,7 +191,7 @@ function HandleRequest($request)
             }
 
         case "competitionList": {
-                $sql = "SELECT C.CompetitionID, C.CompetitionName, C.DBNIYear";
+                $sql = "SELECT DISTINCT C.CompetitionID, C.CompetitionName, C.DBNIYear";
                 $sql .= " FROM Competition AS C";
 
                 $asTD = false;
