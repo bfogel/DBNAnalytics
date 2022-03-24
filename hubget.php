@@ -190,8 +190,29 @@ function HandleRequest($request)
                 return ["success" => true, "content" => $userinfo];
             }
 
-        case "compseeds": {
+        case "competitionList": {
+                $sql = "SELECT C.CompetitionID, C.CompetitionName, C.DBNIYear";
+                $sql .= " FROM Competition AS C";
 
+                $asTD = false;
+                if ($parameters != null && array_key_exists("asTD", $parameters)) $asTD = $parameters["asTD"];
+
+                if ($asTD) {
+                    $sql .= " WHERE C.Director_PlayerID = ?";
+                    $vars = [$userinfo->PlayerID];
+                } else {
+                    $sql .= " INNER JOIN Game as G on G.Competition_CompetitionID = C.CompetitionID";
+                    $sql .= " INNER JOIN GameCountryPlayer as GCP on GCP.Game_GameID = G.GameID";
+                    $sql .= " WHERE GCP.PlayerOfRecord_PlayerID = ?";
+                    $vars = [$userinfo->PlayerID];
+                }
+
+                $sql .= " ORDER BY C.CompetitionName";
+
+                return GetResultsetAsJSON($sql, $vars);
+            }
+
+        case "compseeds": {
                 $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Seed";
                 $sql .= " FROM Competition AS C";
                 $sql .= " INNER JOIN CompetitionPlayerSeed as S on S.Competition_CompetitionID = C.CompetitionID";
