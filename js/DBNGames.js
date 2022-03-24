@@ -419,18 +419,16 @@ class dbnPlayerList extends dbnDiv {
     super(null);
     this.className = "dbnPlayerList";
 
-    var divAdd = this.addDiv();
-    divAdd.className = "dbnPlayerListCell";
-
-    divAdd.addText("Players: ");
-    this.PlayerSelector.placeholder = "Add player";
-    divAdd.add(this.PlayerSelector);
-    this.PlayerSelector.OnPlayerSelected.AddListener(this.#PlayerSelected.bind(this));
+    this.addText("Players: ");
 
     this.add(this.LinesDiv);
     this.LinesDiv.className = "dbnPlayerListCell";
 
-
+    var divAdd = this.addDiv();
+    divAdd.style = "margin-left: 5px";
+    divAdd.add(this.PlayerSelector);
+    this.PlayerSelector.placeholder = "Add player";
+    this.PlayerSelector.OnPlayerSelected.AddListener(this.#PlayerSelected.bind(this));
   }
 
   #raiseOnChanged() { if (this.OnSelectionChanged) this.OnSelectionChanged(); }
