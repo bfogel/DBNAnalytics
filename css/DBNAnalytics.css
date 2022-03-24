@@ -198,7 +198,7 @@ tr.bfTest:hover {
 }
 
 .bftab button:hover {
-    background-color: #ddd;
+    background-color: #ddd !important;
     border-radius: 50px;
 }
 
