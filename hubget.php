@@ -192,6 +192,7 @@ function HandleRequest($request)
 
         case "competitionList": {
                 $sql = "SELECT DISTINCT C.CompetitionID, C.CompetitionName, C.DBNIYear, CS.CompetitionSeriesID, CS.CompetitionSeriesName";
+                $sql .= " , C.CompletionDate";
                 $sql .= " FROM Competition AS C";
                 $sql .= " INNER JOIN CompetitionSeries as CS on C.CompetitionSeries_CompetitionSeriesID = CS.CompetitionSeriesID";
 

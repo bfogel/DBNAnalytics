@@ -290,7 +290,7 @@ class dbnHubRequest_Bids extends bfDataRequest {
 
 //#region Competition
 
-class dbnCompetition { CompetitionID; CompetitionName; CompetitionSeriesName;}
+class dbnCompetition { CompetitionID; CompetitionName; CompetitionSeriesID; CompetitionSeriesName; CompletionDate;}
 
 class dbnHubRequest_CompetitionParticipationList extends bfDataRequest {
   constructor(pAsTD = false) { super("competitionList", { "asTD": pAsTD }); }

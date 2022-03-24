@@ -8,9 +8,6 @@
 /** @type {dbnUserInfo} */
 var myUserInfo;
 
-/** @type {CompetitionAuctionController[]} */
-var myCompetitions = [];
-
 
 function MakePage() {
     var div = dbnHere().addDiv();
@@ -28,60 +25,66 @@ function MakePage() {
 
 }
 
-function MakePageOLD() {
-    var div = dbnHere().addDiv();
 
-    var reqs = myHub.MakeRequestList();
-    var reqUserInfo = new dbnHubRequest_UserInfo();
-    var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed(true);
-    var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule(true);
-    var reqBids = new dbnHubRequest_Bids(true);
+//Below is the code for the TD page for the DBNI power bid auction
 
-    reqs.addRequest([reqUserInfo, reqSeeds, reqSchedule, reqBids]);
+// /** @type {CompetitionAuctionController[]} */
+// var myCompetitions = [];
 
-    reqs.Send();
+// function MakePageOLD() {
+//     var div = dbnHere().addDiv();
 
-    myUserInfo = reqUserInfo.UserInfo;
-    if (!myUserInfo) { div.addBoldText("Could not locate user (" + reqUserInfo.Message + ")"); return; }
-    if (!reqs.Success) { reqs.ReportToConsole(); return; }
+//     var reqs = myHub.MakeRequestList();
+//     var reqUserInfo = new dbnHubRequest_UserInfo();
+//     var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed(true);
+//     var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule(true);
+//     var reqBids = new dbnHubRequest_Bids(true);
 
-    //Passed user and data retrieval
+//     reqs.addRequest([reqUserInfo, reqSeeds, reqSchedule, reqBids]);
 
-    div.addTitleCard("DBN TD Portal: " + myUserInfo.PlayerName);
+//     reqs.Send();
 
-    var allseeds = reqSeeds.ResponseToObjects();
-    var allschedules = reqSchedule.ResponseToObjects();
-    var allbids = reqBids.ResponseToObjects();
+//     myUserInfo = reqUserInfo.UserInfo;
+//     if (!myUserInfo) { div.addBoldText("Could not locate user (" + reqUserInfo.Message + ")"); return; }
+//     if (!reqs.Success) { reqs.ReportToConsole(); return; }
 
-    //Collect competitions
-    allseeds.forEach(x => {
-        if (!myCompetitions.hasOwnProperty(x.CompetitionID)) {
-            var comp = new CompetitionAuctionController(x.CompetitionID, x.CompetitionName);
-            myCompetitions[x.CompetitionID] = comp;
-        }
-    });
+//     //Passed user and data retrieval
 
-    myCompetitions.forEach(comp => {
-        comp.Manager = PowerBidManager.GetManagerForCompetition(comp.CompetitionID);
+//     div.addTitleCard("DBN TD Portal: " + myUserInfo.PlayerName);
 
-        comp.Seeds = allseeds.filter(x => x.CompetitionID == comp.CompetitionID);
-        comp.Seeds.sort((a, b) => a.Seed - b.Seed);
+//     var allseeds = reqSeeds.ResponseToObjects();
+//     var allschedules = reqSchedule.ResponseToObjects();
+//     var allbids = reqBids.ResponseToObjects();
 
-        comp.Rounds = [];
-        allschedules.forEach(x => { if (!comp.Rounds.includes(x.Round)) comp.Rounds.push(x.Round); });
-        comp.Rounds.sort();
+//     //Collect competitions
+//     allseeds.forEach(x => {
+//         if (!myCompetitions.hasOwnProperty(x.CompetitionID)) {
+//             var comp = new CompetitionAuctionController(x.CompetitionID, x.CompetitionName);
+//             myCompetitions[x.CompetitionID] = comp;
+//         }
+//     });
 
-        comp.Schedules = allschedules.filter(x => x.CompetitionID == comp.CompetitionID);
+//     myCompetitions.forEach(comp => {
+//         comp.Manager = PowerBidManager.GetManagerForCompetition(comp.CompetitionID);
 
-        comp.MakeBidSets(allbids);
+//         comp.Seeds = allseeds.filter(x => x.CompetitionID == comp.CompetitionID);
+//         comp.Seeds.sort((a, b) => a.Seed - b.Seed);
 
-        var card = new dbnCard();
-        card.addHeading(1, comp.CompetitionName);
-        card.add(comp.MakeUI());
+//         comp.Rounds = [];
+//         allschedules.forEach(x => { if (!comp.Rounds.includes(x.Round)) comp.Rounds.push(x.Round); });
+//         comp.Rounds.sort();
 
-        div.appendChild(card);
+//         comp.Schedules = allschedules.filter(x => x.CompetitionID == comp.CompetitionID);
 
-    });
-}
+//         comp.MakeBidSets(allbids);
+
+//         var card = new dbnCard();
+//         card.addHeading(1, comp.CompetitionName);
+//         card.add(comp.MakeUI());
+
+//         div.appendChild(card);
+
+//     });
+// }
 
 MakePage();
