@@ -191,8 +191,9 @@ function HandleRequest($request)
             }
 
         case "competitionList": {
-                $sql = "SELECT DISTINCT C.CompetitionID, C.CompetitionName, C.DBNIYear";
+                $sql = "SELECT DISTINCT C.CompetitionID, C.CompetitionName, C.DBNIYear, CS.CompetitionSeriesID";
                 $sql .= " FROM Competition AS C";
+                $sql .= " INNER JOIN CompetitionSeries as CS on C.CompetitionSeries_CompetitionSeriesID = CS.CompetitionSeriesID";
 
                 $asTD = false;
                 if ($parameters != null && array_key_exists("asTD", $parameters)) $asTD = $parameters["asTD"];
