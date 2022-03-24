@@ -302,12 +302,24 @@ div.dbnButtonBar button.dbnDisabled:hover {
     top: 0px;
 }
 
-select  {
+select {
     width: 300px;
 }
 
-select.PlayerSelector  {
+select.PlayerSelector {
     margin-bottom: 10px
+}
+
+div.dbnPlayerList {
+    display: table;
+}
+div.dbnPlayerList .dbnPlayerListCell {
+    display: table-cell;
+}
+
+div.dbnPlayerList span{
+    margin-right: 5px;
+    margin-left: 5px;
 }
 
 td.GamePlayer_Player {
@@ -343,4 +355,47 @@ table.GamePlayer tr:nth-child(odd) {
 
 table.GamePlayer tr:last-child {
     border-bottom: 0;
+}
+
+.DropdownWithSearchList {
+    position: relative;
+    display: inline-block;
+}
+
+.DropdownWithSearchList input {
+    border: 2px solid slateblue;
+}
+
+.DropdownWithSearchList-items {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    border-bottom: none;
+    border-top: none;
+    z-index: 99;
+    /*position the autocomplete items to be the same width as the container:*/
+    top: 100%;
+    left: 0;
+    right: 0;
+    overflow-y: auto;
+    max-height: 200px;
+    border: 2px solid slateblue;
+}
+
+.DropdownWithSearchList-items div {
+    padding: 3px 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border-bottom: 1px solid #d4d4d4;
+    height: fit-content;
+}
+
+/*when hovering an item:*/
+.DropdownWithSearchList-items div:hover {
+    background-color: #e9e9e9;
+}
+
+/*when navigating through the items using the arrow keys:*/
+.DropdownWithSearchList-active {
+    background-color: DodgerBlue !important;
+    color: #ffffff;
 }

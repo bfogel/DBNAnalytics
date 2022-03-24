@@ -295,7 +295,7 @@ class dbnHubRequest_Competitions extends bfDataRequest {
 
 //#endregion
 
-//#region Player
+//#region Player and Player selectors
 
 class dbnPlayer {
   constructor(playerid, playername) { this.PlayerID = parseInt(playerid); this.PlayerName = playername; }
@@ -324,7 +324,7 @@ class dbnHubRequest_Players extends bfDataRequest {
   }
 }
 
-class dbnPlayerSelector extends dbnSelect {
+class dbnPlayerSelectorOLD extends dbnSelect {
 
   constructor(parent = null) {
     super(parent);
@@ -343,6 +343,140 @@ class dbnPlayerSelector extends dbnSelect {
     myHub.Players.forEach(x => this.AddOption(x.PlayerName, x.PlayerID));
   }
 
+}
+
+class dbnPlayerSelector extends dbnDropdownWithSearch {
+
+  constructor() {
+    super();
+    this.className += " PlayerSelector";
+    this.LoadPlayers();
+    this.placeholder = "Player";
+
+    this.OnItemSelected.AddListener(() => this.OnPlayerSelected.Raise(null));
+  }
+
+  OnPlayerSelected = new dbnEvent();
+
+  /**
+   * @type {dbnPlayer}
+   */
+  get SelectedPlayer() {
+    var item = this.SelectedItem;
+    if (!(item?.Value)) return null;
+    return myHub.Players.find(x => x.PlayerID == item.Value);
+  }
+  set SelectedPlayer(value) {
+    this.SelectedItem = value?.PlayerID;
+  }
+
+  LoadPlayers() {
+    //this.AddItem("(none)", null);
+    myHub.Players.forEach(x => this.AddItem(x.PlayerName, x.PlayerID));
+  }
+
+}
+
+class dbnPlayerListLine extends dbnSpan {
+
+  /** @type {dbnPlayer} */
+  Player;
+
+  PlayerList = new dbnPlayerSelector();
+  RemoveLink = new dbnLink();
+
+  /**
+   * @param {dbnPlayer} player 
+   */
+  constructor(player) {
+    super();
+    this.Player = player;
+
+    this.add(this.RemoveLink);
+    this.RemoveLink.href = "#";
+    var xx = this.RemoveLink.createAndAppendElement("i");
+    xx.className = "fa fa-times-circle";
+    this.RemoveLink.addText(this.Player.PlayerName);
+
+  }
+
+  OnClick() {
+    alert("did it");
+  }
+
+}
+class dbnPlayerList extends dbnDiv {
+
+  OnSelectionChanged;
+
+  PlayerSelector = new dbnPlayerSelector();
+
+  /** @type {dbnPlayerListLine[]} */
+  Lines = [];
+  LinesDiv = new dbnDiv();
+
+  constructor() {
+    super(null);
+    this.className = "dbnPlayerList";
+
+    var divAdd = this.addDiv();
+    divAdd.className = "dbnPlayerListCell";
+
+    divAdd.addText("Players: ");
+    this.PlayerSelector.placeholder = "Add player";
+    divAdd.add(this.PlayerSelector);
+    this.PlayerSelector.OnPlayerSelected.AddListener(this.#PlayerSelected.bind(this));
+
+    this.add(this.LinesDiv);
+    this.LinesDiv.className = "dbnPlayerListCell";
+
+
+  }
+
+  #raiseOnChanged() { if (this.OnSelectionChanged) this.OnSelectionChanged(); }
+
+  #PlayerSelected() {
+    var player = this.PlayerSelector.SelectedPlayer;
+    if (player == null) return;
+
+    var bIn = this.Lines.some(x => x.Player.PlayerID == player.PlayerID);
+
+    if (!bIn) this.AddPlayer(player);
+
+    this.PlayerSelector.SelectedPlayer = null;
+  }
+
+  /**
+   * @param {dbnPlayer} player 
+   */
+  AddPlayer(player) {
+    var line = new dbnPlayerListLine(player);
+
+    line.RemoveLink.onclick = this.RemovePlayer.bind(this, player);
+    this.Lines.push(line);
+    this.LinesDiv.add(line);
+    this.#raiseOnChanged();
+  }
+
+  /**
+   * @param {dbnPlayer} player 
+   */
+  RemovePlayer(player) {
+    var lines = this.Lines.filter(x => x.Player.PlayerID == player.PlayerID);
+
+    lines.forEach(x => {
+      var i = this.Lines.indexOf(x);
+      this.Lines.splice(i, 1);
+      x.domelement.remove();
+    });
+
+    this.#raiseOnChanged();
+  }
+
+  get Players() {
+    var ret = this.Lines.map(x => x.Player);
+    return ret;
+  }
 }
 
 //#endregion

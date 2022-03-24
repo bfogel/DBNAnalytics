@@ -1,3 +1,4 @@
+//2022-03-11 - I believe this file is obsolete
 
 var cardPlayerComparison = null;
 var selPlayer1 = null;

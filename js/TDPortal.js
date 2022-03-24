@@ -1,10 +1,16 @@
 "use strict";
 
+/**
+ * @typedef {import('./DBNUI.js')}
+ * @typedef {import('./DBNGames.js')}
+ */
+
 /** @type {dbnUserInfo} */
 var myUserInfo;
 
 /** @type {CompetitionAuctionController[]} */
 var myCompetitions = [];
+
 
 function MakePage() {
     var div = dbnHere().addDiv();

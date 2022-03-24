@@ -5,81 +5,16 @@
  * @typedef {import('./DBNGames.js')}
  */
 
-//#region Player selection
-
-class PlayerSelectionLine extends dbnDiv {
-    Selector = new dbnPlayerSelector();
-    RemoveButton = new dbnButton("Remove", this.OnClick, null);
-
-    constructor(parent) {
-        super(parent);
-        this.add(this.Selector);
-        this.addText(" ");
-        this.add(this.RemoveButton);
-    }
-
-    OnClick() {
-        alert("did it");
-    }
-
-}
-
-class PlayerSelectionView extends dbnDiv {
-
-    OnSelectionChanged;
-
-    /** @type {PlayerSelectionLine[]} */
-    SelectorLines = [];
-
-    SelectorDiv = new dbnDiv();
-    AddLineButton = new dbnButton("Add Player", this.OnClick, null);
-
-    constructor() {
-        super(null);
-        this.className = "PlayerSelectionView";
-
-        this.add(this.SelectorDiv);
-        this.add(this.AddLineButton);
-        this.AddLineButton.onclick = this.#AddLine.bind(this);;
-
-        this.#AddLine();
-    }
-
-    #raiseOnChanged() { if (this.OnSelectionChanged) this.OnSelectionChanged(); }
-
-    #AddLine() {
-        var line = new PlayerSelectionLine(this.SelectorDiv);
-        line.Selector.onchange = this.#raiseOnChanged.bind(this);
-        line.RemoveButton.onclick = this.#RemoveLine.bind(this, line);
-        this.SelectorLines.push(line);
-    }
-
-    /**
-     * @param {PlayerSelectionLine} line 
-     */
-    #RemoveLine(line) {
-        var i = this.SelectorLines.indexOf(line);
-        this.SelectorLines.splice(i, 1);
-        line.domelement.remove();
-
-        this.#raiseOnChanged();
-    }
-
-    get Players() {
-        var ret = this.SelectorLines.map(x => x.Selector.SelectedPlayer);
-        return ret;
-    }
-}
-
-//#endregion
-
 var cardPlayerComparison = null;
 
-var _PlayerSelection = new PlayerSelectionView();
+var _PlayerList = new dbnPlayerList();
+
+var _RetrieveButton = new dbnButton("Load games", LoadComparison);
+
 /** @type {dbnGame[]} */
 var _Games;
 
-var divFilter = new dbnDiv();
+var divFilter = new dbnSpan();
 /** @type {dbnSelect} */
 var selFilter;
 
@@ -101,42 +36,50 @@ function MakePage() {
     titlecard.addText("DBNI qualifying events and exhibitions covered by DBN");
 
     cardPlayerComparison = dbnHere().addCard();
+    cardPlayerComparison.style = "min-height: 400px";
 
-    var ss = cardPlayerComparison.createAndAppendElement("style");
+    cardPlayerComparison.add(_PlayerList);
 
-    cardPlayerComparison.add(_PlayerSelection);
     cardPlayerComparison.addLineBreak();
 
-    _PlayerSelection.OnSelectionChanged = LoadComparison.bind(this);
+    var div = cardPlayerComparison.addDiv();
+    div.add(_RetrieveButton);
+    _RetrieveButton.style = "margin-right: 20px";
+    div.add(divFilter);
 
-    cardPlayerComparison.add(divFilter);
+    cardPlayerComparison.addLineBreak();
+    //cardPlayerComparison.addLineBreak();
+
+    // cardPlayerComparison.addLineBreak();
+
     divSummary = cardPlayerComparison.addDiv();
     divGames = cardPlayerComparison.addDiv();
 
     divGamesStatus = cardPlayerComparison.addDiv();
 
-    // selPlayer1.domelement.value = 203;
-    // selPlayer2.domelement.value = 222;
+    _PlayerList.AddPlayer(myHub.Players.find(x => x.PlayerID == 203));
+    _PlayerList.AddPlayer(myHub.Players.find(x => x.PlayerID == 222));
     // LoadComparison();
-
 }
 MakePage();
 
 function LoadComparison() {
     ClearTables();
+
     divGamesStatus.domelement.innerHTML = "Loading...";
 
-    var players = _PlayerSelection.Players;
+    var players = _PlayerList.Players;
 
-    if (players.some(x => x == null)) {
-        divGamesStatus.domelement.innerHTML = "No selection";
+    if (players.length == 0) {
+        divGamesStatus.domelement.innerHTML = "No players selected";
         return;
     }
 
     _Games = myHub.GetGamesForPlayers(players.map(x => x.PlayerID));
 
     if (_Games == null || _Games.length == 0) {
-        divGamesStatus.domelement.innerHTML = "None";
+        divFilter.innerHTML = "";
+        divGamesStatus.innerHTML = "None";
     } else {
         MakeFilter(_Games);
         MakeDataTables();
@@ -148,6 +91,8 @@ function LoadComparison() {
  * @param {dbnGame[]} games 
  */
 function MakeFilter(games) {
+    console.log("Making filter");
+
     divFilter.innerHTML = "";
 
     var DBNIYears = [];
@@ -167,16 +112,15 @@ function MakeFilter(games) {
 
     selFilter.onchange = MakeDataTables;
 
-    divFilter.addLineBreak();
-    divFilter.addLineBreak();
+    console.log("Made filter");
 }
 
 //----------------------
 
 function ClearTables() {
-    divGames.domelement.innerHTML = "";
-    divSummary.domelement.innerHTML = "";
-
+    divGames.innerHTML = "";
+    divSummary.innerHTML = "";
+   // _Games = null;
 }
 
 function MakeDataTables() {
@@ -193,8 +137,8 @@ function MakeDataTables() {
 
     //games.sort((a, b) => (a.EndDate ?? "0").localeCompare(b.EndDate ?? "0"));
 
-    MakeSummary(_PlayerSelection.Players, games);
-    MakeGameList(_PlayerSelection.Players, games);
+    MakeSummary(_PlayerList.Players, games);
+    MakeGameList(_PlayerList.Players, games);
 }
 
 /**

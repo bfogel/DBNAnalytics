@@ -1,3 +1,4 @@
+"use strict";
 
 /* to do: 
     - dbnTable: Replace style properties with registration functions.  Current requires too much insider knowledge
@@ -10,6 +11,10 @@ class dbnElement {
     /** @type {HTMLElement} */
     domelement = null;
 
+    /**
+     * @param {string | HTMLElement} pDomElement 
+     * @param {dbnElement | HTMLElement | null} parent 
+     */
     constructor(pDomElement, parent = null) {
         if (typeof pDomElement == "string") pDomElement = document.createElement(pDomElement);
         this.domelement = pDomElement;
@@ -24,6 +29,12 @@ class dbnElement {
 
     get onchange() { return this.domelement.onchange; }
     set onchange(value) { this.domelement.onchange = value; }
+    get onclick() { return this.domelement.onclick; }
+    set onclick(value) { this.domelement.onclick = value; }
+    get onfocus() { return this.domelement.onfocus; }
+    set onfocus(value) { this.domelement.onfocus = value; }
+    get onblur() { return this.domelement.onblur; }
+    set onblur(value) { this.domelement.onblur = value; }
 
     get id() { return this.domelement.id; }
     set id(value) { this.domelement.id = value; }
@@ -54,6 +65,8 @@ class dbnElement {
     addSpan() { var ret = new dbnSpan(this); return ret; }
 
     addTabs() { var ret = new dbnTabs(this); return ret; }
+
+    addLink() { var ret = new dbnLink(this); return ret; }
 
     addButton(text, onclick = null, className = null) { var ret = new dbnButton(text, onclick, className, this); return ret; }
     addButtonBar() { var ret = new dbnButtonBar(this); return ret; }
@@ -140,6 +153,47 @@ class dbnText extends dbnElement {
 
 //#endregion
 
+//#region dbnUIHub
+
+class dbnUIHub {
+
+    constructor() {
+        document.addEventListener("click", (function (e) {
+            this.CloseAllPopUps(e.target);
+        }).bind(this));
+
+    }
+
+    /** @type{HTMLElement[]} */
+    #RegisteredPopUps = [];
+
+    /**
+     * @param {dbnElement} element 
+     */
+    RegisterPopUp(element) {
+        this.#RegisteredPopUps.push(element.domelement);
+    }
+
+    /**
+     * @param {HTMLElement} except 
+     */
+    CloseAllPopUps(except) {
+        var popups = this.#RegisteredPopUps.filter(x => {
+            if (x == except || (except != null && x.parentNode == except.parentNode)) {
+                return true;
+            } else {
+                x.parentNode.removeChild(x);
+                return false;
+            }
+        });
+        this.#RegisteredPopUps = popups;
+    }
+}
+
+var myUIHub = new dbnUIHub();
+
+//#endregion
+
 //#region Buttons
 
 class dbnButton extends dbnElement {
@@ -188,6 +242,18 @@ class dbnButtonBar extends dbnDiv {
 
 //#region Lists
 
+class dbnListItem {
+    /**@type{string} */
+    Display;
+    Value;
+
+    /**
+     * @param {string} display 
+     * @param {any} value 
+     */
+    constructor(display, value) { this.Display = display; this.Value = value; }
+}
+
 class dbnOrderedList extends dbnElement {
     constructor(parent = null) {
         super("ol", parent);
@@ -198,6 +264,249 @@ class dbnOrderedList extends dbnElement {
         ret.addText(text);
         return ret;
     }
+}
+
+//#endregion
+
+//#region Inputs
+
+class dbnInput extends dbnElement {
+    constructor() {
+        super("input");
+    }
+
+    get oninput() { return this.domelement.oninput; }
+    set oninput(value) { this.domelement.oninput = value; }
+
+    get value() { return this.domelement.value; }
+    set value(value) { this.domelement.value = value; }
+
+    get placeholder() { return this.domelement.placeholder; }
+    set placeholder(value) { this.domelement.placeholder = value; }
+}
+
+class dbnDropdownWithDataList extends dbnDiv {
+
+    static NextID = 1;
+
+    constructor() {
+        super();
+
+        this.#myID = dbnDropdownWithDataList.NextID;
+        dbnDropdownWithDataList.NextID++;
+
+        this.add(this.#input);
+        this.#datalist = this.createAndAppendElement("datalist");
+        this.#datalist.id = "DropdownDataList" + this.#myID;
+
+        this.#input.domelement.setAttribute("list", this.#datalist.id);
+
+        this.#input.oninput = this.#OnInput.bind(this);
+        // this.#input.onfocus = this.#OnFocus.bind(this);
+        // this.#input.onblur = this.#OnBlur.bind(this);
+    }
+
+    #myID = 0;
+
+    bLeft = true;
+
+    OnItemSelected = new dbnEvent();
+
+    get placeholder() { return this.#input.placeholder; }
+    set placeholder(value) { this.#input.placeholder = value; }
+
+    /** @type{dbnListItem} */
+    #SelectedItem;
+    get SelectedItem() { return this.#SelectedItem; }
+    set SelectedItem(value) {
+        this.#SelectedItem = value;
+        this.#input.value = value?.Display;
+        this.OnItemSelected.Raise();
+    }
+
+    /** @type{dbnElement} */
+    #datalist;
+    #input = new dbnInput();
+
+    /** @type{dbnListItem[]} */
+    Items = [];
+
+    /**
+     * @param {string} display 
+     * @param {string} value 
+     */
+    AddItem(display, value) {
+        this.Items.push(new dbnListItem(display, value));
+        var option = this.#datalist.createAndAppendElement("option");
+        option.value = value;
+        option.addText(display);
+    }
+
+    #OnInput() {
+        var val = this.#input.value;
+
+        for (const x of this.Items) {
+            if (x.Value == val) {
+                this.SelectedItem = x;
+                return;
+            }
+
+        }
+        // this.Items.forEach(x => {
+        //     if (x.Value == val) {
+        //         this.SelectedItem = x;
+        //         return;
+        //     }
+        // });
+
+        //this.SelectedItem = null;
+    }
+
+    #OnBlur() {
+        var inp = document.getElementById("browser");
+
+        inp.value = myOption == null ? null : inp.value;
+        bLeft = true;
+    }
+
+    #OnFocus() {
+        var inp = document.getElementById("browser");
+        //inp.select();
+    }
+
+
+    #OnClick() {
+        var inp = document.getElementById("browser");
+        console.log("Selection: " + inp.selectionStart + " to " + inp.selectionEnd);
+        if (bLeft && inp.selectionStart == inp.selectionEnd) inp.select();
+        bLeft = false;
+    }
+}
+
+class dbnDropdownWithSearch extends dbnDiv {
+
+    constructor() {
+        super();
+        this.className += " DropdownWithSearchList";
+        this.add(this.#input);
+        this.#input.oninput = this.#OnInput.bind(this);
+        this.#input.domelement.addEventListener("keydown", this.#OnKeyDown.bind(this));
+        this.#input.onclick = this.#OnClick.bind(this);
+        this.#input.onblur = this.#OnBlur.bind(this);
+    }
+
+    OnItemSelected = new dbnEvent();
+
+    get placeholder() { return this.#input.placeholder; }
+    set placeholder(value) { this.#input.placeholder = value; }
+
+    /** @type{dbnListItem} */
+    #SelectedItem;
+    get SelectedItem() { return this.#SelectedItem; }
+    set SelectedItem(value) {
+        this.#SelectedItem = value;
+        this.#input.value = value?.Display ?? "";
+        this.OnItemSelected.Raise();
+        this.#LeftInput = true;
+    }
+
+    /** @type{dbnDiv} */
+    #divList;
+    #input = new dbnInput();
+    #LeftInput = true;
+
+    /** @type{dbnListItem[]} */
+    Items = [];
+    /** @type{dbnListItem[]} */
+    #ListedItems = [];
+
+    /**
+     * @param {string} display 
+     * @param {any} value 
+     */
+    AddItem(display, value) {
+        this.Items.push(new dbnListItem(display, value));
+    }
+
+    #OnBlur() {
+        this.#input.value = this.#SelectedItem ? this.#SelectedItem.Display : null;
+        this.#LeftInput = true;
+    }
+    #OnClick() {
+        if (this.#LeftInput && this.#input.domelement.selectionStart == this.#input.domelement.selectionEnd) this.#input.domelement.select();
+        this.#LeftInput = false;
+        this.#OnInput();
+    }
+
+    #OnInput() {
+        myUIHub.CloseAllPopUps();
+
+        var disp = this.#input.value.toLowerCase();
+        this.#ListedItems = !disp ? this.Items.slice() : this.Items.filter(x => x.Display.toLowerCase().includes(disp));
+
+        if (this.#ListedItems.length == 0) return;
+
+        disp = disp.toLowerCase();
+
+        this.#divList = new dbnDiv();
+        this.#divList.className = "DropdownWithSearchList-items";
+        this.add(this.#divList);
+        myUIHub.RegisterPopUp(this.#divList);
+
+        this.#ListedItems.forEach(x => {
+            var item = new dbnDiv();
+
+            var iStart = x.Display.toLowerCase().search(disp);
+            var iEnd = iStart + disp.length - 1;
+            if (iStart > 0) item.addText(x.Display.substring(0, iStart));
+            item.addBoldText(x.Display.substring(iStart, iEnd + 1));
+            if (iEnd < x.Display.length - 1) item.addText(x.Display.substring(iEnd + 1));
+
+            item.domelement.addEventListener("click", (function (e) {
+                this.SelectedItem = e;
+            }).bind(this, x))
+            this.#divList.appendChild(item);
+        });
+
+        this.#SelectedListIndex = 0;
+        this.#UpdateSelected();
+    }
+
+    #SelectedListIndex = -1;
+
+    #OnKeyDown(e) {
+        if (e.keyCode == 40) {//Down key
+            this.#SelectedListIndex++;
+            this.#UpdateSelected();
+        } else if (e.keyCode == 38) { //Up
+            this.#SelectedListIndex--;
+            this.#UpdateSelected();
+        } else if (e.keyCode == 13) {
+            /*If the ENTER key is pressed, prevent the form from being submitted,*/
+            e.preventDefault();
+            if (this.#SelectedListIndex > -1) {
+                this.SelectedItem = this.#ListedItems[this.#SelectedListIndex];
+                myUIHub.CloseAllPopUps();
+            } else {
+                this.SelectedItem = null;
+            }
+        }
+    }
+
+    #UpdateSelected() {
+        if (this.#ListedItems.length == 0) {
+            this.#SelectedListIndex = -1;
+            return;
+        }
+        if (this.#SelectedListIndex < 0) this.#SelectedListIndex = 0;
+        if (this.#SelectedListIndex >= this.#ListedItems.length) this.#SelectedListIndex = this.#ListedItems.length - 1;
+
+        const active = "DropdownWithSearchList-active";
+
+        this.#divList.domelement.childNodes.forEach(x => x.className = x.className.replace(active, ""));
+        if (this.#SelectedListIndex < this.#divList.domelement.childNodes.length) this.#divList.domelement.childNodes[this.#SelectedListIndex].className += " " + active;
+    }
+
 }
 
 //#endregion
