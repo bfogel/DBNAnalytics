@@ -57,8 +57,8 @@ function MakePage() {
 
     divGamesStatus = cardPlayerComparison.addDiv();
 
-    _PlayerList.AddPlayer(myHub.Players.find(x => x.PlayerID == 203));
-    _PlayerList.AddPlayer(myHub.Players.find(x => x.PlayerID == 222));
+    // _PlayerList.AddPlayer(myHub.Players.find(x => x.PlayerID == 203));
+    // _PlayerList.AddPlayer(myHub.Players.find(x => x.PlayerID == 222));
     // LoadComparison();
 }
 MakePage();
