@@ -115,7 +115,7 @@ class PowerBidManager {
         p.addText(".");
 
         ret.addText("Bids for a single game are subject to these constraints:");
-        var ol = ret.addOrderedList();
+        var ol = ret.addList(true);
         ol.AddItem("Individual bids must be no less than " + this.MinimumIndividualBid + " and no more than " + this.MaximumIndividualBid + " points.");
         ol.AddItem("A player's total bid can be no more than " + this.MaximumTotalPerRound + " points.");
         ol.AddItem("A player cannot bid the same amount on any two powers. This means that a player's total bid must be at least " + this.MinimumTotalPerRound + " points.");

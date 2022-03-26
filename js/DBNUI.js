@@ -51,13 +51,23 @@ class dbnElement {
     get innerHTML() { return this.domelement.innerHTML; }
     set innerHTML(value) { this.domelement.innerHTML = value; }
 
-    /**
-     * @param {dbnElement} element 
-     */
-    add(element) { this.appendChild(element); }
     addRange(elements) { elements.forEach(x => this.add(x)); }
     appendChild(element) { this.domelement.appendChild(element instanceof dbnElement ? element.domelement : element); }
     createAndAppendElement(tagname) { var ret = new dbnElement(document.createElement(tagname)); this.appendChild(ret); return ret; }
+
+    addText(text) { var ret = new dbnText(text, this); return ret; }
+
+    /**
+     * 
+     * @param {string|dbnElement|HTMLElement} textOrElement 
+     */
+    add(textOrElement) {
+        if (typeof textOrElement == "string") {
+            this.addText(textOrElement);
+        } else {
+            this.appendChild(textOrElement);
+        }
+    }
 
     addDiv() { var ret = new dbnDiv(this); return ret; }
     addCard() { var ret = new dbnCard(this); return ret; }
@@ -72,14 +82,18 @@ class dbnElement {
     addButtonBar() { var ret = new dbnButtonBar(this); return ret; }
     addTable() { var ret = new dbnTable(this); return ret; }
 
-    addOrderedList() { var ret = new dbnOrderedList(this); return ret; }
+    /**
+     * @param {boolean} ordered 
+     * @returns 
+     */
+    addList(ordered) { var ret = new dbnList(ordered, this); return ret; }
+    addNavList() { var ret = new dbnList(false, this); ret.className = "dbnNavList"; return ret; }
     addSelect() { var ret = new dbnSelect(this); return ret; }
 
     addLineBreak() { var ret = new dbnElement("br", this); return ret; }
     addHardRule() { var ret = new dbnElement("hr", this); return ret; }
 
     addParagraph() { var ret = new dbnElement("p", this); return ret; }
-    addText(text) { var ret = new dbnText(text, this); return ret; }
     addBoldText(text) { var ret = new dbnElement("b", this); ret.addText(text); return ret; }
     addItalicText(text) { var ret = new dbnElement("i", this); ret.addText(text); return ret; }
 
@@ -149,6 +163,11 @@ class dbnText extends dbnElement {
         super(document.createTextNode(text), parent);
     }
 
+    /** @type{Text} */
+    get #DOMElementAsText() { return document.domelement; }
+
+    get Text() { return this.#DOMElementAsText.textContent; }
+    set Text(value) { this.#DOMElementAsText.textContent = value; }
 }
 
 //#endregion
@@ -254,14 +273,19 @@ class dbnListItem {
     constructor(display, value) { this.Display = display; this.Value = value; }
 }
 
-class dbnOrderedList extends dbnElement {
-    constructor(parent = null) {
-        super("ol", parent);
+class dbnList extends dbnElement {
+    constructor(ordered = true, parent = null) {
+        super(ordered ? "ol" : "ul", parent);
     }
 
-    AddItem(text) {
+    /**
+     * 
+     * @param {string|dbnElement|HTMLElement} textOrElement 
+     * @returns 
+     */
+    AddItem(textOrElement) {
         var ret = this.createAndAppendElement("li");
-        ret.addText(text);
+        ret.add(textOrElement);
         return ret;
     }
 }
@@ -972,3 +996,128 @@ class dbnEvent {
 
 
   //#endregion
+
+//#region DrillDownPage
+
+class dbnDrilldownPage {
+
+    /**
+     * @param {string} homekey 
+     */
+    constructor(homekey) {
+        this.HomeKey = homekey;
+
+        var urlparams = new URLSearchParams(window.location.search);
+
+        this.CurrentKeys = [];
+        if (urlparams.has("keys")) {
+            var keys = JSON.parse(urlparams.get("keys"));
+            if (Array.isArray(keys)) this.CurrentKeys = keys;
+        }
+
+        window.onpopstate = this.#OnPopState.bind(this);
+
+        this.Title = homekey;
+    }
+
+    /** @type{string} */
+    HomeKey;
+
+    /** @type{string[]} */
+    CurrentKeys;
+
+    #TitleCard = dbnHere().addCard();
+    #TitleHeading = this.#TitleCard.addHeading(1, "");
+    get Title() { return this.#TitleHeading.innerHTML; }
+    set Title(value) { this.#TitleHeading.innerHTML = value; this.#TitleCard.style.display = value == "" ? "none" : "block"; }
+
+    BreadcrumbDiv = this.#TitleCard.addDiv();
+
+    ContentDiv = dbnHere().addDiv();
+
+    /** @callback MakeContentCallback
+     * @param {string[]} keys - A list of keys identifying this point in the drilldown
+     * @param {dbnDiv} div - The div where the content goes
+     */
+
+    /** @type{MakeContentCallback} */
+    #OnMakeContent;
+    get OnMakeContent() { return this.#OnMakeContent; }
+    set OnMakeContent(value) { this.#OnMakeContent = value; this.DrilldownTo(this.CurrentKeys); }
+
+    /**
+     * @param {string | string[]} key 
+     * @param {dbnElement|HTMLElement|string} elementOrText 
+     */
+    MakeDrilldownLink(key, elementOrText, relativeToCurrent = true) {
+        var ret = new dbnLink();
+        ret.addText(elementOrText);
+        var newkeys = relativeToCurrent ? this.CurrentKeys.slice() : [];
+        if (Array.isArray(key)) {
+            newkeys.push(...key);
+        } else {
+            newkeys.push(key);
+        }
+        // ret.onclick = () => { this.DrilldownTo.bind(this, newkeys); return false; }
+        ret.onclick = this.DrilldownTo.bind(this, newkeys);
+        ret.href = "nowhere.com";
+        return ret;
+    }
+
+    /**
+     * @param {string[]} keys 
+     */
+    DrilldownTo(keys) {
+
+        var bAddToHistory = !this.#StatePopped && JSON.stringify(keys) != JSON.stringify(this.CurrentKeys);
+        this.CurrentKeys = keys;
+
+        var doctitle = this.Title;
+
+        this.BreadcrumbDiv.innerHTML = "";
+        var breadkeys = [];
+        if (keys.length > 0) {
+            var list = this.BreadcrumbDiv.addList(false);
+            list.className = "breadcrumb";
+            list.AddItem(this.MakeDrilldownLink(breadkeys, this.HomeKey, false));
+            keys.forEach((x, i) => {
+                breadkeys.push(x);
+                list.AddItem(i == keys.length - 1 ? x : this.MakeDrilldownLink(breadkeys, x, false));
+                doctitle += " / " + x;
+            });
+        }
+
+        window.document.title = doctitle;
+
+        this.ContentDiv.innerHTML = "";
+        this.#OnMakeContent(keys, this.ContentDiv);
+
+        if (bAddToHistory) {
+            var url = window.location.href;
+            if (url.includes("?")) url = url.substring(0, url.search("\\?"));
+            var urlparams = new URLSearchParams(window.location.search);
+
+            if (keys.length > 0) {
+                urlparams.set("keys", JSON.stringify(keys));
+            } else {
+                urlparams.delete("keys");
+            }
+            url = url + "?" + urlparams.toString();
+
+            window.history.pushState(keys, "", url);
+        }
+        return false;
+    }
+
+    #StatePopped = false;
+    /**
+     * @param {PopStateEvent} e 
+     */
+    #OnPopState(e) {
+        this.#StatePopped = true;
+        this.DrilldownTo(e.state ?? []);
+        this.#StatePopped = false;
+    }
+}
+
+//#endregion

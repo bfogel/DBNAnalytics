@@ -313,11 +313,12 @@ select.PlayerSelector {
 div.dbnPlayerList {
     display: table;
 }
+
 div.dbnPlayerList .dbnPlayerListCell {
     display: table-cell;
 }
 
-div.dbnPlayerList span{
+div.dbnPlayerList span {
     margin-right: 5px;
     margin-left: 5px;
 }
@@ -398,4 +399,54 @@ table.GamePlayer tr:last-child {
 .DropdownWithSearchList-active {
     background-color: DodgerBlue !important;
     color: #ffffff;
+}
+
+ul.breadcrumb {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+ul.breadcrumb li {
+    display: inline;
+    font-size: 18px;
+}
+
+ul.breadcrumb li+li:before {
+    padding: 8px;
+    color: black;
+    content: "/\00a0";
+}
+
+ul.breadcrumb li a {
+    color: #0275d8;
+    text-decoration: none;
+}
+
+ul.breadcrumb li a:hover {
+    color: #01447e;
+    text-decoration: underline;
+}
+
+ul.dbnNavList {
+    list-style-type: none
+}
+
+ul.dbnNavList li {
+    margin-bottom: 20px;
+    transition: transform .2s;
+    width: fit-content;
+}
+
+ul.dbnNavList a {
+    font-size: larger;
+    color: white;
+    text-decoration: none;
+    background-color: #dc1b26;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+ul.dbnNavList li:hover {
+    transform: scale(1.1);
 }
