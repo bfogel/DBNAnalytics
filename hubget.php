@@ -153,11 +153,12 @@ function HandleRequest($request)
                 $vars = null;
                 $sql = "SELECT PlayerID, PlayerName FROM Player";
 
-                $token = $parameters["token"];
-                if ($token != null) {
-                    $sql .= ' WHERE Token = ?';
-                    $vars = [$token];
-                }
+                //2022-03-27 - Not sure what this was doing.  Might be a vestige before userinfo request
+                // $token = $parameters["token"];
+                // if ($token != null) {
+                //     $sql .= ' WHERE Token = ?';
+                //     $vars = [$token];
+                // }
                 return GetResultsetAsJSON($sql, $vars);
             }
 

@@ -13,6 +13,23 @@ var myManager = new dbnDrilldownPage("Portal Home");
 
 //#region DBNIYearGroup
 
+class CompetitionManager {
+    /**
+     * @param {dbnCompetition} competition 
+     */
+    constructor(competition) { this.Competition = competition; }
+
+    /** @type{dbnCompetition} */
+    Competition;
+
+    get Key() { return this.Competition.CompetitionName; }
+
+    /** @type{CompetitionPowerAssignmentController} */
+    #PowerAssignmentController;
+    get PowerAssignmentController() { if (!this.#PowerAssignmentController) this.#PowerAssignmentController = new CompetitionPowerAssignmentController(this.Competition.CompetitionID); return this.#PowerAssignmentController; }
+
+}
+
 class DBNIYearGroup {
     /**
      * @param {number} year 
@@ -22,8 +39,8 @@ class DBNIYearGroup {
     /** @type{number} */
     Year;
 
-    /** @type{dbnCompetition[]} */
-    Competitions = [];
+    /** @type{CompetitionManager[]} */
+    CompetitionManagers = [];
 
     get Key() {
         if (this.Year == 0) return "Other";
@@ -34,9 +51,11 @@ class DBNIYearGroup {
 
     /**
      * @param {dbnCompetition} competition 
-     * @returns {string}
      */
-    KeyForCompetition(competition) { return competition.CompetitionName; }
+    AddCompetition(competition) {
+        this.CompetitionManagers.push(new CompetitionManager(competition));
+    }
+
 }
 
 /** @type{Object.<number,DBNIYearGroup>} */
@@ -77,7 +96,7 @@ function MakePage() {
             year = parseInt(syear);
         }
         if (!myDBNIYearGroups.hasOwnProperty(year)) myDBNIYearGroups[year] = new DBNIYearGroup(year);
-        myDBNIYearGroups[year].Competitions.push(x);
+        myDBNIYearGroups[year].AddCompetition(x);
     });
 
     myManager.OnMakeContent = MakeContent;
@@ -106,27 +125,129 @@ function MakeContent(keys, div) {
     if (keys.length == 1) {
         card.addHeading(1, keys[0] + " Competitions");
         var list = card.addNavList();
-        group.Competitions.forEach(x => {
-            var key = group.KeyForCompetition(x);
-            list.AddItem(myManager.MakeDrilldownLink(key, key))
+        group.CompetitionManagers.forEach(x => {
+            list.AddItem(myManager.MakeDrilldownLink(x.Key, x.Key))
         });
         return;
     }
 
-    var competition = group.Competitions.find(x => group.KeyForCompetition(x) == keys[1]);
-    if (!competition) {
+    var compmgr = group.CompetitionManagers.find(x => x.Key == keys[1]);
+    if (!compmgr) {
         div.addText("Could not locate competition " + keys[1]);
         return;
     }
 
-    card.addText("This is " + competition.CompetitionName);
+    var comp = compmgr.Competition;
+    card.addHeading(1, comp.CompetitionName);
+    if (comp.CompletionDate) {
+        card.addText("Nothing to do for  " + comp.CompetitionName);
+    } else {
+        card.addHeading(2, "Power assignement");
+        card.add(compmgr.PowerAssignmentController);
+    }
 }
 
-// class dbnNavigationList extends dbnDiv {
-//     constructor(parent) { super(parent); }
+//#region Schedule and Random Power Assignment
 
-//     AddItem(text, href)
-// }
+class CompetitionPowerAssignmentController extends dbnDiv {
+
+    /**
+     * 
+     * @param {number} competitionId 
+     * @param {string} competitionName 
+     */
+    constructor(competitionId, competitionName) {
+        super();
+        this.CompetitionID = competitionId;
+        this.CompetitionName = competitionName;
+
+        var tabs = this.addTabs();
+
+        for (let i = 1; i < 4; i++) {
+            var rdiv = new CompetitionPowerAssignmentRound(this, i);
+            tabs.addTab("Round " + i, rdiv);
+        }
+
+        tabs.SelectTabByIndex(0);
+    }
+
+    /** @type {number} */
+    CompetitionID;
+    /** @type {string} */
+    CompetitionName;
+
+    /** @type {dbnCompetitionPlayerSchedule[]} */
+    Schedules;
+
+    /**
+     * @param {number} playerid
+     * @returns {dbnCompetitionPlayerSchedule[]} 
+     */
+    GetScheduleForPlayer(playerid) {
+        var ret = this.Schedules.filter(x => x.CompetitionID == this.CompetitionID && x.PlayerID == playerid);
+        ret.sort((a, b) => a.Round - b.Round);
+        return ret;
+    }
+}
+
+class CompetitionPowerAssignmentRound extends dbnDiv {
+    constructor(controller, round) {
+        super();
+        this.Controller = controller;
+        this.Round = round;
+
+        this.style.minHeight = "400px";
+
+        var div = this.addDiv();
+        div.addText("Add Player: ");
+        div.add(this.#PlayerSelector);
+        this.#PlayerSelector.placeholder = "Search";
+        this.#PlayerSelector.OnPlayerSelected.AddListener(this.#OnPlayerSelected.bind(this));
+
+        this.add(this.#PlayersUI);
+    }
+
+    /** @type{CompetitionPowerAssignmentController} */
+    Controller;
+
+    /** @type{number} */
+    Round;
+
+    #PlayerSelector = new dbnPlayerSelector();
+    #PlayersUI = new dbnDiv();
+    /** @type{dbnPlayer[]} */
+    Players = [];
+
+    #OnPlayerSelected(e) {
+        var newplayer = this.#PlayerSelector.SelectedPlayer;
+        if (!newplayer) return;
+
+        if (this.Players.every(x => x.PlayerID != newplayer.PlayerID)) {
+            this.Players.push(newplayer);
+            this.Players.sort((a, b) => a.PlayerName - b.PlayerName);
+            this.#UpdateDisplay();
+        }
+    }
+
+    #UpdateDisplay() {
+        this.#PlayersUI.innerHTML = "";
+
+        var tbl = this.addTable();
+        var data = [];
+
+        this.Players.forEach(x => {
+            data.push([x.PlayerName]);
+        });
+
+        tbl.Data = data;
+        tbl.Generate();
+    }
+
+}
+
+//#endregion
+
+
 
 //Below is the code for the TD page for the DBNI power bid auction
 
