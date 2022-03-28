@@ -287,7 +287,7 @@ function HandleRequest($request)
                 if (!$rs->success) return MakeErrorResponse("(clearing) " . $rs->message);
 
                 $sql = 'INSERT INTO CompetitionPlayerSchedule (Competition_CompetitionID, Player_PlayerID, `Round`, BidsLocked)';
-                $sql .= ' VALUES (?,?,?,?,?)';
+                $sql .= ' VALUES (?,?,?,?)';
 
                 foreach ($schedules as $sched) {
                     if ($sched["CompetitionID"] == $competitionID) {
