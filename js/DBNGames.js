@@ -189,11 +189,15 @@ class bfDataRequestList {
     return fd;
   }
 
-  addRequest(request) {
-    if (request instanceof bfDataRequest) {
-      this.Requests.push(request);
-    } else if (request instanceof Array) {
-      request.forEach(x => this.addRequest(x));
+  /**
+   * 
+   * @param {*} requestOrRequests A bfDataRequest or array of bfDataRequest. 
+   */
+  addRequest(requestOrRequests) {
+    if (requestOrRequests instanceof bfDataRequest) {
+      this.Requests.push(requestOrRequests);
+    } else if (requestOrRequests instanceof Array) {
+      requestOrRequests.forEach(x => this.addRequest(x));
     } else {
       throw "request must be bfDataRequest or an array of bfDataRequest";
     }

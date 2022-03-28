@@ -159,10 +159,21 @@ class CompetitionPowerAssignmentController extends dbnDiv {
         super();
         this.Competition = competition;
 
-        var req = new dbnHubRequest_CompetitionPlayerSchedule(_AsTD, competition.CompetitionID);
-        req.SendAlone();
+        var reqlist = myHub.MakeRequestList();
+        var reqSchedules = new dbnHubRequest_CompetitionPlayerSchedule(_AsTD, competition.CompetitionID);
+        var reqGameCounts = new bfDataRequest("CompetitionPlayerCountries", { "competitionID": competition.CompetitionID });
 
-        var schedules = req.ResponseToObjects();
+        reqlist.addRequest([reqSchedules, reqGameCounts]);
+        reqlist.Send();
+
+        if (!reqlist.Success) {
+            reqlist.ReportToConsole();
+            this.addText("Unable to retrieve data.");
+            return;
+        }
+
+        var schedules = reqSchedules.ResponseToObjects();
+        reqGameCounts.ReportToConsole();
 
         this.add(this.#SaveButton);
         this.#SaveButton.onclick = this.#SaveSchedules.bind(this);

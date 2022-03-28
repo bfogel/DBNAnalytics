@@ -260,11 +260,10 @@ function HandleRequest($request)
                 $sql .= " INNER JOIN GameCountryPlayer as GCP on GCP.Game_GameID = G.GameID";
                 $sql .= " INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID";
                 $sql .= ' INNER JOIN Country as CO on GCP.Country_CountryID = CO.CountryID';
-                $sql .= " WHERE C.Director_PlayerID = ?";
-                $sql .= " AND C.CompetitionID = ?";
+                $sql .= " WHERE C.CompetitionID = ?";
                 $sql .= " GROUP BY P.PlayerID, CO.CountryName";
 
-                $vars = [$userinfo->PlayerID, $competitionID];
+                $vars = [$competitionID];
 
 
                 $sql .= " ORDER BY C.CompetitionName";
