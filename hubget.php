@@ -291,7 +291,7 @@ function HandleRequest($request)
 
                 foreach ($schedules as $sched) {
                     if ($sched["CompetitionID"] == $competitionID) {
-                        $rs = new dbnResultSet($sql, [$competitionID, $sched["PlayerID"], $sched["Round"], $sched["BidsLocked"]]);
+                        $rs = new dbnResultSet($sql, [$competitionID, $sched["PlayerID"], $sched["Round"], $sched["BidsLocked"] ? 1 : 0]);
                         if (!$rs->success) return MakeErrorResponse("(adding " . json_encode($sched) . ") " . $rs->message);
                     }
                 }
