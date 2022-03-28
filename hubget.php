@@ -255,13 +255,14 @@ function HandleRequest($request)
                 $competitionID = $parameters["competitionID"];
                 if (!VerifyTD($competitionID, $userinfo->PlayerID)) return MakeErrorResponse("User not authorized");
 
-                $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.BidsLocked";
-                $sql .= " FROM Competition AS C";
-                $sql .= " INNER JOIN Game as G ON G.Competition_CompetitionID = C.CompetitionID";
+                $sql = "SELECT P.PlayerID, CO.CountryName, Count(CO.CountryID) as GameCount";
+                $sql .= " FROM Game as G ON G.Competition_CompetitionID = C.CompetitionID";
                 $sql .= " INNER JOIN GameCountryPlayer as GCP on GCP.Game_GameID = G.GameID";
-                $sql .= " INNER JOIN Player as P on GCP.Player_PlayerID = P.PlayerID";
+                $sql .= " INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID";
+                $sql .= ' INNER JOIN Country as CO on GCP.Country_CountryID = CO.CountryID';
                 $sql .= " WHERE C.Director_PlayerID = ?";
                 $sql .= " AND C.CompetitionID = ?";
+                $sql .= " GROUP BY P.PlayerID, CO.CountryName";
 
                 $vars = [$userinfo->PlayerID, $competitionID];
 
