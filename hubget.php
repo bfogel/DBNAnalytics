@@ -250,7 +250,28 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $vars);
             }
 
-        case "compschedule_get": {
+        case "CompetitionPlayerCountries": {
+                if ($parameters == null || !array_key_exists("competitionID", $parameters)) return MakeErrorResponse("No CompetitionID");
+                $competitionID = $parameters["competitionID"];
+                if (!VerifyTD($competitionID, $userinfo->PlayerID)) return MakeErrorResponse("User not authorized");
+
+                $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.BidsLocked";
+                $sql .= " FROM Competition AS C";
+                $sql .= " INNER JOIN Game as G ON G.Competition_CompetitionID = C.CompetitionID";
+                $sql .= " INNER JOIN GameCountryPlayer as GCP on GCP.Game_GameID = G.GameID";
+                $sql .= " INNER JOIN Player as P on GCP.Player_PlayerID = P.PlayerID";
+                $sql .= " WHERE C.Director_PlayerID = ?";
+                $sql .= " AND C.CompetitionID = ?";
+
+                $vars = [$userinfo->PlayerID, $competitionID];
+
+
+                $sql .= " ORDER BY C.CompetitionName";
+
+                return GetResultsetAsJSON($sql, $vars);
+            }
+
+        case "CompetitionSchedule_Get": {
                 $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.BidsLocked";
                 $sql .= " FROM Competition AS C";
                 $sql .= " INNER JOIN CompetitionPlayerSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
@@ -269,18 +290,19 @@ function HandleRequest($request)
                     $vars = [$userinfo->PlayerID];
                 }
 
-                $sql .= " AND C.CompetitionID = " . $competitionID;
+                $sql .= " AND C.CompetitionID = ?";
+                array_push($vars,  $competitionID);
 
                 $sql .= " ORDER BY C.CompetitionName";
 
                 return GetResultsetAsJSON($sql, $vars);
             }
 
-        case "compschedule_save": {
+        case "CompetitionSchedule_Save": {
                 $competitionID = $parameters["competitionID"];
                 $schedules = $parameters["schedules"];
 
-                if (!VerifyTD($competitionID, $userinfo->PlayerID)) return ["success" => false, "message" => "User not authorized"];
+                if (!VerifyTD($competitionID, $userinfo->PlayerID)) return MakeErrorResponse("User not authorized");
 
                 $sql = "DELETE FROM CompetitionPlayerSchedule WHERE Competition_CompetitionID = ?";
                 $rs = new dbnResultSet($sql, [$competitionID]);

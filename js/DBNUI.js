@@ -172,6 +172,16 @@ class dbnText extends dbnElement {
 
 //#endregion
 
+//#region Icons
+
+class dbnIcon_TimesCircle extends dbnElement {
+    constructor() {
+        super("i");
+        this.className = "fa fa-times-circle";
+    }
+}
+//#endregion
+
 //#region dbnUIHub
 
 class dbnUIHub {
@@ -216,9 +226,9 @@ var myUIHub = new dbnUIHub();
 //#region Buttons
 
 class dbnButton extends dbnElement {
-    constructor(text, onclick, className, parent = null) {
+    constructor(textOrElement, onclick = null, className = null, parent = null) {
         super(document.createElement("button"), parent);
-        this.addText(text);
+        this.add(textOrElement);
         this.onclick = onclick;
         this.className = className;
     }
@@ -235,6 +245,10 @@ class dbnButton extends dbnElement {
         this.className = this.className.replace(" dbnDisabled", "");
         if (value) this.className += " dbnDisabled";
     }
+}
+
+class dbnFlatButton extends dbnButton {
+    constructor(textOrElement, onclick = null, parent = null) { super(textOrElement, onclick, "dbnFlatButton", parent); }
 }
 
 class dbnButtonBar extends dbnDiv {
@@ -995,7 +1009,7 @@ class dbnEvent {
 // aa.RaiseTestEvent();
 
 
-  //#endregion
+//#endregion
 
 //#region DrillDownPage
 

@@ -261,6 +261,16 @@ button {
     color: black !important;
 }
 
+button.dbnFlatButton {
+    background-color: transparent !important;
+    border: none;
+    outline: none;
+}
+
+button.dbnDisabled {
+    color: darkgray !important;
+}
+
 .dbnButtonBar {
     width: fit-content;
     background-color: #555;
@@ -291,10 +301,6 @@ div.dbnButtonBarCompact button {
 div.dbnButtonBar button:hover {
     position: relative;
     top: -1px;
-}
-
-div.dbnButtonBar button.dbnDisabled {
-    color: darkgray !important;
 }
 
 div.dbnButtonBar button.dbnDisabled:hover {

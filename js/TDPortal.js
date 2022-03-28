@@ -162,9 +162,12 @@ class CompetitionPowerAssignmentController extends dbnDiv {
         var req = new dbnHubRequest_CompetitionPlayerSchedule(_AsTD, competition.CompetitionID);
         req.SendAlone();
 
-        this.Schedules = req.ResponseToObjects();
+        var schedules = req.ResponseToObjects();
 
-        this.addButton("Save All Rounds", this.#SaveSchedules.bind(this));
+        this.add(this.#SaveButton);
+        this.#SaveButton.onclick = this.#SaveSchedules.bind(this);
+        this.#SaveButton.disabled = true;
+
         this.addLineBreak();
         this.addLineBreak();
 
@@ -172,12 +175,13 @@ class CompetitionPowerAssignmentController extends dbnDiv {
 
         for (let i = 1; i < 4; i++) {
             var rdiv = new CompetitionPowerAssignmentRound(this, i);
+            rdiv.Schedules = schedules.filter(x => x.Round == i);
             this.#RoundControllers.push(rdiv);
             tabs.addTab("Round " + i, rdiv);
         }
 
-        this.#RoundControllers[0].TryAddPlayer(myHub.Players.find(x => x.PlayerID == 203));
-        this.#RoundControllers[0].TryAddPlayer(myHub.Players.find(x => x.PlayerID == 222));
+        // this.#RoundControllers[0].TryAddPlayer(myHub.Players.find(x => x.PlayerID == 203));
+        // this.#RoundControllers[0].TryAddPlayer(myHub.Players.find(x => x.PlayerID == 222));
 
         tabs.SelectTabByIndex(0);
     }
@@ -185,20 +189,13 @@ class CompetitionPowerAssignmentController extends dbnDiv {
     /** @type {dbnCompetition} */
     Competition;
 
-    /** @type {dbnCompetitionPlayerSchedule[]} */
-    Schedules = [];
-
     /** @type{CompetitionPowerAssignmentRound[]} */
     #RoundControllers = [];
 
-    /**
-     * @param {number} playerid
-     * @returns {dbnCompetitionPlayerSchedule[]} 
-     */
-    GetScheduleForPlayer(playerid) {
-        var ret = this.Schedules.filter(x => x.CompetitionID == this.Competition.CompetitionID && x.PlayerID == playerid);
-        ret.sort((a, b) => a.Round - b.Round);
-        return ret;
+    #SaveButton = new dbnButton("Save All Rounds", null, null);
+
+    InformChanged() {
+        this.#SaveButton.disabled = false;
     }
 
     #SaveSchedules() {
@@ -206,6 +203,11 @@ class CompetitionPowerAssignmentController extends dbnDiv {
         this.#RoundControllers.forEach(x => schedules.push(...x.Schedules));
         var req = new dbnHubRequest_SaveCompetitionPlayerSchedules(this.Competition.CompetitionID, schedules);
         req.SendAlone();
+
+        if (req.Success) {
+            this.#SaveButton.disabled = true;
+        }
+
         req.ReportToConsole();
     }
 }
@@ -239,7 +241,9 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
     Round;
 
     /** @type {dbnCompetitionPlayerSchedule[]} */
-    Schedules = [];
+    #Schedules = [];
+    get Schedules() { return this.#Schedules };
+    set Schedules(value) { this.#Schedules = value; this.#UpdateDisplay(); }
 
     #PlayerSelector = new dbnPlayerSelector();
     #PlayersUI = new dbnDiv();
@@ -260,6 +264,17 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
         this.Schedules.push(schedule);
         this.Schedules.sort((a, b) => a.PlayerName.localeCompare(b.PlayerName));
         this.#UpdateDisplay();
+
+        this.Controller.InformChanged();
+    }
+
+    /**
+     * @param {dbnCompetitionPlayerSchedule} schedule 
+     */
+    #RemovePlayer(schedule) {
+        this.#Schedules = this.#Schedules.filter(x => x.PlayerID != schedule.PlayerID);
+        this.#UpdateDisplay();
+        this.Controller.InformChanged();
     }
 
     #OnPlayerSelected(e) {
@@ -276,17 +291,30 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
             this.#PlayersUI.addText("No players selected.")
         } else {
             var tbl = this.#PlayersUI.addTable();
-            tbl.Headers = ["Player", "Games"];
+            tbl.Headers = ["", "Player", "Games"];
             var data = [];
 
             this.Schedules.forEach(x => {
-                data.push([x.PlayerName, 0]);
+                var removelink = new dbnFlatButton(new dbnIcon_TimesCircle(), this.#RemovePlayer.bind(this, x));
+                data.push([removelink, x.PlayerName, 0]);
             });
 
             tbl.Data = data;
             tbl.Generate();
         }
     }
+
+    //     /**
+    //  * @param {number} playerid
+    //  * @returns {dbnCompetitionPlayerSchedule[]} 
+    //  */
+    //      GetScheduleForPlayer(playerid) {
+    //         var ret = this.Schedules.filter(x => x.CompetitionID == this.Competition.CompetitionID && x.PlayerID == playerid);
+    //         ret.sort((a, b) => a.Round - b.Round);
+    //         return ret;
+    //     }
+
+
 
 }
 

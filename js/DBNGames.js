@@ -1,3 +1,4 @@
+"use strict";
 
 /**
  * @typedef {import('./DBNUI.js')}
@@ -213,9 +214,11 @@ class dbnHub {
 
   Countries = ["Austria", "England", "France", "Germany", "Italy", "Russia", "Turkey"];
 
-  #players = Array.from(Array(0), x => new dbnPlayer());
+  /** @type{dbnPlayer[]} */
+  #players = [];
   get Players() {
-    if (this.#players.length = []) {
+    if (this.#players.length == 0) {
+      console.log("Retrieving players");
       var req = new dbnHubRequest_Players();
       req.SendAlone();
       this.#players = req.ResponseToPlayers();
@@ -286,7 +289,7 @@ class dbnCompetitionPlayerSchedule {
   BidsLocked;
 }
 class dbnHubRequest_CompetitionPlayerSchedule extends bfDataRequest {
-  constructor(pAsTD = false, competitionID = null) { super("compschedule_get", { "asTD": pAsTD, "competitionID": competitionID }); }
+  constructor(pAsTD = false, competitionID = null) { super("CompetitionSchedule_Get", { "asTD": pAsTD, "competitionID": competitionID }); }
   /** @returns {dbnCompetitionPlayerSchedule[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerSchedule()); }
 }
@@ -294,7 +297,7 @@ class dbnHubRequest_SaveCompetitionPlayerSchedules extends bfDataRequest {
   /**
    * @param {dbnCompetitionPlayerSchedule[]} schedules 
    */
-  constructor(competitionID, schedules) { super("compschedule_save", { "competitionID": competitionID, "schedules": schedules }); }
+  constructor(competitionID, schedules) { super("CompetitionSchedule_Save", { "competitionID": competitionID, "schedules": schedules }); }
   /** @returns {dbnCompetitionPlayerSchedule[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerSchedule()); }
 }
@@ -440,10 +443,8 @@ class dbnPlayerListLine extends dbnSpan {
 
     this.add(this.RemoveLink);
     this.RemoveLink.href = "#";
-    var xx = this.RemoveLink.createAndAppendElement("i");
-    xx.className = "fa fa-times-circle";
+    this.RemoveLink.add(new dbnIcon_TimesCircle());
     this.RemoveLink.addText(this.Player.PlayerName);
-
   }
 
   OnClick() {
