@@ -286,13 +286,15 @@ function HandleRequest($request)
                 $rs = new dbnResultSet($sql, [$competitionID]);
                 if (!$rs->success) return MakeErrorResponse("(clearing) " . $rs->message);
 
-                // $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
-                // $sql .= ' VALUES (?,?,?,?,?)';
+                $sql = 'INSERT INTO CompetitionPlayerSchedule (Competition_CompetitionID, Player_PlayerID, `Round`, BidsLocked)';
+                $sql .= ' VALUES (?,?,?,?,?)';
 
-                // foreach ($bids as $country => $bid) {
-                //     $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round, CountryNameToID($country), $bid]);
-                //     if (!$rs->success) MakeErrorResponse("(adding " . $country . ") " . $rs->message);
-                // }
+                foreach ($schedules as $sched) {
+                    if ($sched["CompetitionID"] == $competitionID) {
+                        $rs = new dbnResultSet($sql, [$competitionID, $sched["PlayerID"], $sched["Round"], $sched["BidsLocked"]]);
+                        if (!$rs->success) return MakeErrorResponse("(adding " . json_encode($sched) . ") " . $rs->message);
+                    }
+                }
 
                 return MakeQuerySuccessResponse("ok");
             }
@@ -363,10 +365,10 @@ function HandleRequest($request)
 
                 foreach ($bids as $country => $bid) {
                     $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round, CountryNameToID($country), $bid]);
-                    if (!$rs->success) MakeErrorResponse("(adding " . $country . ") " . $rs->message);
+                    if (!$rs->success) return MakeErrorResponse("(adding " . $country . ") " . $rs->message);
                 }
 
-                return ["success" => true, "content" => json_encode(["what" => "yes"])];
+                return MakeQuerySuccessResponse(["what" => "yes"]);
             }
 
         default:
