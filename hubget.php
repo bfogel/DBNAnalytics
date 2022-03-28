@@ -83,6 +83,10 @@ function MakeNonQuerySuccessResponse($affectedRowCount)
 {
     return ["success" => true, "content" => ["RecordsAffected" => $affectedRowCount]];
 }
+function MakeQuerySuccessResponse($content)
+{
+    return ["success" => true, "content" => $content];
+}
 
 class dbnUserInfo
 {
@@ -276,24 +280,11 @@ function HandleRequest($request)
                 $competitionID = $parameters["competitionID"];
                 $schedules = $parameters["schedules"];
 
-                return ["success" => true, "content" => [$competitionID,  $schedules]];
+                if (!VerifyTD($competitionID, $userinfo->PlayerID)) return ["success" => false, "message" => "User not authorized"];
 
-                // $sql = 'SELECT BidsLocked FROM CompetitionPlayerSchedule';
-                // $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
-                // $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
-                // if (!$rs->success) return MakeErrorResponse($rs->message);
-
-                // $locked = false;
-                // foreach ($rs->data as $row) {
-                //     if ($row[0] == 1) $locked = true;
-                // }
-                // if ($locked) {
-                //     return MakeErrorResponse("Bids for this round are locked.  Contact the TD to unlock.");
-                // }
-
-                // $sql = "DELETE FROM PlayerCountryBid WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND `Round` = ?";
-                // $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
-                // if (!$rs->success) return MakeErrorResponse("(clearing) " . $rs->message);
+                $sql = "DELETE FROM CompetitionPlayerSchedule WHERE Competition_CompetitionID = ?";
+                $rs = new dbnResultSet($sql, [$competitionID]);
+                if (!$rs->success) return MakeErrorResponse("(clearing) " . $rs->message);
 
                 // $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
                 // $sql .= ' VALUES (?,?,?,?,?)';
@@ -303,7 +294,7 @@ function HandleRequest($request)
                 //     if (!$rs->success) MakeErrorResponse("(adding " . $country . ") " . $rs->message);
                 // }
 
-                // return ["success" => true, "content" => json_encode(["what" => "yes"])];
+                return MakeQuerySuccessResponse("ok");
             }
 
         case "setScheduleLock": {

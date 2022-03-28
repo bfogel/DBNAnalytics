@@ -166,6 +166,7 @@ class CompetitionPowerAssignmentController extends dbnDiv {
 
         this.addButton("Save All Rounds", this.#SaveSchedules.bind(this));
         this.addLineBreak();
+        this.addLineBreak();
 
         var tabs = this.addTabs();
 
