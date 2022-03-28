@@ -273,7 +273,7 @@ function HandleRequest($request)
             }
 
         case "compschedule_save": {
-                $competitionID = $parameters["competitionid"];
+                $competitionID = $parameters["competitionID"];
                 $schedules = $parameters["schedules"];
 
                 return ["success" => false, "stuff" => $competitionID];
