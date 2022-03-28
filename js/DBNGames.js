@@ -255,8 +255,6 @@ var myHub = new dbnHub();
 
 //#region Misc DataRequest classes
 
-//---Add PlayerName to these requests for convience
-
 class dbnUserInfo { PlayerID; PlayerName; }
 class dbnHubRequest_UserInfo extends bfDataRequest {
   constructor() { super("userinfo", null); }
@@ -312,6 +310,20 @@ class dbnHubRequest_Bids extends bfDataRequest {
   constructor(pAsTD = false) { super("bids", { "asTD": pAsTD }); }
   /** @returns {dbnPlayerCountryBid[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnPlayerCountryBid()); }
+}
+
+class dbnCompetitionPlayerGameCount {
+  /** @type{number} */
+  PlayerID;
+  /** @type{number} */
+  CountryID;
+  /** @type{number} */
+  GameCount;
+}
+class dbnHubRequest_CompetitionPlayerGameCounts extends bfDataRequest {
+  constructor(competitionID) { super("CompetitionPlayerCountries", { "competitionID": competitionID }); }
+  /** @returns {dbnCompetitionPlayerGameCount[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerGameCount()); }
 }
 
 //#endregion

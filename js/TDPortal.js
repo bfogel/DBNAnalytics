@@ -161,7 +161,7 @@ class CompetitionPowerAssignmentController extends dbnDiv {
 
         var reqlist = myHub.MakeRequestList();
         var reqSchedules = new dbnHubRequest_CompetitionPlayerSchedule(_AsTD, competition.CompetitionID);
-        var reqGameCounts = new bfDataRequest("CompetitionPlayerCountries", { "competitionID": competition.CompetitionID });
+        var reqGameCounts = new dbnHubRequest_CompetitionPlayerGameCounts(competition.CompetitionID);
 
         reqlist.addRequest([reqSchedules, reqGameCounts]);
         reqlist.Send();
@@ -191,9 +191,6 @@ class CompetitionPowerAssignmentController extends dbnDiv {
             tabs.addTab("Round " + i, rdiv);
         }
 
-        // this.#RoundControllers[0].TryAddPlayer(myHub.Players.find(x => x.PlayerID == 203));
-        // this.#RoundControllers[0].TryAddPlayer(myHub.Players.find(x => x.PlayerID == 222));
-
         tabs.SelectTabByIndex(0);
     }
 
@@ -202,6 +199,9 @@ class CompetitionPowerAssignmentController extends dbnDiv {
 
     /** @type{CompetitionPowerAssignmentRound[]} */
     #RoundControllers = [];
+
+    /** @type{CompetitionPowerAssignmentRound[]} */
+    #PlayerGameCounts = [];
 
     #SaveButton = new dbnButton("Save All Rounds", null, null);
 
