@@ -276,7 +276,7 @@ function HandleRequest($request)
                 $competitionID = $parameters["competitionID"];
                 $schedules = $parameters["schedules"];
 
-                return ["success" => true, "stuff" => $competitionID, "morestuff" => $schedules];
+                return ["success" => true, "content" => [$competitionID,  $schedules]];
 
                 // $sql = 'SELECT BidsLocked FROM CompetitionPlayerSchedule';
                 // $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
