@@ -265,7 +265,7 @@ function HandleRequest($request)
 
                 $vars = [$competitionID];
 
-                $sql .= " ORDER BY C.CompetitionName";
+                $sql .= " ORDER BY P.PlayerID";
 
                 return GetResultsetAsJSON($sql, $vars);
             }
