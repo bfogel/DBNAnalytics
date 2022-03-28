@@ -701,10 +701,18 @@ class dbnTable extends dbnElement {
 
     /** @type {Object.<number,string>} */
     CountryColumns = {};
+    /**
+     * Style a column for a particular country
+     * @param {number} column 
+     * @param {string} country 
+     */
     SetCountryForColumn(column, country) { this.CountryColumns[column] = country; }
 
     CountryRows = null;
-    CountryCells = null;
+
+    /** @type {[[number,number,string]]} */
+    CountryCells = [];
+    SetCountryForCell(row, column, country) { this.CountryCells.push([row, column, country]); }
 
     RowUrls = null;
     CellUrls = null;

@@ -73,6 +73,18 @@ function GetDBNIYearGroups() {
 //#endregion
 
 function MakePage() {
+
+    // var xx = new dbnWeightedSelector();
+    // xx.AddItem("A", 1);
+    // xx.AddItem("B", 2);
+    // xx.AddItem("C", 3);
+    // xx.AddItem("D", 4);
+
+    // console.log(xx);
+    // xx.filter(x => x == "B");
+    // console.log(xx);
+    // return;
+
     var reqs = myHub.MakeRequestList();
     var reqUserInfo = new dbnHubRequest_UserInfo();
 
@@ -173,14 +185,23 @@ class CompetitionPowerAssignmentController extends dbnDiv {
         }
 
         var schedules = reqSchedules.ResponseToObjects();
-        reqGameCounts.ReportToConsole();
 
-        this.add(this.#SaveButton);
-        this.#SaveButton.onclick = this.#SaveSchedules.bind(this);
+        reqGameCounts.ResponseToObjects().forEach(x => {
+            if (!this.#PlayerGameCounts.hasOwnProperty(x.PlayerID)) this.#PlayerGameCounts[x.PlayerID] = [0, 0, 0, 0, 0, 0, 0];
+            this.#PlayerGameCounts[x.PlayerID][x.CountryID] = x.GameCount;
+        });
+
+        var bar = this.addButtonBar();
+        this.#SaveButton = bar.addButton("Save All", this.#SaveSchedules.bind(this));
         this.#SaveButton.disabled = true;
 
-        this.addLineBreak();
-        this.addLineBreak();
+        bar.addButton("Clear All", this.ClearAllSchedules.bind(this));
+
+        this.add(this.#MessageDiv);
+        this.#MessageDiv.style.color = "red";
+        this.#MessageDiv.style.fontSize = "larger";
+        this.#MessageDiv.style.margin = "10px";
+        this.#MessageDiv.innerHTML = "&nbsp;";
 
         var tabs = this.addTabs();
 
@@ -200,13 +221,30 @@ class CompetitionPowerAssignmentController extends dbnDiv {
     /** @type{CompetitionPowerAssignmentRound[]} */
     #RoundControllers = [];
 
-    /** @type{CompetitionPowerAssignmentRound[]} */
-    #PlayerGameCounts = [];
+    /** @type{Object.<number,number[]>} */
+    #PlayerGameCounts = {};
 
-    #SaveButton = new dbnButton("Save All Rounds", null, null);
+    /**
+     * @param {number} playerid 
+     */
+    GetGameCounts(playerid) {
+        return this.#PlayerGameCounts.hasOwnProperty(playerid) ? this.#PlayerGameCounts[playerid] : [0, 0, 0, 0, 0, 0, 0];
+    }
+
+    /** @type{dbnButton} */
+    #SaveButton;
+    #MessageDiv = new dbnDiv();
 
     InformChanged() {
         this.#SaveButton.disabled = false;
+        this.#MessageDiv.innerHTML = "You have unsaved changes.";
+    }
+
+    ClearAllSchedules() {
+        if (confirm("Are you sure you want to clear all rounds? (Note: You will still need to click Save to save the changes)")) {
+            this.#RoundControllers.forEach(x => x.Schedules = []);
+            this.InformChanged();
+        }
     }
 
     #SaveSchedules() {
@@ -217,6 +255,7 @@ class CompetitionPowerAssignmentController extends dbnDiv {
 
         if (req.Success) {
             this.#SaveButton.disabled = true;
+            this.#MessageDiv.innerHTML = "&nbsp;";
         }
 
         req.ReportToConsole();
@@ -242,6 +281,9 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
 
         this.add(this.#PlayersUI);
 
+        this.addButton("Assign Powers", this.#AssignPowers.bind(this));
+        this.addButton("Clear Assignments", this.#ClearAssignments.bind(this));
+
         this.#UpdateDisplay();
     }
 
@@ -254,7 +296,7 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
     /** @type {dbnCompetitionPlayerSchedule[]} */
     #Schedules = [];
     get Schedules() { return this.#Schedules };
-    set Schedules(value) { this.#Schedules = value; this.#UpdateDisplay(); }
+    set Schedules(value) { this.#Schedules = value; this.#SortSchedules(); this.#UpdateDisplay(); }
 
     #PlayerSelector = new dbnPlayerSelector();
     #PlayersUI = new dbnDiv();
@@ -273,10 +315,14 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
         schedule.BidsLocked = false;
 
         this.Schedules.push(schedule);
-        this.Schedules.sort((a, b) => a.PlayerName.localeCompare(b.PlayerName));
+        this.#SortSchedules();
         this.#UpdateDisplay();
 
         this.Controller.InformChanged();
+    }
+
+    #SortSchedules() {
+        this.Schedules.sort((a, b) => a.PlayerName.localeCompare(b.PlayerName));
     }
 
     /**
@@ -298,16 +344,50 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
     #UpdateDisplay() {
         this.#PlayersUI.innerHTML = "";
 
-        if (this.Schedules.length == 0) {
-            this.#PlayersUI.addText("No players selected.")
-        } else {
+        this.#PlayersUI.addBoldText("Total players: " + this.#Schedules.length);
+        this.#PlayersUI.addLineBreak();
+
+        if (this.Schedules.length > 0) {
+
+            var bHasAssignments = this.Schedules.some(x => x.Board || x.CountryID);
+            if (bHasAssignments) {
+                //this.Schedules.sort((a, b) => a.Board != b.Board ? a.Board - b.Board : a.CountryID - b.CountryID);
+            }
+
             var tbl = this.#PlayersUI.addTable();
+            tbl.ClickHeaderToSort = true;
             tbl.Headers = ["", "Player", "Games"];
+            tbl.NumberColumns = [2];
+
+            myHub.Countries.forEach((x, i) => {
+                tbl.Headers.push(x.substring(0, 1))
+                tbl.SetCountryForColumn(i + 3, x);
+                tbl.NumberColumns.push(i + 3);
+            });
+
+            if (bHasAssignments) {
+                tbl.Headers.push("Board", "Country", "Player");
+                tbl.NumberColumns.push(10);
+            }
+
             var data = [];
 
-            this.Schedules.forEach(x => {
+            this.Schedules.forEach((x, iRow) => {
                 var removelink = new dbnFlatButton(new dbnIcon_TimesCircle(), this.#RemovePlayer.bind(this, x));
-                data.push([removelink, x.PlayerName, 0]);
+                var gcs = this.Controller.GetGameCounts(x.PlayerID);
+                var total = gcs.reduce((p, x) => x + p, 0);
+                var row = [removelink, x.PlayerName, total];
+                row.push(...gcs);
+
+                if (bHasAssignments) {
+                    var country = x.CountryID != null && x.CountryID != undefined ? myHub.Countries[x.CountryID] : null;
+                    row.push(x.Board, country, x.PlayerName + (country ? " (" + gcs[x.CountryID] + ")" : ""));
+                    if (country) {
+                        tbl.SetCountryForCell(iRow, 11, country);
+                        tbl.SetCellClass(iRow, x.CountryID + 3, " bfboldtext");
+                    }
+                }
+                data.push(row);
             });
 
             tbl.Data = data;
@@ -315,19 +395,133 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
         }
     }
 
-    //     /**
-    //  * @param {number} playerid
-    //  * @returns {dbnCompetitionPlayerSchedule[]} 
-    //  */
-    //      GetScheduleForPlayer(playerid) {
-    //         var ret = this.Schedules.filter(x => x.CompetitionID == this.Competition.CompetitionID && x.PlayerID == playerid);
-    //         ret.sort((a, b) => a.Round - b.Round);
-    //         return ret;
-    //     }
+    #ClearAssignments() {
+        this.Schedules.forEach(x => { x.Board = undefined; x.CountryID = undefined; })
+        this.#UpdateDisplay();
+    }
 
+    #AssignPowers() {
+        if (this.#Schedules.length % 7 != 0) {
+            alert("The number of players must be a multiple of 7");
+            return;
+        }
 
+        var bOk = false;
+
+        for (let i = 0; i < 100; i++) {
+            bOk = this.#AssignByForce();
+            if (bOk) break;
+        }
+
+        if (!bOk) this.#AssignByRandom();
+
+        this.#UpdateDisplay();
+    }
+
+    #AssignByForce() {
+        this.#ClearAssignments();
+        var scheds = this.Schedules.slice();
+        var boardcount = scheds.length / 7;
+
+        var countryAssignments = myHub.Countries.map(x => []);
+
+        var allOptions = [];
+
+        scheds.forEach(x => {
+            var counts = this.Controller.GetGameCounts(x.PlayerID);
+            var maxcount = counts.reduce((p, x) => Math.max(x, p), 0);
+
+            for (let iCountry = 0; iCountry < 7; iCountry++) {
+                var slot = 10 ** (maxcount - counts[iCountry] + 1) - counts[iCountry];
+                allOptions.push([slot, [x, iCountry]]);
+            }
+        });
+
+        allOptions.sort((a, b) => b[0] - a[0]);
+
+        for (let iPlayer = 0; iPlayer < 7 * boardcount; iPlayer++) {
+            if (allOptions.length == 0) return false;
+
+            var bestSlot = allOptions[0][0];
+            var best = allOptions.filter(x => x[0] == bestSlot);
+
+            var selector = new dbnWeightedSelector();
+            best.forEach(x => selector.AddItem(1, x[1]));
+
+            var sel = selector.GetItem();
+
+            /** @type{dbnCompetitionPlayerSchedule} */
+            var sched = sel[0];
+            sched.CountryID = sel[1];
+
+            countryAssignments[sched.CountryID].push(sched);
+
+            allOptions = allOptions.filter(x => sched.PlayerID != x[1][0].PlayerID);
+            if (countryAssignments[sched.CountryID].length == boardcount) {
+                allOptions = allOptions.filter(x => sched.CountryID != x[1][1]);
+
+                var boardselector = new dbnWeightedSelector();
+                countryAssignments[sched.CountryID].forEach(x => boardselector.AddItem(1, x));
+                for (let iBoard = 1; iBoard <= boardcount; iBoard++) {
+                    /** @type{dbnCompetitionPlayerSchedule} */
+                    var bsel = boardselector.GetItem();
+                    bsel.Board = iBoard;
+                    boardselector.filterInPlace(x => x.PlayerID != bsel.PlayerID);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    #AssignByRandom() {
+        this.#ClearAssignments();
+        var scheds = this.Schedules.slice();
+        var boardcount = scheds.length / 7;
+
+        var countryAssignments = myHub.Countries.map(x => []);
+
+        var playerselector = new dbnWeightedSelector;
+
+        scheds.forEach(x => {
+            var counts = this.Controller.GetGameCounts(x.PlayerID);
+            var maxcount = counts.reduce((p, x) => Math.max(x, p), 0);
+
+            for (let iCountry = 0; iCountry < 7; iCountry++) {
+                var weight = 10 ** (maxcount - counts[iCountry] + 1) - counts[iCountry];
+                playerselector.AddItem(weight, [x, iCountry]);
+            }
+        });
+
+        for (let iPlayer = 0; iPlayer < 7 * boardcount; iPlayer++) {
+            var sel = playerselector.GetItem();
+
+            /** @type{dbnCompetitionPlayerSchedule} */
+            var sched = sel[0];
+            sched.CountryID = sel[1];
+
+            countryAssignments[sched.CountryID].push(sched);
+
+            playerselector.filterInPlace(x => sched.PlayerID != x[0].PlayerID);
+
+            if (countryAssignments[sched.CountryID].length == boardcount) {
+                playerselector.filterInPlace(x => sched.CountryID != x[1]);
+
+                var boardselector = new dbnWeightedSelector();
+                countryAssignments[sched.CountryID].forEach(x => boardselector.AddItem(1, x));
+                for (let iBoard = 1; iBoard <= boardcount; iBoard++) {
+                    /** @type{dbnCompetitionPlayerSchedule} */
+                    var bsel = boardselector.GetItem();
+                    bsel.Board = iBoard;
+                    boardselector.filterInPlace(x => x.PlayerID != bsel.PlayerID);
+                }
+            }
+        }
+        return true;
+    }
 
 }
+
 
 //#endregion
 

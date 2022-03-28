@@ -289,6 +289,10 @@ class dbnCompetitionPlayerSchedule {
   Round;
   /** @type{boolean} */
   BidsLocked;
+  /** @type{?number} */
+  Board;
+  /** @type{?number} */
+  CountryID;
 }
 class dbnHubRequest_CompetitionPlayerSchedule extends bfDataRequest {
   constructor(pAsTD = false, competitionID = null) { super("CompetitionSchedule_Get", { "asTD": pAsTD, "competitionID": competitionID }); }
@@ -637,4 +641,56 @@ class dbnGameResultLine {
   }
 }
 
-  //#endregion
+//#endregion
+
+//#region Utility
+
+class dbnWeightedSelector {
+
+  WeightsAndItems = [];
+  get Items() { return this.WeightsAndItems.map(x => x[1]); }
+
+  get TotalWeight() {
+    return this.WeightsAndItems.reduce((p, x) => p + x[0], 0);
+  }
+
+  /**
+   * @param {number} weight 
+   * @param {*} item 
+   */
+  AddItem(weight, item) {
+    this.WeightsAndItems.push([weight, item]);
+  }
+
+  GetItem() {
+    var tot = this.TotalWeight;
+    var rnd = Math.random() * tot;
+
+    var cur = 0;
+    var ret;
+
+    this.WeightsAndItems.every((x, i) => {
+      if (rnd > cur && rnd <= cur + x[0]) { ret = x[1]; return false; }
+      cur += x[0];
+      return true;
+    });
+
+    return ret;
+  }
+
+  /** @callback PredicateCallback
+   * @param {any} item 
+   * @return {boolean} 
+   */
+
+  /**
+   * 
+   * @param {PredicateCallback} callback Takes one argument and returns a boolean
+   */
+  filterInPlace(callback) {
+    this.WeightsAndItems = this.WeightsAndItems.filter(x => callback(x[1]));
+  }
+
+}
+
+//#endregion

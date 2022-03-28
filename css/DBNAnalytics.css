@@ -90,6 +90,10 @@ tr.bfTest:hover {
     text-align: right;
 }
 
+.bfboldtext {
+    font-weight: bold;
+}
+
 .bftableRowHighlight td {
     font-weight: bold;
 }
