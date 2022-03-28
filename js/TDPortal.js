@@ -11,7 +11,7 @@ var myUserInfo;
 var _AsTD = true;
 var myManager = new dbnDrilldownPage("Portal Home");
 
-//#region DBNIYearGroup
+//#region CompetitionManager and DBNIYearGroup
 
 class CompetitionManager {
     /**
@@ -72,6 +72,8 @@ function GetDBNIYearGroups() {
 
 //#endregion
 
+//#region MakePage and MakeContent for Drilldown
+
 function MakePage() {
 
     // var xx = new dbnWeightedSelector();
@@ -111,14 +113,14 @@ function MakePage() {
         myDBNIYearGroups[year].AddCompetition(x);
     });
 
-    myManager.OnMakeContent = MakeContent;
+    myManager.OnMakeContent = MakeDrilldownContent;
 }
 
 /**
  * @param {string[]} keys 
  * @param {dbnDiv} div
  */
-function MakeContent(keys, div) {
+function MakeDrilldownContent(keys, div) {
     var card = div.addCard();
 
     if (keys.length == 0) {
@@ -159,7 +161,9 @@ function MakeContent(keys, div) {
     }
 }
 
-//#region Schedule and Random Power Assignment
+//#endregion
+
+//#region CompetitionPowerAssignmentController
 
 class CompetitionPowerAssignmentController extends dbnDiv {
 
@@ -237,7 +241,7 @@ class CompetitionPowerAssignmentController extends dbnDiv {
 
     InformChanged() {
         this.#SaveButton.disabled = false;
-        this.#MessageDiv.innerHTML = "You have unsaved changes.";
+        this.#MessageDiv.innerHTML = "You have unsaved changes.  Refresh the page to undo.";
     }
 
     ClearAllSchedules() {
@@ -261,6 +265,10 @@ class CompetitionPowerAssignmentController extends dbnDiv {
         req.ReportToConsole();
     }
 }
+
+//#endregion
+
+//#region CompetitionPowerAssignmentRound
 
 class CompetitionPowerAssignmentRound extends dbnDiv {
     constructor(controller, round) {
@@ -525,7 +533,7 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
 
 //#endregion
 
-
+//#region Power Bid
 
 //Below is the code for the TD page for the DBNI power bid auction
 
@@ -587,5 +595,7 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
 
 //     });
 // }
+
+//#endregion
 
 MakePage();
