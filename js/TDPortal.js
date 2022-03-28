@@ -26,7 +26,7 @@ class CompetitionManager {
 
     /** @type{CompetitionPowerAssignmentController} */
     #PowerAssignmentController;
-    get PowerAssignmentController() { if (!this.#PowerAssignmentController) this.#PowerAssignmentController = new CompetitionPowerAssignmentController(this.Competition.CompetitionID); return this.#PowerAssignmentController; }
+    get PowerAssignmentController() { if (!this.#PowerAssignmentController) this.#PowerAssignmentController = new CompetitionPowerAssignmentController(this.Competition); return this.#PowerAssignmentController; }
 
 }
 
@@ -142,7 +142,7 @@ function MakeContent(keys, div) {
     if (comp.CompletionDate) {
         card.addText("Nothing to do for  " + comp.CompetitionName);
     } else {
-        card.addHeading(2, "Power assignement");
+        card.addHeading(2, "Power assignment");
         card.add(compmgr.PowerAssignmentController);
     }
 }
@@ -153,40 +153,59 @@ class CompetitionPowerAssignmentController extends dbnDiv {
 
     /**
      * 
-     * @param {number} competitionId 
-     * @param {string} competitionName 
+     * @param {dbnCompetition} competition
      */
-    constructor(competitionId, competitionName) {
+    constructor(competition) {
         super();
-        this.CompetitionID = competitionId;
-        this.CompetitionName = competitionName;
+        this.Competition = competition;
+
+        var req = new dbnHubRequest_CompetitionPlayerSchedule(_AsTD, competition.CompetitionID);
+        req.SendAlone();
+
+        this.Schedules = req.ResponseToObjects();
+
+        this.addButton("Save All Rounds", this.#SaveSchedules.bind(this));
+        this.addLineBreak();
 
         var tabs = this.addTabs();
 
         for (let i = 1; i < 4; i++) {
             var rdiv = new CompetitionPowerAssignmentRound(this, i);
+            this.#RoundControllers.push(rdiv);
             tabs.addTab("Round " + i, rdiv);
         }
+
+        this.#RoundControllers[0].TryAddPlayer(myHub.Players.find(x => x.PlayerID == 203));
+        this.#RoundControllers[0].TryAddPlayer(myHub.Players.find(x => x.PlayerID == 222));
 
         tabs.SelectTabByIndex(0);
     }
 
-    /** @type {number} */
-    CompetitionID;
-    /** @type {string} */
-    CompetitionName;
+    /** @type {dbnCompetition} */
+    Competition;
 
     /** @type {dbnCompetitionPlayerSchedule[]} */
-    Schedules;
+    Schedules = [];
+
+    /** @type{CompetitionPowerAssignmentRound[]} */
+    #RoundControllers = [];
 
     /**
      * @param {number} playerid
      * @returns {dbnCompetitionPlayerSchedule[]} 
      */
     GetScheduleForPlayer(playerid) {
-        var ret = this.Schedules.filter(x => x.CompetitionID == this.CompetitionID && x.PlayerID == playerid);
+        var ret = this.Schedules.filter(x => x.CompetitionID == this.Competition.CompetitionID && x.PlayerID == playerid);
         ret.sort((a, b) => a.Round - b.Round);
         return ret;
+    }
+
+    #SaveSchedules() {
+        var schedules = [];
+        this.#RoundControllers.forEach(x => schedules.push(...x.Schedules));
+        var req = new dbnHubRequest_SaveCompetitionPlayerSchedules(this.Competition.CompetitionID, schedules);
+        req.SendAlone();
+        req.ReportToConsole();
     }
 }
 
@@ -197,6 +216,7 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
         this.Round = round;
 
         this.style.minHeight = "400px";
+        this.style.padding = "10px";
 
         var div = this.addDiv();
         div.addText("Add Player: ");
@@ -204,7 +224,11 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
         this.#PlayerSelector.placeholder = "Search";
         this.#PlayerSelector.OnPlayerSelected.AddListener(this.#OnPlayerSelected.bind(this));
 
+        this.addLineBreak();
+
         this.add(this.#PlayersUI);
+
+        this.#UpdateDisplay();
     }
 
     /** @type{CompetitionPowerAssignmentController} */
@@ -213,34 +237,54 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
     /** @type{number} */
     Round;
 
+    /** @type {dbnCompetitionPlayerSchedule[]} */
+    Schedules = [];
+
     #PlayerSelector = new dbnPlayerSelector();
     #PlayersUI = new dbnDiv();
-    /** @type{dbnPlayer[]} */
-    Players = [];
+
+    /**
+     * @param {dbnPlayer} player 
+     */
+    TryAddPlayer(player) {
+        if (this.Schedules.some(x => x.PlayerID == player.PlayerID)) return;
+        var schedule = new dbnCompetitionPlayerSchedule();
+        schedule.PlayerID = player.PlayerID;
+        schedule.PlayerName = player.PlayerName;
+        schedule.CompetitionID = this.Controller.Competition.CompetitionID;
+        schedule.CompetitionName = this.Controller.Competition.CompetitionName;
+        schedule.Round = this.Round;
+        schedule.BidsLocked = false;
+
+        this.Schedules.push(schedule);
+        this.Schedules.sort((a, b) => a.PlayerName.localeCompare(b.PlayerName));
+        this.#UpdateDisplay();
+    }
 
     #OnPlayerSelected(e) {
         var newplayer = this.#PlayerSelector.SelectedPlayer;
         if (!newplayer) return;
-
-        if (this.Players.every(x => x.PlayerID != newplayer.PlayerID)) {
-            this.Players.push(newplayer);
-            this.Players.sort((a, b) => a.PlayerName - b.PlayerName);
-            this.#UpdateDisplay();
-        }
+        this.TryAddPlayer(newplayer);
+        this.#PlayerSelector.SelectedPlayer = null;
     }
 
     #UpdateDisplay() {
         this.#PlayersUI.innerHTML = "";
 
-        var tbl = this.addTable();
-        var data = [];
+        if (this.Schedules.length == 0) {
+            this.#PlayersUI.addText("No players selected.")
+        } else {
+            var tbl = this.#PlayersUI.addTable();
+            tbl.Headers = ["Player", "Games"];
+            var data = [];
 
-        this.Players.forEach(x => {
-            data.push([x.PlayerName]);
-        });
+            this.Schedules.forEach(x => {
+                data.push([x.PlayerName, 0]);
+            });
 
-        tbl.Data = data;
-        tbl.Generate();
+            tbl.Data = data;
+            tbl.Generate();
+        }
     }
 
 }

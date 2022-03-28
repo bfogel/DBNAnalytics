@@ -75,6 +75,15 @@ function CountryNameToID($country)
     }
 }
 
+function MakeErrorResponse($message)
+{
+    return ["success" => false, "message" => $message];
+}
+function MakeNonQuerySuccessResponse($affectedRowCount)
+{
+    return ["success" => true, "content" => ["RecordsAffected" => $affectedRowCount]];
+}
+
 class dbnUserInfo
 {
     public $PlayerID = 0;
@@ -237,7 +246,7 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $vars);
             }
 
-        case "compschedule": {
+        case "compschedule_get": {
                 $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.BidsLocked";
                 $sql .= " FROM Competition AS C";
                 $sql .= " INNER JOIN CompetitionPlayerSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
@@ -245,6 +254,8 @@ function HandleRequest($request)
 
                 $asTD = false;
                 if ($parameters != null && array_key_exists("asTD", $parameters)) $asTD = $parameters["asTD"];
+                if ($parameters == null || !array_key_exists("competitionID", $parameters)) return MakeErrorResponse("No CompetitionID");
+                $competitionID = $parameters["competitionID"];
 
                 if ($asTD) {
                     $sql .= " WHERE C.Director_PlayerID = ?";
@@ -254,13 +265,49 @@ function HandleRequest($request)
                     $vars = [$userinfo->PlayerID];
                 }
 
+                $sql .= " AND C.CompetitionID = " . $competitionID;
+
                 $sql .= " ORDER BY C.CompetitionName";
 
                 return GetResultsetAsJSON($sql, $vars);
             }
 
+        case "compschedule_save": {
+                $competitionID = $parameters["competitionid"];
+                $schedules = $parameters["schedules"];
+
+                return ["success" => false, "stuff" => $competitionID];
+
+                // $sql = 'SELECT BidsLocked FROM CompetitionPlayerSchedule';
+                // $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
+                // $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
+                // if (!$rs->success) return MakeErrorResponse($rs->message);
+
+                // $locked = false;
+                // foreach ($rs->data as $row) {
+                //     if ($row[0] == 1) $locked = true;
+                // }
+                // if ($locked) {
+                //     return MakeErrorResponse("Bids for this round are locked.  Contact the TD to unlock.");
+                // }
+
+                // $sql = "DELETE FROM PlayerCountryBid WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND `Round` = ?";
+                // $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
+                // if (!$rs->success) return MakeErrorResponse("(clearing) " . $rs->message);
+
+                // $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
+                // $sql .= ' VALUES (?,?,?,?,?)';
+
+                // foreach ($bids as $country => $bid) {
+                //     $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round, CountryNameToID($country), $bid]);
+                //     if (!$rs->success) MakeErrorResponse("(adding " . $country . ") " . $rs->message);
+                // }
+
+                // return ["success" => true, "content" => json_encode(["what" => "yes"])];
+            }
+
         case "setScheduleLock": {
-                return ["success" => false, "message" => "no can do"];
+                return MakeErrorResponse("no can do");
 
                 $competitionID = $parameters["competitionid"];
                 $round = $parameters["round"];
@@ -273,7 +320,7 @@ function HandleRequest($request)
                 $rs = new dbnResultSet($sql, [$value ? 1 : 0, $competitionID, $round]);
 
                 if (!$rs->success) return ["success" => false, "message" => $rs->message];
-                return ["success" => true, "content" => ["RecordsAffected" => $rs->affected_rows]];
+                return MakeNonQuerySuccessResponse($rs->affected_rows);
             }
 
         case "bids": {
@@ -306,33 +353,33 @@ function HandleRequest($request)
                 $sql = 'SELECT BidsLocked FROM CompetitionPlayerSchedule';
                 $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
                 $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
-                if (!$rs->success) return ["success" => false, "message" => $rs->message];
+                if (!$rs->success) return MakeErrorResponse($rs->message);
 
                 $locked = false;
                 foreach ($rs->data as $row) {
                     if ($row[0] == 1) $locked = true;
                 }
                 if ($locked) {
-                    return ["success" => false, "message" => "Bids for this round are locked.  Contact the TD to unlock."];
+                    return MakeErrorResponse("Bids for this round are locked.  Contact the TD to unlock.");
                 }
 
                 $sql = "DELETE FROM PlayerCountryBid WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND `Round` = ?";
                 $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
-                if (!$rs->success) return ["success" => false, "message" => "(clearing) " . $rs->message];
+                if (!$rs->success) return MakeErrorResponse("(clearing) " . $rs->message);
 
                 $sql = 'INSERT INTO PlayerCountryBid (Competition_CompetitionID, Player_PlayerID, `Round`, Country_CountryID, Bid)';
                 $sql .= ' VALUES (?,?,?,?,?)';
 
                 foreach ($bids as $country => $bid) {
                     $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round, CountryNameToID($country), $bid]);
-                    if (!$rs->success) return ["success" => false, "message" => "(adding " . $country . ") " . $rs->message];
+                    if (!$rs->success) MakeErrorResponse("(adding " . $country . ") " . $rs->message);
                 }
 
                 return ["success" => true, "content" => json_encode(["what" => "yes"])];
             }
 
         default:
-            return ["success" => false, "message" => "hubget: Unrecognized key (" + $request["Key"] + ")"];
+            return MakeErrorResponse("hubget: Unrecognized key (" + $request["Key"] + ")");
     }
 }
 

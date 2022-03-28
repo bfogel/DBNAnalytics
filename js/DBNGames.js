@@ -271,9 +271,30 @@ class dbnHubRequest_CompetitionPlayerSeed extends bfDataRequest {
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerSeed()); }
 }
 
-class dbnCompetitionPlayerSchedule { PlayerID; PlayerName; CompetitionID; CompetitionName; Round; BidsLocked; }
+class dbnCompetitionPlayerSchedule {
+  /** @type{number} */
+  PlayerID;
+  /** @type{string} */
+  PlayerName;
+  /** @type{number} */
+  CompetitionID;
+  /** @type{string} */
+  CompetitionName;
+  /** @type{number} */
+  Round;
+  /** @type{boolean} */
+  BidsLocked;
+}
 class dbnHubRequest_CompetitionPlayerSchedule extends bfDataRequest {
-  constructor(pAsTD = false) { super("compschedule", { "asTD": pAsTD }); }
+  constructor(pAsTD = false, competitionID = null) { super("compschedule_get", { "asTD": pAsTD, "competitionID": competitionID }); }
+  /** @returns {dbnCompetitionPlayerSchedule[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerSchedule()); }
+}
+class dbnHubRequest_SaveCompetitionPlayerSchedules extends bfDataRequest {
+  /**
+   * @param {dbnCompetitionPlayerSchedule[]} schedules 
+   */
+  constructor(competitionID, schedules) { super("compschedule_save", { "competitionID": competitionID, "schedules": schedules }); }
   /** @returns {dbnCompetitionPlayerSchedule[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionPlayerSchedule()); }
 }
@@ -290,19 +311,20 @@ class dbnHubRequest_Bids extends bfDataRequest {
 
 //#region Competition
 
-class dbnCompetition { 
+class dbnCompetition {
   /** @type{number} */
-  CompetitionID; 
+  CompetitionID;
   /** @type{string} */
-  CompetitionName; 
+  CompetitionName;
   /** @type{number} */
-  CompetitionSeriesID; 
+  CompetitionSeriesID;
   /** @type{string} */
-  CompetitionSeriesName; 
+  CompetitionSeriesName;
   /** @type{string} */
-  CompletionDate; 
+  CompletionDate;
   /** @type{?number} */
-  DBNIYear;}
+  DBNIYear;
+}
 
 class dbnHubRequest_CompetitionParticipationList extends bfDataRequest {
   constructor(pAsTD = false) { super("competitionList", { "asTD": pAsTD }); }
