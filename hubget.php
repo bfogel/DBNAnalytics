@@ -345,7 +345,7 @@ function HandleRequest($request)
                         $rs = new dbnResultSet($sql, [$competitionID, $sched["PlayerID"], $sched["Round"], $sched["BidsLocked"] ? 1 : 0, $sched["Board"], $sched["CountryID"]]);
                         if (!$rs->success) {
                             $brb = $trans->Rollback();
-                            return MakeErrorResponse("(adding " . json_encode($sched) . ") " . $rs->message . ($brb ? "" : " [" . $trans->RollbackMessage . "]"));
+                            return MakeErrorResponse("(adding " . json_encode($sched) . ") " . $rs->message . ($brb ? "[ok]" : " [" . $trans->RollbackMessage . "]"));
                         }
                     }
                 }
