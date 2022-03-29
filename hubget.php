@@ -98,22 +98,19 @@ class dbnTransaction
     function Start()
     {
         $conn = dbn_GetConnection();
-        $result = $conn->query("START TRANSACTION");
-        if(!$result) return false;
+        $conn->begin_transaction();
         return true;
     }
     function Commit()
     {
         $conn = dbn_GetConnection();
-        $rs = $conn->query("COMMIT");
-        $this->CommitMessage = $rs->message;
-        return $rs->success;
+        $rs = $conn->commit();
+        return true;
     }
     function Rollback()
     {
         $conn = dbn_GetConnection();
-        $result = $conn->query("ROLLBACK");
-        if(!$result) return false;
+        $conn->rollback();
         return true;
     }
 }
