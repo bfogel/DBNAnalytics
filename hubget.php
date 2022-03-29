@@ -97,19 +97,22 @@ class dbnTransaction
 
     function Start()
     {
-        $rs = new dbnResultSet("START TRANSACTION", null);
+        $conn = dbn_GetConnection();
+        $rs = $conn->query("START TRANSACTION");
         $this->StartMessage = $rs->message;
         return $rs->success;
     }
     function Commit()
     {
-        $rs = new dbnResultSet("COMMIT", null);
+        $conn = dbn_GetConnection();
+        $rs = $conn->query("COMMIT");
         $this->CommitMessage = $rs->message;
         return $rs->success;
     }
     function Rollback()
     {
-        $rs = new dbnResultSet("ROLLBACK", null);
+        $conn = dbn_GetConnection();
+        $rs = $conn->query("ROLLBACK");
         $this->RollbackMessage = $rs->message;
         return $rs->success;
     }
