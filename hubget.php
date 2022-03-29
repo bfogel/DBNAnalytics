@@ -271,7 +271,7 @@ function HandleRequest($request)
             }
 
         case "CompetitionSchedule_Get": {
-                $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.BidsLocked";
+                $sql = "SELECT P.PlayerID, P.PlayerName, C.CompetitionID, C.CompetitionName, S.Round, S.BidsLocked, S.Board, S.Country_CountryID as CountryID";
                 $sql .= " FROM Competition AS C";
                 $sql .= " INNER JOIN CompetitionPlayerSchedule as S on S.Competition_CompetitionID = C.CompetitionID";
                 $sql .= " INNER JOIN Player as P on S.Player_PlayerID = P.PlayerID";
@@ -307,12 +307,12 @@ function HandleRequest($request)
                 $rs = new dbnResultSet($sql, [$competitionID]);
                 if (!$rs->success) return MakeErrorResponse("(clearing) " . $rs->message);
 
-                $sql = 'INSERT INTO CompetitionPlayerSchedule (Competition_CompetitionID, Player_PlayerID, `Round`, BidsLocked)';
+                $sql = 'INSERT INTO CompetitionPlayerSchedule (Competition_CompetitionID, Player_PlayerID, `Round`, BidsLocked, Board, Country_CountryID)';
                 $sql .= ' VALUES (?,?,?,?)';
 
                 foreach ($schedules as $sched) {
                     if ($sched["CompetitionID"] == $competitionID) {
-                        $rs = new dbnResultSet($sql, [$competitionID, $sched["PlayerID"], $sched["Round"], $sched["BidsLocked"] ? 1 : 0]);
+                        $rs = new dbnResultSet($sql, [$competitionID, $sched["PlayerID"], $sched["Round"], $sched["BidsLocked"] ? 1 : 0, $sched["Board"], $sched["CountryID"]]);
                         if (!$rs->success) return MakeErrorResponse("(adding " . json_encode($sched) . ") " . $rs->message);
                     }
                 }
