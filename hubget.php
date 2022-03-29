@@ -331,7 +331,7 @@ function HandleRequest($request)
                 if (!VerifyTD($competitionID, $userinfo->PlayerID)) return MakeErrorResponse("User not authorized");
 
                 $trans = new dbnTransaction();
-                if (!$trans->Start()) return MakeErrorResponse("Could not start transaction: " + $trans->StartMessage);
+                if (!$trans->Start()) return MakeErrorResponse("Could not start transaction: " . $trans->StartMessage);
 
                 $sql = "DELETE FROM CompetitionPlayerSchedule WHERE Competition_CompetitionID = ?";
                 $rs = new dbnResultSet($sql, [$competitionID]);
@@ -350,7 +350,7 @@ function HandleRequest($request)
                     }
                 }
 
-                if (!$trans->Commit()) return MakeErrorResponse("Could not commit transaction: " + $trans->CommitMessage);
+                if (!$trans->Commit()) return MakeErrorResponse("Could not commit transaction: " . $trans->CommitMessage);
                 return MakeQuerySuccessResponse("ok");
             }
 
