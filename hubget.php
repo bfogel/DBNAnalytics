@@ -88,20 +88,31 @@ function MakeQuerySuccessResponse($content)
     return ["success" => true, "content" => $content];
 }
 
-function Transaction_Start()
+class dbnTransaction
 {
-    $rs = new dbnResultSet("START TRANSACTION", null);
-    return $rs->success;
-}
-function Transaction_Commit()
-{
-    $rs = new dbnResultSet("COMMIT", null);
-    return $rs->success;
-}
-function Transaction_Rollback()
-{
-    $rs = new dbnResultSet("ROLLBACK", null);
-    return $rs->success;
+
+    public $StartMessage = "";
+    public $CommitMessage = "";
+    public $RollbackMessage = "";
+
+    function Start()
+    {
+        $rs = new dbnResultSet("START TRANSACTION", null);
+        $this->StartMessage = $rs->message;
+        return $rs->success;
+    }
+    function Commit()
+    {
+        $rs = new dbnResultSet("COMMIT", null);
+        $this->CommitMessage = $rs->message;
+        return $rs->success;
+    }
+    function Rollback()
+    {
+        $rs = new dbnResultSet("ROLLBACK", null);
+        $this->RollbackMessage = $rs->message;
+        return $rs->success;
+    }
 }
 
 class dbnUserInfo
@@ -319,7 +330,8 @@ function HandleRequest($request)
 
                 if (!VerifyTD($competitionID, $userinfo->PlayerID)) return MakeErrorResponse("User not authorized");
 
-                if (!Transaction_Start()) return MakeErrorResponse("Could not start transaction");
+                $trans = new dbnTransaction();
+                if (!$trans->Start()) return MakeErrorResponse("Could not start transaction: " + $trans->StartMessage);
 
                 $sql = "DELETE FROM CompetitionPlayerSchedule WHERE Competition_CompetitionID = ?";
                 $rs = new dbnResultSet($sql, [$competitionID]);
@@ -332,13 +344,13 @@ function HandleRequest($request)
                     if ($sched["CompetitionID"] == $competitionID) {
                         $rs = new dbnResultSet($sql, [$competitionID, $sched["PlayerID"], $sched["Round"], $sched["BidsLocked"] ? 1 : 0, $sched["Board"], $sched["CountryID"]]);
                         if (!$rs->success) {
-                            Transaction_Rollback();
-                            return MakeErrorResponse("(adding " . json_encode($sched) . ") " . $rs->message);
+                            $brb = $trans->Rollback();
+                            return MakeErrorResponse("(adding " . json_encode($sched) . ") " . $rs->message . ($brb ? "" : " [" . $trans->RollbackMessage . "]"));
                         }
                     }
                 }
 
-                if (!Transaction_Commit()) return MakeErrorResponse("Could not commit transaction");
+                if (!$trans->Commit()) return MakeErrorResponse("Could not commit transaction: " + $trans->CommitMessage);
                 return MakeQuerySuccessResponse("ok");
             }
 
