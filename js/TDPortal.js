@@ -236,7 +236,7 @@ class CompetitionPowerAssignmentController extends dbnDiv {
         if (round == undefined) throw "No round";
         var ret = this.#PlayerGameCounts.hasOwnProperty(playerid) ? this.#PlayerGameCounts[playerid].slice() : [0, 0, 0, 0, 0, 0, 0];
         this.#RoundControllers.filter(x => x.Round < round).forEach(x => {
-            x.Schedules.filter(xx => xx.PlayerID == playerid && xx.CountryID).forEach(xx => ret[xx.CountryID]++);
+            x.Schedules.filter(xx => xx.PlayerID == playerid && xx.CountryID != null).forEach(xx => ret[xx.CountryID]++);
         });
         return ret;
     }
@@ -248,6 +248,11 @@ class CompetitionPowerAssignmentController extends dbnDiv {
     InformChanged() {
         this.#SaveButton.disabled = false;
         this.#MessageDiv.innerHTML = "You have unsaved changes.  Refresh the page to undo.";
+    }
+
+    InformAssignment() {
+        this.InformChanged();
+        this.#RoundControllers.forEach(x => x.UpdateDisplay());
     }
 
     ClearAllSchedules() {
@@ -355,6 +360,7 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
         this.#PlayerSelector.SelectedPlayer = null;
     }
 
+    UpdateDisplay() { this.#UpdateDisplay(); }
     #UpdateDisplay() {
         this.#PlayersUI.innerHTML = "";
 
@@ -421,6 +427,11 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
             return;
         }
 
+        if (this.Schedules.some(x => x.Board != null || x.CountryID != null)) {
+            alert("There are already some board assignments for Round " + this.Round + ".  Please clear assignments first.")
+            return;
+        }
+
         var bOk = false;
 
         for (let i = 0; i < 100; i++) {
@@ -430,8 +441,7 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
 
         if (!bOk) this.#AssignByRandom();
 
-        this.#UpdateDisplay();
-        this.Controller.InformChanged();
+        this.Controller.InformAssignment();
     }
 
     #AssignByForce() {
