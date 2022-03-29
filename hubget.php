@@ -98,20 +98,20 @@ class dbnTransaction
     function Start()
     {
         $conn = dbn_GetConnection();
-        $conn->begin_transaction();
-        return true;
+        $res = $conn->begin_transaction();
+        return $res;
     }
     function Commit()
     {
         $conn = dbn_GetConnection();
-        $rs = $conn->commit();
-        return true;
+        $res = $conn->commit();
+        return $res;
     }
     function Rollback()
     {
         $conn = dbn_GetConnection();
-        $conn->rollback();
-        return true;
+        $res = $conn->rollback();
+        return $res;
     }
 }
 
