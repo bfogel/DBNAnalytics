@@ -98,9 +98,9 @@ class dbnTransaction
     function Start()
     {
         $conn = dbn_GetConnection();
-        $rs = $conn->query("START TRANSACTION");
-        $this->StartMessage = $rs->message;
-        return $rs->success;
+        $result = $conn->query("START TRANSACTION");
+        if(!$result) return false;
+        return true;
     }
     function Commit()
     {
