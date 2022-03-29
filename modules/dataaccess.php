@@ -1,5 +1,7 @@
 <?php
 
+$myConnection = null;
+
 function dbn_GetConnection()
 {
 
@@ -8,15 +10,17 @@ function dbn_GetConnection()
     $password = "gh^511`31^3r";
     $dbname = "dbo4lunx2qm2nn";
 
+    global $myConnection;
+
     // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
+    if (!$myConnection)   $myConnection = new mysqli($servername, $username, $password, $dbname);
 
     // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
+    if ($myConnection->connect_error) {
+        die("Connection failed: " . $myConnection->connect_error);
     }
 
-    return $conn;
+    return $myConnection;
 }
 
 function GetResultsetAsJSON($sql, $parameters = null)
