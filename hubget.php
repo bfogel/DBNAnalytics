@@ -112,9 +112,9 @@ class dbnTransaction
     function Rollback()
     {
         $conn = dbn_GetConnection();
-        $rs = $conn->query("ROLLBACK");
-        $this->RollbackMessage = $rs->message;
-        return $rs->success;
+        $result = $conn->query("ROLLBACK");
+        if(!$result) return false;
+        return true;
     }
 }
 
