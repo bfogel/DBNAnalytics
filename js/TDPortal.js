@@ -406,6 +406,7 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
     #ClearAssignments() {
         this.Schedules.forEach(x => { x.Board = undefined; x.CountryID = undefined; })
         this.#UpdateDisplay();
+        this.Controller.InformChanged();
     }
 
     #AssignPowers() {
@@ -424,6 +425,7 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
         if (!bOk) this.#AssignByRandom();
 
         this.#UpdateDisplay();
+        this.Controller.InformChanged();
     }
 
     #AssignByForce() {

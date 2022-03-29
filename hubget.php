@@ -88,6 +88,22 @@ function MakeQuerySuccessResponse($content)
     return ["success" => true, "content" => $content];
 }
 
+function Transaction_Start()
+{
+    $rs = new dbnResultSet("START TRANSACTION", null);
+    return $rs->success;
+}
+function Transaction_Commit()
+{
+    $rs = new dbnResultSet("COMMIT", null);
+    return $rs->success;
+}
+function Transaction_Rollback()
+{
+    $rs = new dbnResultSet("ROLLBACK", null);
+    return $rs->success;
+}
+
 class dbnUserInfo
 {
     public $PlayerID = 0;
@@ -303,20 +319,26 @@ function HandleRequest($request)
 
                 if (!VerifyTD($competitionID, $userinfo->PlayerID)) return MakeErrorResponse("User not authorized");
 
+                if (!Transaction_Start()) return MakeErrorResponse("Could not start transaction");
+
                 $sql = "DELETE FROM CompetitionPlayerSchedule WHERE Competition_CompetitionID = ?";
                 $rs = new dbnResultSet($sql, [$competitionID]);
                 if (!$rs->success) return MakeErrorResponse("(clearing) " . $rs->message);
 
                 $sql = 'INSERT INTO CompetitionPlayerSchedule (Competition_CompetitionID, Player_PlayerID, `Round`, BidsLocked, Board, Country_CountryID)';
-                $sql .= ' VALUES (?,?,?,?)';
+                $sql .= ' VALUES (?,?,?,?,?)';
 
                 foreach ($schedules as $sched) {
                     if ($sched["CompetitionID"] == $competitionID) {
                         $rs = new dbnResultSet($sql, [$competitionID, $sched["PlayerID"], $sched["Round"], $sched["BidsLocked"] ? 1 : 0, $sched["Board"], $sched["CountryID"]]);
-                        if (!$rs->success) return MakeErrorResponse("(adding " . json_encode($sched) . ") " . $rs->message);
+                        if (!$rs->success) {
+                            Transaction_Rollback();
+                            return MakeErrorResponse("(adding " . json_encode($sched) . ") " . $rs->message);
+                        }
                     }
                 }
 
+                if (!Transaction_Commit()) return MakeErrorResponse("Could not commit transaction");
                 return MakeQuerySuccessResponse("ok");
             }
 
