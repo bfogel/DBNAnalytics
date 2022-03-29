@@ -230,9 +230,15 @@ class CompetitionPowerAssignmentController extends dbnDiv {
 
     /**
      * @param {number} playerid 
+     * @param {round} round 
      */
-    GetGameCounts(playerid) {
-        return this.#PlayerGameCounts.hasOwnProperty(playerid) ? this.#PlayerGameCounts[playerid] : [0, 0, 0, 0, 0, 0, 0];
+    GetGameCounts(playerid, round) {
+        if (round == undefined) throw "No round";
+        var ret = this.#PlayerGameCounts.hasOwnProperty(playerid) ? this.#PlayerGameCounts[playerid].slice() : [0, 0, 0, 0, 0, 0, 0];
+        this.#RoundControllers.filter(x => x.Round < round).forEach(x => {
+            x.Schedules.filter(xx => xx.PlayerID == playerid && xx.CountryID).forEach(xx => ret[xx.CountryID]++);
+        });
+        return ret;
     }
 
     /** @type{dbnButton} */
@@ -262,7 +268,7 @@ class CompetitionPowerAssignmentController extends dbnDiv {
             this.#MessageDiv.innerHTML = "&nbsp;";
         }
 
-        req.ReportToConsole();
+        if (!req.Success) req.ReportToConsole();
     }
 }
 
@@ -382,7 +388,7 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
 
             this.Schedules.forEach((x, iRow) => {
                 var removelink = new dbnFlatButton(new dbnIcon_TimesCircle(), this.#RemovePlayer.bind(this, x));
-                var gcs = this.Controller.GetGameCounts(x.PlayerID);
+                var gcs = this.Controller.GetGameCounts(x.PlayerID, this.Round);
                 var total = gcs.reduce((p, x) => x + p, 0);
                 var row = [removelink, x.PlayerName, total];
                 row.push(...gcs);
@@ -438,7 +444,7 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
         var allOptions = [];
 
         scheds.forEach(x => {
-            var counts = this.Controller.GetGameCounts(x.PlayerID);
+            var counts = this.Controller.GetGameCounts(x.PlayerID, this.Round);
             var maxcount = counts.reduce((p, x) => Math.max(x, p), 0);
 
             for (let iCountry = 0; iCountry < 7; iCountry++) {
@@ -494,7 +500,7 @@ class CompetitionPowerAssignmentRound extends dbnDiv {
         var playerselector = new dbnWeightedSelector;
 
         scheds.forEach(x => {
-            var counts = this.Controller.GetGameCounts(x.PlayerID);
+            var counts = this.Controller.GetGameCounts(x.PlayerID, this.Round);
             var maxcount = counts.reduce((p, x) => Math.max(x, p), 0);
 
             for (let iCountry = 0; iCountry < 7; iCountry++) {

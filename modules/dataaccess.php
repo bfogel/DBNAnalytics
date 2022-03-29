@@ -79,6 +79,7 @@ class dbnResultSet
             foreach ($parameters as $value) {
                 switch (gettype($value)) {
                     case 'string':
+                    case 'NULL':
                         $types .= "s";
                         break;
                     case 'integer':
