@@ -72,14 +72,15 @@ async function scrapeGameScores() {
 // test URLs
 // webdip, drawn game: https://webdiplomacy.net/board.php?gameID=340030
 // webdip, won game: https://webdiplomacy.net/board.php?gameID=334382
+// webdip, game with a CD: https://webdiplomacy.net/board.php?gameID=404806
 function parseWebDipGame(webpage, scrapedCenterCounts) {
-	let table = webpage.getElementsByClassName("membersFullTable")[0];
+	let table = webpage.getElementsByClassName("membersFullTable")[0].children[0];
 	let rows = table.getElementsByClassName("member");
 
 	// Go through each country to get the name and center count
 	for (var i = rows.length - 1; i >= 0; i--) {
 		let span = rows[i].getElementsByClassName("memberCountryName")[0];
-		console.log(rows[i]);
+		// console.log(rows[i]);
 		let countryName = span.textContent.trim().toLowerCase();
 
 		// Handles a weird dash during retreat phases
@@ -103,13 +104,13 @@ function parseWebDipGame(webpage, scrapedCenterCounts) {
 // vdip, drawn game: https://vdiplomacy.com/board.php?gameID=50673
 // vdip, won game: https://vdiplomacy.com/board.php?gameID=50129
 function parseVDipGame(webpage, scrapedCenterCounts) {
-	let table = webpage.getElementsByClassName("membersFullTable")[0];
+	let table = webpage.getElementsByClassName("membersFullTable")[0].children[0];
 	let rows = table.getElementsByClassName("member");
 
 	// Go through each country to get the name and center count
 	for (var i = rows.length - 1; i >= 0; i--) {
 		let span = rows[i].getElementsByClassName("memberLeftSide")[0];
-		console.log(rows[i]);
+		// console.log(rows[i]);
 		let countryName = span.textContent.trim().toLowerCase();
 
 		// Handles a weird dash during retreat phases
