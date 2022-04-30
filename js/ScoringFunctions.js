@@ -92,8 +92,8 @@ function CalculateSoS() {
     return ret;
 }
 
-function CalculateManorCon() { CalculateManorConBase(75, true); }
-function CalculateManorConV2() { CalculateManorConBase(100, false); }
+function CalculateManorCon() { return CalculateManorConBase(75, true); }
+function CalculateManorConV2() { return CalculateManorConBase(100, false); }
 
 function CalculateManorConBase(solovalue, elimsHaveWeight) {
 

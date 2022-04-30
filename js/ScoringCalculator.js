@@ -22,7 +22,7 @@ function SetUpSystems() {
     group.push(["PPSC", 34 / 7, CalculatePPSC]);
     group.push(["SoS", 100 / 7, CalculateSoS]);
     group.push(["Manor", 13.63, CalculateManorCon]);
-    group.push(["ManorV2", 13.63, CalculateManorConV2]);
+    group.push(["ManorV2", 15.0, CalculateManorConV2]);
     mSystemGroups.push(["Center-focused", group]);
 
     group = [];
