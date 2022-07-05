@@ -4,6 +4,20 @@
  * @typedef {import('./DBNUI.js')}
  */
 
+//#region GameModel Enums
+
+const CountryEnum = {
+  Austria: "Austria",
+  England: "England",
+  France: "France",
+  Germany: "Germany",
+  Italy: "Italy",
+  Russia: "Russia",
+  Turkey: "Turkey"
+}
+
+//#endregion
+
 //#region DataRequest classes
 
 class bfDataSet {
@@ -216,7 +230,7 @@ class dbnHub {
 
   Ticket;
 
-  Countries = ["Austria", "England", "France", "Germany", "Italy", "Russia", "Turkey"];
+  Countries = Object.values(CountryEnum);
 
   /** @type{dbnPlayer[]} */
   #players = [];

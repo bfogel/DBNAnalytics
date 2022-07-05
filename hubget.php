@@ -437,7 +437,7 @@ function GetGames($where, $params)
     $sql .= ', C.CompetitionID, C.CompetitionName, C.DBNIYear';
     $sql .= ', P.PlayerID, P.PlayerName';
     $sql .= ', CO.CountryName, GCP.Note';
-    $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, GCR.YearOfElimination, GCR.UnexcusedResignation';
+    $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, GCR.YearOfElimination, GCR.UnexcusedResignation, GCR.SupplyCenters';
     $sql .= ', GCC.Score, GCC.Rank, GCC.RankScore, GCC.TopShare';
 
     $sql .= ' FROM Game as G';
@@ -471,6 +471,7 @@ function GetGames($where, $params)
     $cCenterCount = $rs->GetFieldIndex("CenterCount");
     $cYearOfElimination = $rs->GetFieldIndex("YearOfElimination");
     $cUnexcusedResignation = $rs->GetFieldIndex("UnexcusedResignation");
+    $cSupplyCenters = $rs->GetFieldIndex("SupplyCenters");
     $cScore = $rs->GetFieldIndex("Score");
     $cRank = $rs->GetFieldIndex("Rank");
     $cRankScore = $rs->GetFieldIndex("RankScore");
@@ -509,7 +510,10 @@ function GetGames($where, $params)
         }
 
         $line = [
-            "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote], "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination], "UnexcusedResignation" => $row[$cUnexcusedResignation], "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
+            "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote]
+                        , "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination]
+                        , "UnexcusedResignation" => $row[$cUnexcusedResignation], "SupplyCenters" => $row[$cSupplyCenters]
+                        , "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
         ];
 
         $lines[$line["Country"]] = $line;

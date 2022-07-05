@@ -45,9 +45,6 @@ class dbnElement {
     get style() { return this.domelement.style; }
     set style(value) { this.domelement.style = value; }
 
-    get id() { return this.domelement.id; }
-    set id(value) { this.domelement.id = value; }
-
     get innerHTML() { return this.domelement.innerHTML; }
     set innerHTML(value) { this.domelement.innerHTML = value; }
 
@@ -1142,4 +1139,64 @@ class dbnDrilldownPage {
     }
 }
 
+//#endregion
+
+
+//#region SVG
+
+class dbnSVGElement {
+
+    /** @type {SVGElement} */
+    domelement = null;
+
+    /**
+     * @param {string | SVGElement} pSVGElement 
+     * @param {dbnElement | null} parent 
+     */
+    constructor(pSVGElement, parent = null) {
+        if (typeof pSVGElement == "string") pSVGElement = document.createElementNS("http://www.w3.org/2000/svg", pSVGElement);
+        this.domelement = pSVGElement;
+        if (parent != null) {
+            if (parent instanceof dbnElement) {
+                parent.domelement.appendChild(this.domelement);
+            } else {
+                parent.appendChild(this.domelement);
+            }
+        }
+    }
+
+    get style() { return this.domelement.style; }
+    set style(value) { this.domelement.style = value; }
+
+    appendChild(element) { this.domelement.appendChild(element instanceof dbnSVGElement ? element.domelement : element); }
+    createAndAppendElement(tagname) { var ret = new dbnSVGElement(tagname); this.appendChild(ret); return ret; }
+
+}
+
+class dbnSVG extends dbnSVGElement {
+    constructor(parent = null) {
+        super("svg", parent);
+    }
+
+    SetSize(width, height) {
+        this.domelement.setAttribute("width", width);
+        this.domelement.setAttribute("height", height);
+    }
+
+    /**
+     * 
+     * @param {string} d 
+     * @param {string} stroke 
+     * @param {string} strokewidth 
+     * @param {string} fill 
+     */
+    AddPath(d, stroke = null, strokewidth = null, fill = null) {
+        var ret = this.createAndAppendElement("path");
+        ret.domelement.setAttribute("d", d);
+        if (stroke) ret.domelement.setAttribute("stroke", stroke);
+        if (strokewidth) ret.domelement.setAttribute("stroke-width", strokewidth);
+        if (fill) ret.domelement.setAttribute("fill", fill);
+        return ret;
+    }
+}
 //#endregion
