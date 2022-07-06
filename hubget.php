@@ -181,12 +181,11 @@ function HandleRequest($request)
 {
     $parameters = $request["Parameters"];
 
-    //requests that don't require a user
+    //-------------------------------requests that don't require a user-------------------------------
     switch ($request["Key"]) {
         case "test": {
-
                 //$wpuser = wp_get_current_user();
-                return ["success" => true, "content" => ["loggedin" => wp_get_current_user()]];
+                return MakeQuerySuccessResponse(["loggedin" => wp_get_current_user()]);
             }
 
         case "players": {
@@ -202,10 +201,23 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $vars);
             }
 
+        case "compiledtable": {
+                if (!array_key_exists("Category", $parameters)) return MakeErrorResponse("No Category");
+                $Category = $parameters["Category"];
+                if (!array_key_exists("ItemID", $parameters)) return MakeErrorResponse("No ItemID");
+                $ItemID = $parameters["ItemID"];
+
+                $sql = "SELECT * FROM CompiledTable";
+                $sql .= " WHERE Category = ? AND ItemID = ?";
+                $vals = [$Category, $ItemID];
+
+                return GetResultsetAsJSON($sql, $vals);
+            }
+
         case "games": {
-                if (!array_key_exists("PlayerIDs", $parameters)) return ["success" => false, "message" => "No players"];
+                if (!array_key_exists("PlayerIDs", $parameters)) return MakeErrorResponse("No players");
                 $playerids = json_decode($parameters["PlayerIDs"]);
-                if (!is_array($playerids)) return ["success" => false, "message" => "No players"];
+                if (!is_array($playerids)) return MakeErrorResponse("No players");
 
                 $where = "";
                 $vals = [];
@@ -217,18 +229,18 @@ function HandleRequest($request)
                 $games = GetGames($where, $vals);
 
                 if ($games instanceof dbnResultSet) return $games->ToJSON();
-                return ["success" => true, "content" => $games];
+                return MakeQuerySuccessResponse($games);
             }
     }
 
-    //Requests that require a user
+    //-------------------------------Requests that require a user-------------------------------
     if ($request["Key"] != "userinfo") $parameters["token"] = "b10a9bcf-9e4a-4d4a-8389-02d938edb3d5";
     $userinfo = GetUserInfo($parameters);
     if ($userinfo->PlayerID == 0) return ["success" => false, "message" => $userinfo->PlayerName];
 
     switch ($request["Key"]) {
         case "userinfo": {
-                return ["success" => true, "content" => $userinfo];
+                return MakeQuerySuccessResponse($userinfo);
             }
 
         case "competitionList": {
@@ -361,7 +373,7 @@ function HandleRequest($request)
                 $round = $parameters["round"];
                 $value = $parameters["value"];
 
-                if (!VerifyTD($competitionID, $userinfo->PlayerID)) return ["success" => false, "message" => "User not authorized"];
+                if (!VerifyTD($competitionID, $userinfo->PlayerID)) return MakeErrorResponse("User not authorized");
 
                 $sql = 'UPDATE CompetitionPlayerSchedule SET BidsLocked = ? ';
                 $sql .= 'WHERE Competition_CompetitionID = ? AND Round = ?';
@@ -510,10 +522,7 @@ function GetGames($where, $params)
         }
 
         $line = [
-            "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote]
-                        , "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination]
-                        , "UnexcusedResignation" => $row[$cUnexcusedResignation], "SupplyCenters" => $row[$cSupplyCenters]
-                        , "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
+            "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote], "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination], "UnexcusedResignation" => $row[$cUnexcusedResignation], "SupplyCenters" => $row[$cSupplyCenters], "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
         ];
 
         $lines[$line["Country"]] = $line;

@@ -48,6 +48,8 @@ class dbnResponder
     public $JS_PlayerPortal = false;
     public $JS_TDPortal = false;
 
+    public $JS_CompetitionPage = false;
+
     public function Generate()
     {
 
@@ -70,6 +72,8 @@ class dbnResponder
 
         if ($this->JS_PlayerPortal) array_push($js_page, "PlayerPortal");
         if ($this->JS_TDPortal)  array_push($js_page, "TDPortal");
+
+        if ($this->JS_CompetitionPage)  array_push($js_page, "CompetitionPage");
 
         $ret = "";
         foreach ($css as $value) {

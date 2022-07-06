@@ -26,25 +26,12 @@ function dbnCompetitionGroup_GetResults() {
     return $ret;
 }
 
-add_shortcode( 'dbnCompetitionResults2', 'dbnCompetition_GetResults2' );
-
-function dbnCompetition_GetResults2() {
-
-	$data = [[110,111],["hi",113]];
-
-	$ret = "<div id = 'wxyz'></div>";
-
-	$ret .= "<link rel='stylesheet' href='/wp-content/plugins/bfDBN/css/bfDBN.css'>";
-
-	$ret .= "<script src='/wp-content/plugins/bfDBN/js/bfdbn.js'></script>";
-	$ret .= "<script>";
-	$ret .= "data = " . json_encode($data) . ";\n";
-	$ret .= "var x1 = bfMakeTable(data);\n";
-	$ret .= "var xyz1 = document.getElementById('wxyz');\n";
-	$ret .= "xyz1.appendChild(x1);\n";
-	$ret .= "</script>";
-	
-    return $ret;
+add_shortcode( 'dbnCompetitionPage', 'dbnCompetition_GetPage' );
+function dbnCompetition_GetPage($atts = [], $content = null, $tag = '')
+{
+    $responder = new dbnResponder();
+    $responder->JS_CompetitionPage = true;
+    return $responder->Generate();
 }
 
 ?>

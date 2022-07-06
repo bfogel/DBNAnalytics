@@ -6,6 +6,25 @@
  * @typedef {import('./PowerAuction')}
  */
 
+/** @type{int|null} */
+var myCompetitionID = null;
+
+myHub.Parameters["CompetitionID"] = 4069;
+
+function MakePage() {
+    var urlparams = new URLSearchParams(window.location.search);
+    if (urlparams.has("CompetitionID")) myCompetitionID = Number.parseInt(urlparams.get("CompetitionID"));
+    if ("CompetitionID" in myHub.Parameters) myCompetitionID = myHub.Parameters["CompetitionID"];
+
+    var div = dbnHere().addDiv();
+    div.addText("MADE IT");
+    div.addLineBreak();
+    div.addText("CompetitionID: " + myCompetitionID);
+}
+MakePage();
+
+//-------------------
+
 /** @type {CompetitionController} */
 var myCompetition;
 

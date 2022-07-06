@@ -229,6 +229,8 @@ class dbnHub {
   MakeRequestList() { return new bfDataRequestList("https://diplobn.com/wp-json/DBNAnalytics/v1/hubget/13"); }
 
   Ticket;
+  /** @type{Object.<string,any>} */
+  Parameters = {};
 
   Countries = Object.values(CountryEnum);
 
@@ -281,6 +283,13 @@ class dbnHubRequest_UserInfo extends bfDataRequest {
     }
     return null;
   }
+}
+
+class dbnCompiledTable { Category; ItemID; TableJSON; }
+class dbnHubRequest_CompetitionPlayerSeed extends bfDataRequest {
+  constructor(category = "", itemid = 0) { super("compiledtable", { "Category": category, "ItemID": itemid }); }
+  /** @returns {dbnCompiledTable[]} */
+  get CompiledTable() { return this.ResponseContent ? Object.assign(new dbnCompiledTable(), this.ResponseContent) : null; }
 }
 
 class dbnCompetitionPlayerSeed { PlayerID; PlayerName; CompetitionID; CompetitionName; Seed; }
