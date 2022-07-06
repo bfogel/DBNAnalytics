@@ -683,6 +683,12 @@ class dbnRow {
 
 class dbnTable extends dbnElement {
 
+    constructor(parent = null) {
+        super(document.createElement("table"), typeof parent == "string" ? null : parent); //The string test on parent is necessary for legacy purposes (the old version required a variable name to be passed).  CustomHTML pages might still use it.
+        this.domelement.dbnTable = this;
+        this.className = "bftable";
+    }
+
     /** @type {object[][]} */
     Data = null;
 
@@ -722,12 +728,6 @@ class dbnTable extends dbnElement {
     #rows = null;
     #lastSortIndex = null;
     #lastSortAscending = false;
-
-    constructor(parent = null) {
-        super(document.createElement("table"), typeof parent == "string" ? null : parent); //The string test on parent is necessary for legacy purposes (the old version required a variable name to be passed).  CustomHTML pages might still use it.
-        this.domelement.dbnTable = this;
-        this.className = "bftable";
-    }
 
     EnsureRows() {
         if (this.#rows == null) {

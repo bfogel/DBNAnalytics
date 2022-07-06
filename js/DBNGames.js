@@ -286,10 +286,26 @@ class dbnHubRequest_UserInfo extends bfDataRequest {
 }
 
 class dbnCompiledTable { Category; ItemID; TableJSON; }
-class dbnHubRequest_CompetitionPlayerSeed extends bfDataRequest {
+class dbnHubRequest_CompiledTable extends bfDataRequest {
   constructor(category = "", itemid = 0) { super("compiledtable", { "Category": category, "ItemID": itemid }); }
-  /** @returns {dbnCompiledTable[]} */
-  get CompiledTable() { return this.ResponseContent ? Object.assign(new dbnCompiledTable(), this.ResponseContent) : null; }
+
+  /** @type {dbnCompiledTable} */
+  #CompiledTable;
+  get CompiledTable() {
+    if (this.#CompiledTable === undefined) {
+      var ret = super.ResponseToObjects(() => new dbnCompiledTable());
+      this.#CompiledTable = ret.length > 0 ? ret[0] : null;
+    }
+    return this.#CompiledTable;
+  }
+
+  MakeUITable() {
+    if (!this.CompiledTable) return null;
+    var ret = new dbnTable();
+    Object.assign(ret, JSON.parse(this.CompiledTable.TableJSON));
+    ret.Generate();
+    return ret;
+  }
 }
 
 class dbnCompetitionPlayerSeed { PlayerID; PlayerName; CompetitionID; CompetitionName; Seed; }

@@ -16,10 +16,38 @@ function MakePage() {
     if (urlparams.has("CompetitionID")) myCompetitionID = Number.parseInt(urlparams.get("CompetitionID"));
     if ("CompetitionID" in myHub.Parameters) myCompetitionID = myHub.Parameters["CompetitionID"];
 
+    var reqs = myHub.MakeRequestList();
+    //    var reqCompetitionInfo = new dbnhubrequ("CompetitionStandings", myCompetitionID);
+    var reqStandings = new dbnHubRequest_CompiledTable("CompetitionStandings", myCompetitionID);
+    var reqPowerSummary = new dbnHubRequest_CompiledTable("CompetitionPowerSummary", myCompetitionID);
+    var reqPlayerSummary = new dbnHubRequest_CompiledTable("CompetitionPlayerSummary", myCompetitionID);
+    var reqAwards = new dbnHubRequest_CompiledTable("CompetitionAwards", myCompetitionID);
+
+    reqs.addRequest([reqStandings, reqPowerSummary, reqPlayerSummary, reqAwards]);
+
     var div = dbnHere().addDiv();
-    div.addText("MADE IT");
-    div.addLineBreak();
-    div.addText("CompetitionID: " + myCompetitionID);
+    div.addText("Loading...");
+
+    reqs.Send();
+    if (!reqs.Success) { reqs.ReportToConsole(); return; }
+
+    div.innerHTML = "";
+
+    var card = div.addTitleCard(myCompetitionID);
+
+    var tabs = div.addTabs();
+    tabs.addTab("Standings", reqStandings.MakeUITable());
+    if (reqAwards.CompiledTable) tabs.addTab("Awards", reqAwards.MakeUITable());
+
+    var divStats = new dbnDiv();
+    divStats.addRange([reqPowerSummary.MakeUITable(), reqPlayerSummary.MakeUITable()]);
+    tabs.addTab("Statistics", divStats);
+    
+    tabs.addTab("Games", "hi");
+
+    tabs.SelectTabByIndex(0);
+
+
 }
 MakePage();
 

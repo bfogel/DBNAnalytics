@@ -9,7 +9,7 @@ add_shortcode( 'dbnCompetitionResults', 'dbnCompetition_GetResults' );
 function dbnCompetition_GetResults() {
 
 	$iID = $_GET["compid"];
-	if ($iID == null) {$iID = "VDL20212041DBNIQ2022";}
+	if ($iID == null) {$iID = "VDL20224069VDL";}
 	$ret = dbn_GetHTML('Competition', $iID);
 
     return $ret;
