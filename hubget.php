@@ -249,18 +249,18 @@ function HandleRequest($request)
                 $vals = [];
 
                 if (!$GameIDs) {
-                    $where .= $where == "" ? "WHERE" : " AND ";
+                    $where .= $where == "" ? "WHERE " : " AND ";
                     $where .= "GameID IN (" . str_repeat('?,', count($GameIDs) - 1) . "?)";
                     array_push($vals, ...$GameIDs);
                 }
                 if (!$CompetitionIDs) {
-                    $where .= $where == "" ? "WHERE" : " AND ";
+                    $where .= $where == "" ? "WHERE " : " AND ";
                     $where .= "Competition_CompetitionID IN (" . str_repeat('?,', count($CompetitionIDs) - 1) . "?)";
                     array_push($vals, ...$CompetitionIDs);
                 }
                 if (!$PlayerIDs) {
                     foreach ($PlayerIDs as $pid) {
-                        $where .= $where == "" ? "WHERE" : " AND ";
+                        $where .= $where == "" ? "WHERE " : " AND ";
                         $where .= 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                         array_push($vals, $pid);
                     }
