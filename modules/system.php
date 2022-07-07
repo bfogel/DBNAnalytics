@@ -42,6 +42,9 @@ class dbnResponder
 
     public $JS_PlayerGameList = false;
 
+    public $JS_GameModel = false;
+    public $JS_MapView = false;
+
     public $JS_PowerAuction = false;
     public $JS_PowerAuctionDemo = false;
 
@@ -67,13 +70,16 @@ class dbnResponder
         $js_page = [];
         if ($this->JS_PlayerGameList) array_push($js_page, "PlayerGameList");
 
+        if ($this->JS_GameModel) array_push($js_page, "GameModel");
+        if ($this->JS_MapView) array_push($js_page, "MapView");
+
         if ($this->JS_PowerAuction) array_push($js_page, "PowerAuction");
         if ($this->JS_PowerAuctionDemo) array_push($js_page, "PowerAuctionDemo");
 
         if ($this->JS_PlayerPortal) array_push($js_page, "PlayerPortal");
         if ($this->JS_TDPortal)  array_push($js_page, "TDPortal");
 
-        if ($this->JS_CompetitionPage)  array_push($js_page, "CompetitionPage");
+        if ($this->JS_CompetitionPage) array_push($js_page, "CompetitionPage");
 
         $ret = "";
         foreach ($css as $value) {
@@ -95,5 +101,3 @@ class dbnResponder
         return $ret;
     }
 }
-
-?>

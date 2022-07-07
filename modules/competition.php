@@ -30,6 +30,8 @@ add_shortcode( 'dbnCompetitionPage', 'dbnCompetition_GetPage' );
 function dbnCompetition_GetPage($atts = [], $content = null, $tag = '')
 {
     $responder = new dbnResponder();
+    $responder->JS_GameModel = true;
+    $responder->JS_MapView = true;
     $responder->JS_CompetitionPage = true;
     return $responder->Generate();
 }

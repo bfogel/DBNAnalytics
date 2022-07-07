@@ -146,8 +146,8 @@ class gmGame {
 
 class gmGamePhase {
 
-    constructor(json) {
-        Object.keys(this).forEach(x => { if (x in json) this[x] = json[x]; });
+    constructor(json = null) {
+        if (json) Object.keys(this).forEach(x => { if (x in json) this[x] = json[x]; });
 
         if (this.Units) {
             var newo = {};
@@ -194,7 +194,7 @@ class gmGamePhase {
     MakeSupplyCentersByProvince() {
         /** @type{Object.<string,string>}         */
         var ret = {};
-        Object.entries(this.SupplyCenters).forEach(kv => kv[1].forEach(x => ret[x] = kv[0]));
+        Object.entries(this.SupplyCenters).forEach(kv => (kv[1] ?? []).forEach(x => ret[x] = kv[0]));
         return ret;
     }
 }

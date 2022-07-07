@@ -3,6 +3,8 @@
 /**
  * @typedef {import('./DBNUI.js')}
  * @typedef {import('./DBNGames.js')}
+ * @typedef {import('./GameModel')}
+ * @typedef {import('./MapView')}
  * @typedef {import('./PowerAuction')}
  */
 
@@ -24,11 +26,7 @@ function MakePage() {
     var reqAwards = new dbnHubRequest_CompiledTable("CompetitionAwards", myCompetitionID);
     var reqGames = new dbnHubRequest_GetGames(null, [myCompetitionID]);
 
-    reqGames.SendAlone();
-    reqGames.ReportToConsole();
-    return;
-
-    reqs.addRequest([reqCompetitionInfo, reqStandings, reqPowerSummary, reqPlayerSummary, reqAwards]);
+    reqs.addRequest([reqCompetitionInfo, reqStandings, reqPowerSummary, reqPlayerSummary, reqAwards, reqGames]);
 
     var div = dbnHere().addDiv();
     div.addText("Loading...");
@@ -52,15 +50,60 @@ function MakePage() {
     divStats.addRange([reqPowerSummary.MakeUITable(), reqPlayerSummary.MakeUITable()]);
     tabs.addTab("Statistics", divStats);
 
-    tabs.addTab("Games", "hi");
+    tabs.addTab("Games", MakeGameList(reqGames.ResponseToObjects()));
 
-    tabs.SelectTabByIndex(0);
+    tabs.SelectTabByIndex(2);
 
 
 }
 MakePage();
 
-//-------------------
+//-------------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * 
+ * @param {dbnGame[]} games 
+ */
+function MakeGameList(games) {
+    var ret = new dbnDiv();
+
+    //games = [games[0]];
+
+    games.forEach(x => {
+        var div = ret.addDiv();
+        div.style = "display:inline-block; white-space: nowrap;";
+
+        var table = div.addTable();
+        table.Title = x.Label;
+        var data = [];
+        Object.values(x.ResultLines).forEach(rl => {
+            data.push([rl.Country, rl.Player.PlayerName, "(" + rl.CenterCount + ")", rl.Score]);
+        });
+        table.Data = data;
+        table.CountryRows = Object.keys(x.ResultLines);
+        table.Generate();
+
+        var mv = new dbnMapView(div);
+
+        var game = new gmGame(x);
+        mv.Game = game;
+
+        var gp = new gmGamePhase(null);
+        gp.SupplyCenters = {};
+        Object.values(x.ResultLines).forEach(rl => {
+            gp.SupplyCenters[rl.Country] = JSON.parse(rl.SupplyCenters);
+        });
+        game.GamePhases = [gp];
+        mv.GamePhase = gp;
+
+        mv.Draw();
+
+        ret.addHardRule();
+    });
+    return ret;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------
 
 /** @type {CompetitionController} */
 var myCompetition;
