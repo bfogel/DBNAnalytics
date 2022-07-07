@@ -248,17 +248,17 @@ function HandleRequest($request)
                 $where = "";
                 $vals = [];
 
-                if (!$GameIDs) {
+                if ($GameIDs) {
                     $where .= $where == "" ? "WHERE " : " AND ";
                     $where .= "GameID IN (" . str_repeat('?,', count($GameIDs) - 1) . "?)";
                     array_push($vals, ...$GameIDs);
                 }
-                if (!$CompetitionIDs) {
+                if ($CompetitionIDs) {
                     $where .= $where == "" ? "WHERE " : " AND ";
                     $where .= "Competition_CompetitionID IN (" . str_repeat('?,', count($CompetitionIDs) - 1) . "?)";
                     array_push($vals, ...$CompetitionIDs);
                 }
-                if (!$PlayerIDs) {
+                if ($PlayerIDs) {
                     foreach ($PlayerIDs as $pid) {
                         $where .= $where == "" ? "WHERE " : " AND ";
                         $where .= 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
