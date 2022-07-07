@@ -21,6 +21,8 @@ function MakePage() {
     reqCompetitionInfo.SendAlone();
     reqCompetitionInfo.ReportToConsole();
     console.log(reqCompetitionInfo);
+    var ci=reqCompetitionInfo.ResponseToObjects()[0];
+    ci.CompetitionName
     return;
 
     var reqStandings = new dbnHubRequest_CompiledTable("CompetitionStandings", myCompetitionID);
