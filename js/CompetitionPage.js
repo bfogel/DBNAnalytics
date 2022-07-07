@@ -17,7 +17,7 @@ function MakePage() {
     if ("CompetitionID" in myHub.Parameters) myCompetitionID = myHub.Parameters["CompetitionID"];
 
     var reqs = myHub.MakeRequestList();
-    var reqCompetitionInfo = new dbnHubRequest_CompetitionInfo(myCompetitionID);
+    var reqCompetitionInfo = new dbnHubRequest_Competition(myCompetitionID);
     reqCompetitionInfo.SendAlone();
     reqCompetitionInfo.ReportToConsole();
     console.log(reqCompetitionInfo);

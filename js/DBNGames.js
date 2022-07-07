@@ -269,6 +269,53 @@ var myHub = new dbnHub();
 
 //#endregion
 
+//#region Basic DataRequest classes
+
+//#region Competition
+
+class dbnCompetition {
+	/**@type{number}*/ CompetitionID;
+	/**@type{string}*/ CompetitionName;
+	/**@type{number}*/ CompetitionSeries_CompetitionSeriesID;
+	/**@type{string}*/ CompetitionSeries_CompetitionSeriesName;
+	/**@type{number}*/ Director_PlayerID;
+	/**@type{string}*/ Director_PlayerName;
+	/**@type{number}*/ StandingsTopCount;
+	/**@type{number}*/ StandingsAvgOfRestMinimumDivisor;
+	/**@type{number}*/ StandingsAvgOfRestBooster;
+	/**@type{number}*/ StandingsMinimumScoreCountRequired;
+	/**@type{number}*/ DefaultScoringSystem_ScoringSystemID;
+	get DefaultScoringSystem(){return ScoringSystemEnumFromID(this.DefaultScoringSystem_ScoringSystemID);}
+	/**@type{number}*/ DefaultCommunicationType_GameCommunicationTypeID;
+	get DefaultCommunicationType(){return GameCommunicationTypeEnumFromID(this.DefaultCommunicationType_GameCommunicationTypeID);}
+	/**@type{number}*/ DefaultLanguage_GameLanguageID;
+	get DefaultLanguage(){return GameLanguageEnumFromID(this.DefaultLanguage_GameLanguageID);}
+	/**@type{number}*/ DefaultDeadlineType_GameDeadlineType;
+	get DefaultDeadlineType(){return GameDeadlineTypeEnumFromID(this.DefaultDeadlineType_GameDeadlineType);}
+	/**@type{number}*/ DefaultGameLimitType_GameLimitTypeID;
+	get DefaultGameLimitType(){return GameLimitTypeEnumFromID(this.DefaultGameLimitType_GameLimitTypeID);}
+	/**@type{number}*/ DefaultAnonymityType_GameAnonymityTypeID;
+	get DefaultAnonymityType(){return GameAnonymityTypeEnumFromID(this.DefaultAnonymityType_GameAnonymityTypeID);}
+	/**@type{string}*/ CompletionDate;
+	/**@type{number}*/ TopBoard_GameID;
+	/**@type{number}*/ TopBoardType_TopBoardTypeID;
+	get TopBoardType(){return TopBoardTypeEnumFromID(this.TopBoardType_TopBoardTypeID);}
+	/**@type{number}*/ ExternalBoardCount;
+	/**@type{boolean}*/ IncludedInFTFRankings;
+	/**@type{number}*/ DBNIYear;
+	/**@type{boolean}*/ WinnerAutoQualifiesForDBNI;
+	/**@type{string}*/ Note;
+}
+class dbnHubRequest_Competition extends bfDataRequest {
+  constructor(pCompetitionIDs) { super("competition", { "CompetitionIDs": pCompetitionIDs }); }
+  /** @returns {dbnCompetition[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetition()); }
+}
+
+//#endregion
+
+//#endregion
+
 //#region Misc DataRequest classes
 
 class dbnUserInfo { PlayerID; PlayerName; }
@@ -306,13 +353,6 @@ class dbnHubRequest_CompiledTable extends bfDataRequest {
     ret.Generate();
     return ret;
   }
-}
-
-class dbnCompetition { CompetitionID; CompetitionName; CompetitionSeries_CompetitionSeriesID; Director_PlayerID; StandingsTopCount; StandingsAvgOfRestMinimumDivisor; StandingsAvgOfRestBooster; StandingsMinimumScoreCountRequired; DefaultScoringSystem_ScoringSystemID; DefaultCommunicationType_GameCommunicationTypeID; DefaultLanguage_GameLanguageID; DefaultDeadlineType_GameDeadlineType; DefaultGameLimitType_GameLimitTypeID; DefaultAnonymityType_GameAnonymityTypeID; CompletionDate; TopBoard_GameID; TopBoardType_TopBoardTypeID; ExternalBoardCount; IncludedInFTFRankings; DBNIYear; WinnerAutoQualifiesForDBNI; Note; }
-class dbnHubRequest_CompetitionInfo extends bfDataRequest {
-  constructor(pCompetitionIDs ) { super("competition", { "CompetitionIDs": pCompetitionIDs }); }
-  /** @returns {dbnCompetition[]} */
-  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetition()); }
 }
 
 class dbnCompetitionPlayerSeed { PlayerID; PlayerName; CompetitionID; CompetitionName; Seed; }

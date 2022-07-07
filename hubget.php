@@ -206,7 +206,9 @@ function HandleRequest($request)
                 $CompetitionIDs = $parameters["CompetitionIDs"];
                 if (gettype($CompetitionIDs) != "array") $CompetitionIDs = [$CompetitionIDs];
 
-                $sql = "SELECT * FROM Competition";
+                $sql = "SELECT C.*, CS.CompetitionSeriesName AS CompetitionSeries_CompetitionSeriesName";
+                $sql .= " FROM Competition AS C";
+                $sql = " INNER JOIN CompetitionSeries AS CS ON CS.CompetitionSeriesID = C.CompetitionSeries_CompetitionSeriesID";
                 $sql .= " WHERE CompetitionID IN (" . str_repeat('?,', count($CompetitionIDs) - 1) . "?)";
 
                 return GetResultsetAsJSON($sql, $CompetitionIDs);
