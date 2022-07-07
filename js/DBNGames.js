@@ -380,7 +380,7 @@ class dbnHubRequest_CompetitionPlayerGameCounts extends bfDataRequest {
 
 //#region Competition
 
-class dbnCompetition {
+class dbnCompetitionAdHoc {
   /** @type{number} */
   CompetitionID;
   /** @type{string} */
@@ -397,16 +397,9 @@ class dbnCompetition {
 
 class dbnHubRequest_CompetitionParticipationList extends bfDataRequest {
   constructor(pAsTD = false) { super("competitionList", { "asTD": pAsTD }); }
-  /** @returns {dbnCompetition[]} */
-  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetition()); }
+  /** @returns {dbnCompetidbnCompetitionAdHoction[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionAdHoc()); }
 }
-
-// class dbnCompetition { CompetitionID; CompetitionName; }
-// class dbnHubRequest_Competitions extends bfDataRequest {
-//   constructor(compids) {
-//     super("competitions", { "compids": compids });
-//   }
-// }
 
 //#endregion
 

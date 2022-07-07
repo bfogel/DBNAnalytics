@@ -17,13 +17,18 @@ function MakePage() {
     if ("CompetitionID" in myHub.Parameters) myCompetitionID = myHub.Parameters["CompetitionID"];
 
     var reqs = myHub.MakeRequestList();
-    //    var reqCompetitionInfo = new dbnhubrequ("CompetitionStandings", myCompetitionID);
+    var reqCompetitionInfo = new dbnHubRequest_CompetitionInfo(myCompetitionID);
+    reqCompetitionInfo.SendAlone();
+    reqCompetitionInfo.ReportToConsole();
+    console.log(reqCompetitionInfo);
+    return;
+
     var reqStandings = new dbnHubRequest_CompiledTable("CompetitionStandings", myCompetitionID);
     var reqPowerSummary = new dbnHubRequest_CompiledTable("CompetitionPowerSummary", myCompetitionID);
     var reqPlayerSummary = new dbnHubRequest_CompiledTable("CompetitionPlayerSummary", myCompetitionID);
     var reqAwards = new dbnHubRequest_CompiledTable("CompetitionAwards", myCompetitionID);
 
-    reqs.addRequest([reqStandings, reqPowerSummary, reqPlayerSummary, reqAwards]);
+    reqs.addRequest([reqCompetitionInfo, reqStandings, reqPowerSummary, reqPlayerSummary, reqAwards]);
 
     var div = dbnHere().addDiv();
     div.addText("Loading...");
@@ -42,7 +47,7 @@ function MakePage() {
     var divStats = new dbnDiv();
     divStats.addRange([reqPowerSummary.MakeUITable(), reqPlayerSummary.MakeUITable()]);
     tabs.addTab("Statistics", divStats);
-    
+
     tabs.addTab("Games", "hi");
 
     tabs.SelectTabByIndex(0);
