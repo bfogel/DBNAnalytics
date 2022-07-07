@@ -22,7 +22,7 @@ function MakePage() {
     var reqPowerSummary = new dbnHubRequest_CompiledTable("CompetitionPowerSummary", myCompetitionID);
     var reqPlayerSummary = new dbnHubRequest_CompiledTable("CompetitionPlayerSummary", myCompetitionID);
     var reqAwards = new dbnHubRequest_CompiledTable("CompetitionAwards", myCompetitionID);
-    var reqGames = new dbnHubRequest_GetGames([4478, 4483]);
+    var reqGames = new dbnHubRequest_GetGames(null, [myCompetitionID]);
 
     reqGames.SendAlone();
     reqGames.ReportToConsole();
