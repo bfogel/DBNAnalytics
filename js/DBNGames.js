@@ -308,6 +308,13 @@ class dbnHubRequest_CompiledTable extends bfDataRequest {
   }
 }
 
+class dbnCompetition { CompetitionID; CompetitionName; CompetitionSeries_CompetitionSeriesID; Director_PlayerID; StandingsTopCount; StandingsAvgOfRestMinimumDivisor; StandingsAvgOfRestBooster; StandingsMinimumScoreCountRequired; DefaultScoringSystem_ScoringSystemID; DefaultCommunicationType_GameCommunicationTypeID; DefaultLanguage_GameLanguageID; DefaultDeadlineType_GameDeadlineType; DefaultGameLimitType_GameLimitTypeID; DefaultAnonymityType_GameAnonymityTypeID; CompletionDate; TopBoard_GameID; TopBoardType_TopBoardTypeID; ExternalBoardCount; IncludedInFTFRankings; DBNIYear; WinnerAutoQualifiesForDBNI; Note; }
+class dbnHubRequest_CompetitionInfo extends bfDataRequest {
+  constructor(pCompetitionIDs ) { super("competition", { "CompetitionIDs": pCompetitionIDs }); }
+  /** @returns {dbnCompetition[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetition()); }
+}
+
 class dbnCompetitionPlayerSeed { PlayerID; PlayerName; CompetitionID; CompetitionName; Seed; }
 class dbnHubRequest_CompetitionPlayerSeed extends bfDataRequest {
   constructor(pAsTD = false) { super("compseeds", { "asTD": pAsTD }); }
