@@ -266,7 +266,7 @@ function HandleRequest($request)
                     }
                 }
 
-                return MakeQuerySuccessResponse($CompetitionIDs);
+                // return MakeQuerySuccessResponse($CompetitionIDs);
 
                 $games = GetGames($where, $vals);
 
