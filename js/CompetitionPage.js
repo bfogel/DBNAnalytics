@@ -22,6 +22,11 @@ function MakePage() {
     var reqPowerSummary = new dbnHubRequest_CompiledTable("CompetitionPowerSummary", myCompetitionID);
     var reqPlayerSummary = new dbnHubRequest_CompiledTable("CompetitionPlayerSummary", myCompetitionID);
     var reqAwards = new dbnHubRequest_CompiledTable("CompetitionAwards", myCompetitionID);
+    var reqGames = new dbnHubRequest_GetGames(null, myCompetitionID);
+
+    reqGames.SendAlone();
+    reqGames.ReportToConsole();
+    return;
 
     reqs.addRequest([reqCompetitionInfo, reqStandings, reqPowerSummary, reqPlayerSummary, reqAwards]);
 
@@ -37,7 +42,7 @@ function MakePage() {
     var card = div.addTitleCard(compinfo.CompetitionName);
     if (compinfo.Director_PlayerName) card.addText("Director: " + compinfo.Director_PlayerName); card.addLineBreak();
     card.addText("Scoring: " + compinfo.DefaultScoringSystem); card.addLineBreak();
-    card.addText("Language: " + compinfo.DefaultLanguage); 
+    card.addText("Language: " + compinfo.DefaultLanguage);
 
     var tabs = div.addTabs();
     tabs.addTab("Standings", reqStandings.MakeUITable());
