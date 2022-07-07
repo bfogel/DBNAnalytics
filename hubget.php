@@ -235,7 +235,7 @@ function HandleRequest($request)
                 $CompetitionIDs = null;
                 $PlayerIDs = null;
 
-                 return MakeQuerySuccessResponse($parameters["GameIDs"]);
+                 return MakeQuerySuccessResponse(json_decode($parameters["GameIDs"]));
 
                 if (array_key_exists("GameIDs", $parameters)) $GameIDs = json_decode($parameters["GameIDs"]);
                 if (array_key_exists("CompetitionIDs", $parameters)) $CompetitionIDs = json_decode($parameters["CompetitionIDs"]);
