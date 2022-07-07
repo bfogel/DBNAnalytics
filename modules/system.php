@@ -32,7 +32,7 @@ function dbn_GetHTMLWithConn($conn, $category, $id) {
 class dbnResponder
 {
 
-    public $Version = 49;
+    public $Version = 50;
 
     public $CSS_DBNAnalytics = true;
     public $CSS_PowerAuction = false;

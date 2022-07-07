@@ -52,7 +52,7 @@ function MakePage() {
 
     tabs.addTab("Games", MakeGameList(reqGames.ResponseToObjects()));
 
-    tabs.SelectTabByIndex(2);
+    tabs.SelectTabByIndex(0);
 
 
 }
