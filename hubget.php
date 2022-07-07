@@ -240,7 +240,7 @@ function HandleRequest($request)
                 if (array_key_exists("CompetitionIDs", $parameters)) $CompetitionIDs = $parameters["CompetitionIDs"];
                 if (array_key_exists("PlayerIDs", $parameters)) $PlayerIDs = $parameters["PlayerIDs"];
 
-                return MakeQuerySuccessResponse(!$CompetitionIDs);
+                //return MakeQuerySuccessResponse(!$CompetitionIDs);
 
                 if (!$GameIDs && !$CompetitionIDs && !$PlayerIDs) return MakeErrorResponse("No parameters");
 
