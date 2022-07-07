@@ -176,7 +176,8 @@ function VerifyTD($competitionID, $playerid)
 
 //Should return a JSON object with expected fields set 
 // (really you should define a response class with two subclasses SuccessResponse and FailureResponse)
-// ALSO: All parameters should be sent as json and decoded prior to the switch
+// ALSO: All parameters should be sent as json and decoded prior to the switch 
+// 2022-07-07 - Well, it appears that json can be passed through the parameters without needing to be decoded (see getgames)
 function HandleRequest($request)
 {
     $parameters = $request["Parameters"];
@@ -236,8 +237,8 @@ function HandleRequest($request)
                 $PlayerIDs = null;
 
                 if (array_key_exists("GameIDs", $parameters)) $GameIDs = $parameters["GameIDs"];
-                if (array_key_exists("CompetitionIDs", $parameters)) $CompetitionIDs = json_decode($parameters["CompetitionIDs"]);
-                if (array_key_exists("PlayerIDs", $parameters)) $PlayerIDs = json_decode($parameters["PlayerIDs"]);
+                if (array_key_exists("CompetitionIDs", $parameters)) $CompetitionIDs = $parameters["CompetitionIDs"];
+                if (array_key_exists("PlayerIDs", $parameters)) $PlayerIDs = $parameters["PlayerIDs"];
 
                 if (!$GameIDs && !$CompetitionIDs && !$PlayerIDs) return MakeErrorResponse("No parameters");
 
