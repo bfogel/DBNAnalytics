@@ -245,6 +245,8 @@ function HandleRequest($request)
                 if ($CompetitionIDs && gettype($CompetitionIDs) != "array") $CompetitionIDs = [$CompetitionIDs];
                 if ($PlayerIDs && gettype($PlayerIDs) != "array") $PlayerIDs = [$PlayerIDs];
 
+                return MakeQuerySuccessResponse($CompetitionIDs);
+
                 $where = "";
                 $vals = [];
 
