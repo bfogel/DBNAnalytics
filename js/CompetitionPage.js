@@ -18,13 +18,6 @@ function MakePage() {
 
     var reqs = myHub.MakeRequestList();
     var reqCompetitionInfo = new dbnHubRequest_Competition(myCompetitionID);
-    reqCompetitionInfo.SendAlone();
-    reqCompetitionInfo.ReportToConsole();
-    console.log(reqCompetitionInfo);
-    var ci=reqCompetitionInfo.ResponseToObjects()[0];
-    ci.CompetitionName
-    return;
-
     var reqStandings = new dbnHubRequest_CompiledTable("CompetitionStandings", myCompetitionID);
     var reqPowerSummary = new dbnHubRequest_CompiledTable("CompetitionPowerSummary", myCompetitionID);
     var reqPlayerSummary = new dbnHubRequest_CompiledTable("CompetitionPlayerSummary", myCompetitionID);
@@ -40,7 +33,11 @@ function MakePage() {
 
     div.innerHTML = "";
 
-    var card = div.addTitleCard(myCompetitionID);
+    var compinfo = reqCompetitionInfo.ResponseToObjects()[0];
+    var card = div.addTitleCard(compinfo.CompetitionName);
+    if (compinfo.Director_PlayerName) card.addText("Director: " + compinfo.Director_PlayerName); card.addLineBreak();
+    card.addText("Scoring: " + compinfo.DefaultScoringSystem); card.addLineBreak();
+    card.addText("Language: " + compinfo.DefaultLanguage); 
 
     var tabs = div.addTabs();
     tabs.addTab("Standings", reqStandings.MakeUITable());

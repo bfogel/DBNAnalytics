@@ -230,6 +230,48 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $vals);
             }
 
+        case "getgames": {
+                $GameIDs = null;
+                $CompetitionIDs = null;
+                $PlayerIDs = null;
+
+                if (!array_key_exists("GameIDs", $parameters)) $GameIDs = json_decode($parameters["GameIDs"]);
+                if (!array_key_exists("CompetitionIDs", $parameters)) $CompetitionIDs = json_decode($parameters["CompetitionIDs"]);
+                if (!array_key_exists("PlayerIDs", $parameters)) $PlayerIDs = json_decode($parameters["PlayerIDs"]);
+
+                if (!$GameIDs && !$CompetitionIDs && !$PlayerIDs) return MakeErrorResponse("No parameters");
+
+                if ($GameIDs && gettype($GameIDs) != "array") $GameIDs = [$GameIDs];
+                if ($CompetitionIDs && gettype($CompetitionIDs) != "array") $CompetitionIDs = [$CompetitionIDs];
+                if ($PlayerIDs && gettype($PlayerIDs) != "array") $PlayerIDs = [$PlayerIDs];
+
+                $where = "";
+                $vals = [];
+
+                if (!$GameIDs) {
+                    $where .= $where == "" ? "WHERE" : " AND ";
+                    $where .= "GameID IN (" . str_repeat('?,', count($GameIDs) - 1) . "?)";
+                    array_push($vals, ...$GameIDs);
+                }
+                if (!$CompetitionIDs) {
+                    $where .= $where == "" ? "WHERE" : " AND ";
+                    $where .= "Competition_CompetitionID IN (" . str_repeat('?,', count($CompetitionIDs) - 1) . "?)";
+                    array_push($vals, ...$CompetitionIDs);
+                }
+                if (!$PlayerIDs) {
+                    foreach ($PlayerIDs as $pid) {
+                        $where .= $where == "" ? "WHERE" : " AND ";
+                        $where .= 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
+                        array_push($vals, $pid);
+                    }
+                }
+
+                $games = GetGames($where, $vals);
+
+                if ($games instanceof dbnResultSet) return $games->ToJSON();
+                return MakeQuerySuccessResponse($games);
+            }
+
         case "games": {
                 if (!array_key_exists("PlayerIDs", $parameters)) return MakeErrorResponse("No players");
                 $playerids = json_decode($parameters["PlayerIDs"]);
