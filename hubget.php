@@ -221,7 +221,7 @@ function HandleRequest($request)
             case "compgroup": {
                 if (!array_key_exists("CompetitionGroupIDs", $parameters)) return MakeErrorResponse("No CompetitionGroupIDs");
                 $CompetitionGroupIDs = $parameters["CompetitionGroupIDs"];
-                if (gettype($CompetitionGroupIDs) != "array") $CompetitionIDs = [$CompetitionGroupIDs];
+                if (gettype($CompetitionGroupIDs) != "array") $CompetitionGroupIDs = [$CompetitionGroupIDs];
 
                 $sql = "SELECT CG.*";
                 $sql .= " FROM CompetitionGroup AS CG";
