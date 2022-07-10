@@ -3,30 +3,23 @@
 /**
  * @typedef {import('./DBNUI.js')}
  * @typedef {import('./DBNGames.js')}
- * @typedef {import('./GameModel')}
- * @typedef {import('./MapView')}
- * @typedef {import('./PowerAuction')}
  */
 
 /** @type{int|null} */
-var myCompetitionID = null;
-
-myHub.Parameters["CompetitionID"] = 4069;
+var myCompetitionGroupID = null;
 
 function MakePage() {
     var urlparams = new URLSearchParams(window.location.search);
-    if (urlparams.has("CompetitionID")) myCompetitionID = Number.parseInt(urlparams.get("CompetitionID"));
-    if ("CompetitionID" in myHub.Parameters) myCompetitionID = myHub.Parameters["CompetitionID"];
+    if (urlparams.has("CompetitionGroupID")) myCompetitionGroupID = Number.parseInt(urlparams.get("CompetitionGroupID"));
+    if ("CompetitionGroupID" in myHub.Parameters) myCompetitionGroupID = myHub.Parameters["CompetitionGroupID"];
 
     var reqs = myHub.MakeRequestList();
-    var reqCompetitionInfo = new dbnHubRequest_Competition(myCompetitionID);
-    var reqStandings = new dbnHubRequest_CompiledTable("CompetitionStandings", myCompetitionID);
-    var reqPowerSummary = new dbnHubRequest_CompiledTable("CompetitionPowerSummary", myCompetitionID);
-    var reqPlayerSummary = new dbnHubRequest_CompiledTable("CompetitionPlayerSummary", myCompetitionID);
-    var reqAwards = new dbnHubRequest_CompiledTable("CompetitionAwards", myCompetitionID);
-    var reqGames = new dbnHubRequest_GetGames(null, [myCompetitionID]);
+    var reqGroupInfo = new dbnHubRequest_Competition(myCompetitionGroupID);
+    var reqStandings = new dbnHubRequest_CompiledTable("CompetitionGroup_Standings", myCompetitionGroupID);
+    var reqCompetitions = new dbnHubRequest_CompiledTable("CompetitionGroup_CompetitionList", myCompetitionGroupID);
+    var reqStatistics = new dbnHubRequest_CompiledTable("CompetitionGroup_Statistics", myCompetitionGroupID);
 
-    reqs.addRequest([reqCompetitionInfo, reqStandings, reqPowerSummary, reqPlayerSummary, reqAwards, reqGames]);
+    reqs.addRequest([reqGroupInfo, reqStandings, reqCompetitions, reqStatistics]);
 
     var div = dbnHere().addDiv();
     div.addText("Loading...");
@@ -36,23 +29,20 @@ function MakePage() {
 
     div.innerHTML = "";
 
-    var compinfo = reqCompetitionInfo.ResponseToObjects()[0];
-    var card = div.addTitleCard(compinfo.CompetitionName);
-    if (compinfo.Director_PlayerName) card.addText("Director: " + compinfo.Director_PlayerName); card.addLineBreak();
-    card.addText("Scoring: " + compinfo.DefaultScoringSystem); card.addLineBreak();
-    card.addText("Language: " + compinfo.DefaultLanguage);
+    var groupinfo = reqGroupInfo.ResponseToObjects()[0];
+    var card = div.addTitleCard(groupinfo);
 
-    var tabs = div.addTabs();
-    tabs.addTab("Standings", reqStandings.MakeUITable());
-    if (reqAwards.CompiledTable) tabs.addTab("Awards", reqAwards.MakeUITable());
+    // var tabs = div.addTabs();
+    // tabs.addTab("Standings", reqStandings.MakeUITable());
+    // if (reqAwards.CompiledTable) tabs.addTab("Awards", reqAwards.MakeUITable());
 
-    var divStats = new dbnDiv();
-    divStats.addRange([reqPowerSummary.MakeUITable(), reqPlayerSummary.MakeUITable()]);
-    tabs.addTab("Statistics", divStats);
+    // var divStats = new dbnDiv();
+    // divStats.addRange([reqPowerSummary.MakeUITable(), reqPlayerSummary.MakeUITable()]);
+    // tabs.addTab("Statistics", divStats);
 
-    tabs.addTab("Games", MakeGameList(reqGames.ResponseToObjects()));
+    // tabs.addTab("Games", MakeGameList(reqGames.ResponseToObjects()));
 
-    tabs.SelectTabByIndex(0);
+    // tabs.SelectTabByIndex(0);
 
 
 }
@@ -74,19 +64,7 @@ function MakeGameList(games) {
         div.style = "display:inline-block; white-space: nowrap;";
 
         var table = div.addTable();
-
         table.Title = x.Label;
-        if (x.URL) {
-            var titlink = new dbnLink();
-            titlink.addText(x.Label + " ");
-            var icon = titlink.createAndAppendElement("i");
-            icon.className = "fa fa-external-link";
-            icon.domelement.setAttribute("aria-hidden", "true");
-            titlink.href = x.URL;
-            table.Title = titlink;
-        }
-
-
         var data = [];
         Object.values(x.ResultLines).forEach(rl => {
             data.push([rl.Country, rl.Player.PlayerName, "(" + rl.CenterCount + ")", rl.Score]);
@@ -95,25 +73,22 @@ function MakeGameList(games) {
         table.CountryRows = Object.keys(x.ResultLines);
         table.Generate();
 
-        //Unfalse this to show final map state
-        if (false) {
-            var mv = new dbnMapView(div);
+        var mv = new dbnMapView(div);
 
-            var game = new gmGame(x);
-            mv.Game = game;
+        var game = new gmGame(x);
+        mv.Game = game;
 
-            var gp = new gmGamePhase(null);
-            gp.SupplyCenters = {};
-            Object.values(x.ResultLines).forEach(rl => {
-                gp.SupplyCenters[rl.Country] = JSON.parse(rl.SupplyCenters);
-            });
-            game.GamePhases = [gp];
-            mv.GamePhase = gp;
+        var gp = new gmGamePhase(null);
+        gp.SupplyCenters = {};
+        Object.values(x.ResultLines).forEach(rl => {
+            gp.SupplyCenters[rl.Country] = JSON.parse(rl.SupplyCenters);
+        });
+        game.GamePhases = [gp];
+        mv.GamePhase = gp;
 
-            mv.Draw();
+        mv.Draw();
 
-            ret.addHardRule();
-        }
+        ret.addHardRule();
     });
     return ret;
 }

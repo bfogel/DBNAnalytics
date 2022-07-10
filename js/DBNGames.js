@@ -405,6 +405,20 @@ class dbnHubRequest_Competition extends bfDataRequest {
 
 //#endregion
 
+//#region CompetitionGroup
+
+class dbnCompetitionGroup {
+	/**@type{number}*/ CompetitionGroupID;
+	/**@type{string}*/ Label;
+}
+class dbnHubRequest_CompetitionGroup extends bfDataRequest {
+  constructor(pCompetitionGroupIDs) { super("compgroup", { "CompetitionGroupIDs": pCompetitionGroupIDs }); }
+  /** @returns {dbnCompetitionGroup[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionGroup()); }
+}
+
+//#endregion
+
 //#endregion
 
 //#region Misc DataRequest classes

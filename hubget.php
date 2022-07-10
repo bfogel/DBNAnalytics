@@ -218,7 +218,20 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $CompetitionIDs);
             }
 
-        case "compiledtable": {
+            case "compgroup": {
+                if (!array_key_exists("CompetitionGroupIDs", $parameters)) return MakeErrorResponse("No CompetitionGroupIDs");
+                $CompetitionGroupIDs = $parameters["CompetitionGroupIDs"];
+                if (gettype($CompetitionGroupIDs) != "array") $CompetitionIDs = [$CompetitionGroupIDs];
+
+                $sql = "SELECT CG.*";
+                $sql .= " FROM CompetitionGroup AS CG";
+                $sql .= " WHERE CompetitionGroupID IN (" . str_repeat('?,', count($CompetitionGroupIDs) - 1) . "?)";
+
+                return GetResultsetAsJSON($sql, $CompetitionGroupIDs);
+            }
+
+
+            case "compiledtable": {
                 if (!array_key_exists("Category", $parameters)) return MakeErrorResponse("No Category");
                 $Category = $parameters["Category"];
                 if (!array_key_exists("ItemID", $parameters)) return MakeErrorResponse("No ItemID");

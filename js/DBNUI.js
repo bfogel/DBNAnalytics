@@ -695,7 +695,7 @@ class dbnTable extends dbnElement {
     /** @type {string[]} */
     Headers = null;
 
-    /** @type {string} */
+    /** @type {string|dbnElement} */
     Title = null;
     ClickHeaderToSort = false;
 
