@@ -32,6 +32,7 @@ function MakePage() {
 
     var groupinfo = reqGroupInfo.ResponseToObjects()[0];
     var card = div.addTitleCard(groupinfo.Label);
+    card.style = "text-align: center";
 
     // var tabs = div.addTabs();
     // tabs.addTab("Standings", reqStandings.MakeUITable());

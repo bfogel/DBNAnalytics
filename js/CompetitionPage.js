@@ -20,10 +20,10 @@ function MakePage() {
 
     var reqs = myHub.MakeRequestList();
     var reqCompetitionInfo = new dbnHubRequest_Competition(myCompetitionID);
-    var reqStandings = new dbnHubRequest_CompiledTable("CompetitionStandings", myCompetitionID);
-    var reqPowerSummary = new dbnHubRequest_CompiledTable("CompetitionPowerSummary", myCompetitionID);
-    var reqPlayerSummary = new dbnHubRequest_CompiledTable("CompetitionPlayerSummary", myCompetitionID);
-    var reqAwards = new dbnHubRequest_CompiledTable("CompetitionAwards", myCompetitionID);
+    var reqStandings = new dbnHubRequest_CompiledTable("Competition", myCompetitionID, "Standings");
+    var reqPowerSummary = new dbnHubRequest_CompiledTable("Competition", myCompetitionID, "PowerSummary");
+    var reqPlayerSummary = new dbnHubRequest_CompiledTable("Competition", myCompetitionID, "PlayerSummary");
+    var reqAwards = new dbnHubRequest_CompiledTable("Competition", myCompetitionID, "Awards");
     var reqGames = new dbnHubRequest_GetGames(null, [myCompetitionID]);
 
     reqs.addRequest([reqCompetitionInfo, reqStandings, reqPowerSummary, reqPlayerSummary, reqAwards, reqGames]);

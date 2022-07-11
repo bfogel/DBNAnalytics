@@ -218,7 +218,7 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $CompetitionIDs);
             }
 
-            case "compgroup": {
+        case "compgroup": {
                 if (!array_key_exists("CompetitionGroupIDs", $parameters)) return MakeErrorResponse("No CompetitionGroupIDs");
                 $CompetitionGroupIDs = $parameters["CompetitionGroupIDs"];
                 if (gettype($CompetitionGroupIDs) != "array") $CompetitionGroupIDs = [$CompetitionGroupIDs];
@@ -231,15 +231,17 @@ function HandleRequest($request)
             }
 
 
-            case "compiledtable": {
-                if (!array_key_exists("Category", $parameters)) return MakeErrorResponse("No Category");
-                $Category = $parameters["Category"];
+        case "compiledtable": {
+                if (!array_key_exists("Entity", $parameters)) return MakeErrorResponse("No Entity");
+                $Entity = $parameters["Entity"];
                 if (!array_key_exists("ItemID", $parameters)) return MakeErrorResponse("No ItemID");
                 $ItemID = $parameters["ItemID"];
+                if (!array_key_exists("Category", $parameters)) return MakeErrorResponse("No Category");
+                $Category = $parameters["Category"];
 
                 $sql = "SELECT * FROM CompiledTable";
-                $sql .= " WHERE Category = ? AND ItemID = ?";
-                $vals = [$Category, $ItemID];
+                $sql .= " WHERE Entity = ? AND Category = ? AND ItemID = ?";
+                $vals = [$Entity, $ItemID, $Category];
 
                 return GetResultsetAsJSON($sql, $vals);
             }

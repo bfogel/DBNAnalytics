@@ -437,9 +437,14 @@ class dbnHubRequest_UserInfo extends bfDataRequest {
   }
 }
 
-class dbnCompiledTable { Category; ItemID; TableJSON; }
+class dbnCompiledTable {
+	/**@type{string}*/ Entity;
+	/**@type{number}*/ ItemID;
+	/**@type{string}*/ Category;
+	/**@type{string}*/ TableJSON;
+}
 class dbnHubRequest_CompiledTable extends bfDataRequest {
-  constructor(category = "", itemid = 0) { super("compiledtable", { "Category": category, "ItemID": itemid }); }
+  constructor(entity = "", itemid = 0, category = "") { super("compiledtable", { "Entity": entity, "ItemID": itemid, "Category": category }); }
 
   /** @type {dbnCompiledTable} */
   #CompiledTable;
