@@ -5,24 +5,58 @@
  * @typedef {import('./DBNGames.js')}
  */
 
-/** @type{int|null} */
-var myCompetitionGroupID = null;
+/** @type{string|null} */ var myGroupType = null;
+/** @type{int|null} */ var myGroupID = null;
+
+class GroupInfo {
+
+    constructor(entity, itemid) {
+        this.Entity = entity;
+        this.ItemID = itemid;
+
+        switch (this.Entity) {
+            case "CompetitionSeries": this.Request=new dbnhubre; break;
+            case "CustomCompetitionGroup": entity = "CustomCompetitionGroup"; break;
+            case "DBNIQ": entity = "DBNIQ"; break;
+            default: break;
+        }
+    }
+
+	/**@type{string}*/ Entity;
+	/**@type{number}*/ ItemID;
+
+    /**@type{bfDataRequest}*/ Request;
+
+}
 
 function MakePage() {
     var urlparams = new URLSearchParams(window.location.search);
-    if (urlparams.has("CompetitionGroupID")) myCompetitionGroupID = Number.parseInt(urlparams.get("CompetitionGroupID"));
-    if ("CompetitionGroupID" in myHub.Parameters) myCompetitionGroupID = myHub.Parameters["CompetitionGroupID"];
+
+    if (urlparams.has("GroupID")) myGroupID = Number.parseInt(urlparams.get("GroupID"));
+    if ("GroupID" in myHub.Parameters) myGroupID = myHub.Parameters["GroupID"];
+    if (urlparams.has("GroupType")) myGroupType = urlparams.get("GroupType");
+    if ("GroupType" in myHub.Parameters) myGroupType = myHub.Parameters["GroupType"];
+
+    var entity = "";
+    switch (myGroupType) {
+        case "CS": entity = "CompetitionSeries"; break;
+        case "CG": entity = "CustomCompetitionGroup"; break;
+        case "DBNIQ": entity = "DBNIQ"; break;
+        default: break;
+    }
+
+    if (entity == "") throw "Group type " + myGroupType + " not recognized";
 
     var reqs = myHub.MakeRequestList();
-    var reqGroupInfo = new dbnHubRequest_CompetitionGroup(myCompetitionGroupID);
-    var reqStandings = new dbnHubRequest_CompiledTable("CompetitionGroup_Standings", myCompetitionGroupID);
-    var reqCompetitions = new dbnHubRequest_CompiledTable("CompetitionGroup_CompetitionList", myCompetitionGroupID);
-    var reqStatistics = new dbnHubRequest_CompiledTable("CompetitionGroup_Statistics", myCompetitionGroupID);
+    // var reqGroupInfo = new dbnHubRequest_CompetitionGroup(myCompetitionGroupID);
+    var reqStandings = new dbnHubRequest_CompiledTable(entity, myGroupID, "Standings");
+    var reqCompetitions = new dbnHubRequest_CompiledTable(entity, myGroupID, "CompetitionList");
+    var reqStatistics = new dbnHubRequest_CompiledTable(entity, myGroupID, "Statistics");
 
-    reqs.addRequest([reqGroupInfo, reqStandings, reqCompetitions, reqStatistics]);
+    reqs.addRequest([reqStandings, reqCompetitions, reqStatistics]);
 
     var div = dbnHere().addDiv();
-    div.addText(myCompetitionGroupID);
+    div.addText(entity + " " + myGroupID);
     div.addText("Loading...");
 
     reqs.Send();
@@ -30,21 +64,16 @@ function MakePage() {
 
     div.innerHTML = "";
 
-    var groupinfo = reqGroupInfo.ResponseToObjects()[0];
-    var card = div.addTitleCard(groupinfo.Label);
+    // var groupinfo = reqGroupInfo.ResponseToObjects()[0];
+    var card = div.addTitleCard("Add name here");
     card.style = "text-align: center";
 
-    // var tabs = div.addTabs();
-    // tabs.addTab("Standings", reqStandings.MakeUITable());
-    // if (reqAwards.CompiledTable) tabs.addTab("Awards", reqAwards.MakeUITable());
+    var tabs = div.addTabs();
+    if (reqCompetitions.CompiledTable) tabs.addTab("Competitions", reqCompetitions.MakeUITable());
+    if (reqStandings.CompiledTable) tabs.addTab("Standings", reqStandings.MakeUITable());
+    if (reqStatistics.CompiledTable) tabs.addTab("Statistics", reqStatistics.MakeUITable());
 
-    // var divStats = new dbnDiv();
-    // divStats.addRange([reqPowerSummary.MakeUITable(), reqPlayerSummary.MakeUITable()]);
-    // tabs.addTab("Statistics", divStats);
-
-    // tabs.addTab("Games", MakeGameList(reqGames.ResponseToObjects()));
-
-    // tabs.SelectTabByIndex(0);
+    tabs.SelectTabByIndex(0);
 
 
 }
@@ -97,50 +126,3 @@ function MakeGameList(games) {
 
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-/** @type {CompetitionController} */
-var myCompetition;
-
-function MakeAuctionTab(competitionid) {
-    var ret = dbnHere().addDiv();
-
-    //NOTE: These requests should be modified to take a CompetitionID
-    var reqs = myHub.MakeRequestList();
-    var reqSeeds = new dbnHubRequest_CompetitionPlayerSeed(true);
-    var reqSchedule = new dbnHubRequest_CompetitionPlayerSchedule(true);
-    var reqBids = new dbnHubRequest_Bids(true);
-
-    reqs.addRequest([reqSeeds, reqSchedule, reqBids]);
-
-    reqs.Send();
-
-    if (!reqs.Success) { reqs.ReportToConsole(); return; }
-
-    //Passed data retrieval
-
-    var allseeds = reqSeeds.ResponseToObjects();
-    var allschedules = reqSchedule.ResponseToObjects();
-    var allbids = reqBids.ResponseToObjects();
-
-    //Get competition
-    var seeds = allseeds.filter(x => x.CompetitionID == competitionid);
-    if (seeds.length == 0) return;
-
-    myCompetition = new CompetitionAuctionController(seeds[0].CompetitionID, seeds[0].CompetitionName);
-
-    myCompetition.Manager = PowerBidManager.GetManagerForCompetition(myCompetition.CompetitionID);
-
-    myCompetition.Seeds = allseeds.filter(x => x.CompetitionID == myCompetition.CompetitionID);
-    myCompetition.Seeds.sort((a, b) => a.Seed - b.Seed);
-
-    myCompetition.Rounds = [];
-    allschedules.forEach(x => { if (!myCompetition.Rounds.includes(x.Round)) myCompetition.Rounds.push(x.Round); });
-    myCompetition.Rounds.sort();
-
-    myCompetition.Schedules = allschedules.filter(x => x.CompetitionID == myCompetition.CompetitionID);
-
-    myCompetition.MakeBidSets(allbids);
-
-    ret.appendChild(myCompetition.MakeUI());
-
-    return ret;
-}
