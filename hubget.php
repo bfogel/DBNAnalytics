@@ -243,7 +243,7 @@ function HandleRequest($request)
             }
 
 
-        case "compiledtable": {
+        case "CompiledTable": {
                 if (!array_key_exists("Entity", $parameters)) return MakeErrorResponse("No Entity");
                 $Entity = $parameters["Entity"];
                 if (!array_key_exists("ItemID", $parameters)) return MakeErrorResponse("No ItemID");

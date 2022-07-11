@@ -461,7 +461,7 @@ class dbnCompiledTable {
 	/**@type{string}*/ TableJSON;
 }
 class dbnHubRequest_CompiledTable extends bfDataRequest {
-  constructor(entity = "", itemid = 0, category = "") { super("compiledtable", { "Entity": entity, "ItemID": itemid, "Category": category }); }
+  constructor(entity = "", itemid = 0, category = "") { super("CompiledTable", { "Entity": entity, "ItemID": itemid, "Category": category }); }
 
   /** @type {dbnCompiledTable} */
   #CompiledTable;

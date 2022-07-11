@@ -20,12 +20,20 @@ class GroupInfo {
             case "DBNIQ": throw "not implemented"; break;
             default: throw "Entity type not recognized";
         }
+
+        // var reqStandings = new dbnHubRequest_CompiledTable(entity, myGroupID, "Standings");
+        // var reqCompetitions = new dbnHubRequest_CompiledTable(entity, myGroupID, "CompetitionList");
+        // var reqStatistics = new dbnHubRequest_CompiledTable(entity, myGroupID, "Statistics");
+
     }
 
 	/**@type{string}*/ Entity;
 	/**@type{number}*/ ItemID;
 
-    /**@type{bfDataRequest}*/ Request;
+    /**@type{bfDataRequest}*/ InfoRequest;
+    // /**@type{dbnHubRequest_CompiledTable}*/ StandingsRequest;
+    // /**@type{dbnHubRequest_CompiledTable}*/ CompetitionsRequest;
+    // /**@type{dbnHubRequest_CompiledTable}*/ StatisticsRequest;
 
 }
 
@@ -50,16 +58,16 @@ function MakePage() {
     myGroupInfo = new GroupInfo(grouptype, groupid);
 
     var reqs = myHub.MakeRequestList();
-    var reqStandings = new dbnHubRequest_CompiledTable(entity, myGroupID, "Standings");
-    var reqCompetitions = new dbnHubRequest_CompiledTable(entity, myGroupID, "CompetitionList");
-    var reqStatistics = new dbnHubRequest_CompiledTable(entity, myGroupID, "Statistics");
+    var reqStandings = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "Standings");
+    var reqCompetitions = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "CompetitionList");
+    var reqStatistics = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "Statistics");
 
-    if (myGroupInfo.Request) reqs.addRequest(myGroupInfo.Request);
+    if (myGroupInfo.InfoRequest) reqs.addRequest(myGroupInfo.InfoRequest);
     reqs.addRequest([reqStandings, reqCompetitions, reqStatistics]);
     reqs.ReportToConsole();
 
     var div = dbnHere().addDiv();
-    div.addText(entity + " " + myGroupID);
+    //div.addText(entity + " " + myGroupID);
     div.addText("Loading...");
 
     reqs.Send();
