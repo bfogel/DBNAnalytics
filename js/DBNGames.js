@@ -405,6 +405,23 @@ class dbnHubRequest_Competition extends bfDataRequest {
 
 //#endregion
 
+//#region CompetitionSeries
+
+class dbnCompetitionSeries {
+	/**@type{number}*/ CompetitionSeriesID;
+	/**@type{string}*/ CompetitionSeriesName;
+	/**@type{number}*/ CompetitionSeriesType;
+	get CompetitionSeriesType_Name(){return CompetitionSeriesTypeEnumFromID(this.CompetitionSeriesType);}
+	/**@type{boolean}*/ IsPrivate;
+}
+class dbnHubRequest_CompetitionSeries extends bfDataRequest {
+  constructor(pCompetitionSeriesIDs) { super("CompetitionSeries", { "CompetitionSeriesIDs": pCompetitionSeriesIDs }); }
+  /** @returns {dbnCompetitionSeries[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionSeries()); }
+}
+
+//#endregion
+
 //#region CompetitionGroup
 
 class dbnCompetitionGroup {

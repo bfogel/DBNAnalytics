@@ -5,8 +5,8 @@
  * @typedef {import('./DBNGames.js')}
  */
 
-/** @type{string|null} */ var myGroupType = null;
-/** @type{int|null} */ var myGroupID = null;
+
+/** @type{GroupInfo} */ var myGroupInfo = null;
 
 class GroupInfo {
 
@@ -15,10 +15,10 @@ class GroupInfo {
         this.ItemID = itemid;
 
         switch (this.Entity) {
-            case "CompetitionSeries": this.Request=new dbnhubre; break;
-            case "CustomCompetitionGroup": entity = "CustomCompetitionGroup"; break;
-            case "DBNIQ": entity = "DBNIQ"; break;
-            default: break;
+            case "CompetitionSeries": this.Request = new dbnHubRequest_CompetitionSeries(this.ItemID); break;
+            case "CustomCompetitionGroup": throw "not implemented"; break;
+            case "DBNIQ": throw "not implemented"; break;
+            default: throw "Entity type not recognized";
         }
     }
 
@@ -32,28 +32,31 @@ class GroupInfo {
 function MakePage() {
     var urlparams = new URLSearchParams(window.location.search);
 
-    if (urlparams.has("GroupID")) myGroupID = Number.parseInt(urlparams.get("GroupID"));
-    if ("GroupID" in myHub.Parameters) myGroupID = myHub.Parameters["GroupID"];
-    if (urlparams.has("GroupType")) myGroupType = urlparams.get("GroupType");
-    if ("GroupType" in myHub.Parameters) myGroupType = myHub.Parameters["GroupType"];
+    var groupid = 0; var grouptype = "";
 
-    var entity = "";
-    switch (myGroupType) {
-        case "CS": entity = "CompetitionSeries"; break;
-        case "CG": entity = "CustomCompetitionGroup"; break;
-        case "DBNIQ": entity = "DBNIQ"; break;
+    if (urlparams.has("GroupID")) groupid = Number.parseInt(urlparams.get("GroupID"));
+    if ("GroupID" in myHub.Parameters) groupid = myHub.Parameters["GroupID"];
+
+    if (urlparams.has("GroupType")) grouptype = urlparams.get("GroupType");
+    if ("GroupType" in myHub.Parameters) grouptype = myHub.Parameters["GroupType"];
+
+    switch (grouptype) {
+        case "CS": grouptype = "CompetitionSeries"; break;
+        case "CG": grouptype = "CustomCompetitionGroup"; break;
+        case "DBNIQ": grouptype = "DBNIQ"; break;
         default: break;
     }
 
-    if (entity == "") throw "Group type " + myGroupType + " not recognized";
+    myGroupInfo = new GroupInfo(grouptype, groupid);
 
     var reqs = myHub.MakeRequestList();
-    // var reqGroupInfo = new dbnHubRequest_CompetitionGroup(myCompetitionGroupID);
     var reqStandings = new dbnHubRequest_CompiledTable(entity, myGroupID, "Standings");
     var reqCompetitions = new dbnHubRequest_CompiledTable(entity, myGroupID, "CompetitionList");
     var reqStatistics = new dbnHubRequest_CompiledTable(entity, myGroupID, "Statistics");
 
+    if (myGroupInfo.Request) reqs.addRequest(myGroupInfo.Request);
     reqs.addRequest([reqStandings, reqCompetitions, reqStatistics]);
+    reqs.ReportToConsole();
 
     var div = dbnHere().addDiv();
     div.addText(entity + " " + myGroupID);

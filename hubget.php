@@ -218,6 +218,18 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $CompetitionIDs);
             }
 
+        case "CompetitionSeries": {
+                if (!array_key_exists("CompetitionSeriesIDs", $parameters)) return MakeErrorResponse("No CompetitionSeriesIDs");
+                $CompetitionSeriesIDs = $parameters["CompetitionSeriesIDs"];
+                if (gettype($CompetitionSeriesIDs) != "array") $CompetitionSeriesIDs = [$CompetitionSeriesIDs];
+
+                $sql = "SELECT CS.*";
+                $sql .= " FROM CompetitionSeries as CS";
+                $sql .= " WHERE CompetitionGroupID IN (" . str_repeat('?,', count($CompetitionSeriesIDs) - 1) . "?)";
+
+                return GetResultsetAsJSON($sql, $CompetitionSeriesIDs);
+            }
+
         case "compgroup": {
                 if (!array_key_exists("CompetitionGroupIDs", $parameters)) return MakeErrorResponse("No CompetitionGroupIDs");
                 $CompetitionGroupIDs = $parameters["CompetitionGroupIDs"];
