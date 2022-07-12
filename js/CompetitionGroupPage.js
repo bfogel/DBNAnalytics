@@ -90,6 +90,8 @@ function MakePage() {
 
     // var groupinfo = reqGroupInfo.ResponseToObjects()[0];
     var card = div.addTitleCard(myGroupInfo.Label);
+    document.title = myGroupInfo.Label;
+
     card.style = "text-align: center";
 
     var tabs = div.addTabs();
