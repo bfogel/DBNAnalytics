@@ -230,6 +230,18 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $CompetitionSeriesIDs);
             }
 
+        case "CompetitionSeriesByRoot": {
+                if (!array_key_exists("RootKey", $parameters)) return MakeErrorResponse("RootKey");
+                $RootKey = $parameters["RootKey"];
+
+                $sql = "SELECT CS.*";
+                $sql .= " FROM CompetitionSeries as CS";
+                //$sql .= " WHERE CompetitionSeriesID IN (" . str_repeat('?,', count($CompetitionSeriesIDs) - 1) . "?)";
+
+                // return GetResultsetAsJSON($sql, $CompetitionSeriesIDs);
+                return GetResultsetAsJSON($sql);
+            }
+
         case "CustomCompetitionGroup": {
                 if (!array_key_exists("CustomCompetitionGroupIDs", $parameters)) return MakeErrorResponse("No CustomCompetitionGroupIDs");
                 $CompetitionGroupIDs = $parameters["CustomCompetitionGroupIDs"];

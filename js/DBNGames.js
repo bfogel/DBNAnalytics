@@ -411,11 +411,11 @@ class dbnCompetitionSeries {
 	/**@type{number}*/ CompetitionSeriesID;
 	/**@type{string}*/ CompetitionSeriesName;
 	/**@type{number}*/ CompetitionSeriesType;
-	get CompetitionSeriesType_Name(){return CompetitionSeriesTypeEnumFromID(this.CompetitionSeriesType);}
+  get CompetitionSeriesType_Name() { return CompetitionSeriesTypeEnumFromID(this.CompetitionSeriesType); }
 	/**@type{boolean}*/ IsPrivate;
 }
 class dbnHubRequest_CompetitionSeries extends bfDataRequest {
-  constructor(pCompetitionSeriesIDs) { super("CompetitionSeries", { "CompetitionSeriesIDs": pCompetitionSeriesIDs }); }
+  constructor(pCompetitionSeriesIDs, pRootKey) { super("CompetitionSeries", { "CompetitionSeriesIDs": pCompetitionSeriesIDs, "RootKey": pRootKey }); }
   /** @returns {dbnCompetitionSeries[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionSeries()); }
 }
