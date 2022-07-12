@@ -19,7 +19,7 @@ class GroupInfo {
         switch (this.Entity) {
             case CompetitionGroupType.CompetitionSeries: this.InfoRequest = new dbnHubRequest_CompetitionSeries(this.ItemID); break;
             case CompetitionGroupType.CustomCompetitionGroup: throw "not implemented"; break;
-            case CompetitionGroupType.DBNIQ: throw "not implemented"; break;
+            case CompetitionGroupType.DBNIQ: break;
             default: throw "Entity type not recognized";
         }
 

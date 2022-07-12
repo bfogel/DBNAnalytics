@@ -46,7 +46,7 @@ function MakePage() {
 
     var cslink = card.addLink();
     cslink.href = "/competition-group/?GroupType=CS&GroupID=" + compinfo.CompetitionSeries_CompetitionSeriesID;
-    cslink.addText("Go to " + compinfo.CompetitionSeries_CompetitionSeriesName);
+    cslink.addText("Go to " + compinfo.CompetitionSeries_CompetitionSeriesName + " Series");
 
     if (compinfo.DBNIYear) {
         card.addLineBreak();
