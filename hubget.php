@@ -252,7 +252,7 @@ function HandleRequest($request)
                 $Category = $parameters["Category"];
 
                 $sql = "SELECT * FROM CompiledTable";
-                $sql .= " WHERE Entity = ? AND Category = ? AND ItemID = ?";
+                $sql .= " WHERE Entity = ? AND ItemID = ? AND Category = ?";
                 $vals = [$Entity, $ItemID, $Category];
 
                 return MakeErrorResponse($vals);
