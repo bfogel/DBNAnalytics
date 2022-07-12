@@ -255,7 +255,6 @@ function HandleRequest($request)
                 $sql .= " WHERE Entity = ? AND ItemID = ? AND Category = ?";
                 $vals = [$Entity, $ItemID, $Category];
 
-                return MakeErrorResponse($vals);
                 return GetResultsetAsJSON($sql, $vals);
             }
 
