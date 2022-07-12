@@ -18,8 +18,6 @@ function MakePage() {
     if (urlparams.has("CompetitionID")) myCompetitionID = Number.parseInt(urlparams.get("CompetitionID"));
     if ("CompetitionID" in myHub.Parameters) myCompetitionID = myHub.Parameters["CompetitionID"];
 
-    console.log(myCompetitionID);
-
     var reqs = myHub.MakeRequestList();
     var reqCompetitionInfo = new dbnHubRequest_Competition(myCompetitionID);
     var reqStandings = new dbnHubRequest_CompiledTable("Competition", myCompetitionID, "Standings");
@@ -35,6 +33,7 @@ function MakePage() {
 
     reqs.Send();
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
+    reqCompetitionInfo.ReportToConsole();
 
     div.innerHTML = "";
 

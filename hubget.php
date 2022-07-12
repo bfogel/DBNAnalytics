@@ -202,7 +202,7 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $vars);
             }
 
-        case "competition": {
+        case "Competition": {
                 if (!array_key_exists("CompetitionIDs", $parameters)) return MakeErrorResponse("No CompetitionIDs");
                 $CompetitionIDs = $parameters["CompetitionIDs"];
                 if (gettype($CompetitionIDs) != "array") $CompetitionIDs = [$CompetitionIDs];
@@ -212,7 +212,7 @@ function HandleRequest($request)
                 $sql .= ", P.PlayerName AS Director_PlayerName";
                 $sql .= " FROM Competition AS C";
                 $sql .= " INNER JOIN CompetitionSeries AS CS ON CS.CompetitionSeriesID = C.CompetitionSeries_CompetitionSeriesID";
-                $sql .= " INNER JOIN Player AS P ON P.PlayerID = C.Director_PlayerID";
+                $sql .= " LEFT JOIN Player AS P ON P.PlayerID = C.Director_PlayerID";
                 $sql .= " WHERE CompetitionID IN (" . str_repeat('?,', count($CompetitionIDs) - 1) . "?)";
 
                 return GetResultsetAsJSON($sql, $CompetitionIDs);
