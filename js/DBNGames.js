@@ -415,7 +415,13 @@ class dbnCompetitionSeries {
 	/**@type{boolean}*/ IsPrivate;
 }
 class dbnHubRequest_CompetitionSeries extends bfDataRequest {
-  constructor(pCompetitionSeriesIDs, pRootKey) { super("CompetitionSeries", { "CompetitionSeriesIDs": pCompetitionSeriesIDs, "RootKey": pRootKey }); }
+  constructor(pCompetitionSeriesIDs) { super("CompetitionSeries", { "CompetitionSeriesIDs": pCompetitionSeriesIDs }); }
+  /** @returns {dbnCompetitionSeries[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionSeries()); }
+}
+
+class dbnHubRequest_CompetitionSeriesByRoot extends bfDataRequest {
+  constructor(pRootKey) { super("CompetitionSeriesByRoot", { "RootKey": pRootKey }); }
   /** @returns {dbnCompetitionSeries[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionSeries()); }
 }

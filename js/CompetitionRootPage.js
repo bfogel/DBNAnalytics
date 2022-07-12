@@ -15,7 +15,7 @@ function MakePage() {
     // }
 
     var reqs = myHub.MakeRequestList();
-    var reqSeries = new dbnHubRequest_CompetitionSeries();
+    var reqSeries = new dbnHubRequest_CompetitionSeriesByRoot("hi");
 
     reqs.addRequest([reqSeries]);
 
@@ -40,10 +40,12 @@ function MakePage() {
     // tabs.SelectTabByIndex(0);
 
     var tbl = div.addTable();
-    data = [];
-    reqSeries.ResponseToObjects().forEach(x => {
-        data.push([x.CompetitionSeriesName]);
-    });
+    var data = [];
+    reqSeries.ResponseToObjects()
+        .sort((a, b) => a.CompetitionSeriesName.localeCompare(b.CompetitionSeriesName))
+        .forEach(x => {
+            data.push([x.CompetitionSeriesName]);
+        });
     tbl.Data = data;
     tbl.Generate();
 
