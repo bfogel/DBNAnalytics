@@ -225,19 +225,19 @@ function HandleRequest($request)
 
                 $sql = "SELECT CS.*";
                 $sql .= " FROM CompetitionSeries as CS";
-                $sql .= " WHERE CompetitionGroupID IN (" . str_repeat('?,', count($CompetitionSeriesIDs) - 1) . "?)";
+                $sql .= " WHERE CompetitionSeriesID IN (" . str_repeat('?,', count($CompetitionSeriesIDs) - 1) . "?)";
 
                 return GetResultsetAsJSON($sql, $CompetitionSeriesIDs);
             }
 
-        case "compgroup": {
-                if (!array_key_exists("CompetitionGroupIDs", $parameters)) return MakeErrorResponse("No CompetitionGroupIDs");
-                $CompetitionGroupIDs = $parameters["CompetitionGroupIDs"];
+        case "CustomCompetitionGroup": {
+                if (!array_key_exists("CustomCompetitionGroupIDs", $parameters)) return MakeErrorResponse("No CustomCompetitionGroupIDs");
+                $CompetitionGroupIDs = $parameters["CustomCompetitionGroupIDs"];
                 if (gettype($CompetitionGroupIDs) != "array") $CompetitionGroupIDs = [$CompetitionGroupIDs];
 
                 $sql = "SELECT CG.*";
-                $sql .= " FROM CompetitionGroup AS CG";
-                $sql .= " WHERE CompetitionGroupID IN (" . str_repeat('?,', count($CompetitionGroupIDs) - 1) . "?)";
+                $sql .= " FROM CustomCompetitionGroupIDs AS CG";
+                $sql .= " WHERE CustomCompetitionGroupIDs IN (" . str_repeat('?,', count($CompetitionGroupIDs) - 1) . "?)";
 
                 return GetResultsetAsJSON($sql, $CompetitionGroupIDs);
             }
