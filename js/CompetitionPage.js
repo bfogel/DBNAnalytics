@@ -33,7 +33,6 @@ function MakePage() {
 
     reqs.Send();
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
-    reqs.ReportToConsole();
 
     div.innerHTML = "";
 

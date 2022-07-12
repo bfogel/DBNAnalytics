@@ -8,6 +8,8 @@
 
 /** @type{GroupInfo} */ var myGroupInfo = null;
 
+const CompetitionGroupType = { CompetitionSeries: "CompetitionSeries", CustomCompetitionGroup: "CustomCompetitionGroup", DBNIQ: "DBNIQ" };
+
 class GroupInfo {
 
     constructor(entity, itemid) {
@@ -15,9 +17,9 @@ class GroupInfo {
         this.ItemID = itemid;
 
         switch (this.Entity) {
-            case "CompetitionSeries": this.Request = new dbnHubRequest_CompetitionSeries(this.ItemID); break;
-            case "CustomCompetitionGroup": throw "not implemented"; break;
-            case "DBNIQ": throw "not implemented"; break;
+            case CompetitionGroupType.CompetitionSeries: this.InfoRequest = new dbnHubRequest_CompetitionSeries(this.ItemID); break;
+            case CompetitionGroupType.CustomCompetitionGroup: throw "not implemented"; break;
+            case CompetitionGroupType.DBNIQ: throw "not implemented"; break;
             default: throw "Entity type not recognized";
         }
 
@@ -35,6 +37,18 @@ class GroupInfo {
     // /**@type{dbnHubRequest_CompiledTable}*/ CompetitionsRequest;
     // /**@type{dbnHubRequest_CompiledTable}*/ StatisticsRequest;
 
+    get Label() {
+        switch (this.Entity) {
+            case CompetitionGroupType.CompetitionSeries: {
+                /**@type{dbnHubRequest_CompetitionSeries} */ var req = this.InfoRequest;
+                return req.ResponseToObjects()[0].CompetitionSeriesName;
+            }
+            case CompetitionGroupType.CustomCompetitionGroup: throw "not implemented"; break;
+            case CompetitionGroupType.DBNIQ: return "DBNIQ " + this.ItemID;
+            default: throw "Entity type not recognized";
+        }
+
+    }
 }
 
 function MakePage() {
@@ -64,7 +78,6 @@ function MakePage() {
 
     if (myGroupInfo.InfoRequest) reqs.addRequest(myGroupInfo.InfoRequest);
     reqs.addRequest([reqStandings, reqCompetitions, reqStatistics]);
-    reqs.ReportToConsole();
 
     var div = dbnHere().addDiv();
     //div.addText(entity + " " + myGroupID);
@@ -76,7 +89,7 @@ function MakePage() {
     div.innerHTML = "";
 
     // var groupinfo = reqGroupInfo.ResponseToObjects()[0];
-    var card = div.addTitleCard("Add name here");
+    var card = div.addTitleCard(myGroupInfo.Label);
     card.style = "text-align: center";
 
     var tabs = div.addTabs();
