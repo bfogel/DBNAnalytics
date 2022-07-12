@@ -33,6 +33,7 @@ function MakePage() {
 
     reqs.Send();
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
+    reqs.ReportToConsole();
 
     div.innerHTML = "";
 
@@ -43,11 +44,12 @@ function MakePage() {
     card.addText("Language: " + compinfo.DefaultLanguage);
 
     var tabs = div.addTabs();
-    tabs.addTab("Standings", reqStandings.MakeUITable());
+    if (reqStandings.CompiledTable) tabs.addTab("Standings", reqStandings.MakeUITable());
     if (reqAwards.CompiledTable) tabs.addTab("Awards", reqAwards.MakeUITable());
 
     var divStats = new dbnDiv();
-    divStats.addRange([reqPowerSummary.MakeUITable(), reqPlayerSummary.MakeUITable()]);
+    if (reqPowerSummary.CompiledTable) divStats.add(reqPowerSummary.MakeUITable());
+    if (reqPlayerSummary.CompiledTable) divStats.add(reqPlayerSummary.MakeUITable());
     tabs.addTab("Statistics", divStats);
 
     tabs.addTab("Games", MakeGameList(reqGames.ResponseToObjects()));
