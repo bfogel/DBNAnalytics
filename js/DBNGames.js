@@ -398,7 +398,7 @@ class dbnCompetition {
 	/**@type{string}*/ Note;
 }
 class dbnHubRequest_Competition extends bfDataRequest {
-  constructor(pCompetitionIDs) { super("competition", { "CompetitionIDs": pCompetitionIDs }); }
+  constructor(pCompetitionIDs) { super("Competition", { "CompetitionIDs": pCompetitionIDs }); }
   /** @returns {dbnCompetition[]} */
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetition()); }
 }
