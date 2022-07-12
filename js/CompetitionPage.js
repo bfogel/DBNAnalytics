@@ -38,8 +38,10 @@ function MakePage() {
     div.innerHTML = "";
 
     var compinfo = reqCompetitionInfo.ResponseToObjects()[0];
+    document.title = compinfo.CompetitionName;
+
     var card = div.addTitleCard(compinfo.CompetitionName);
-    if (compinfo.Director_PlayerName) card.addText("Director: " + compinfo.Director_PlayerName); card.addLineBreak();
+    if (compinfo.Director_PlayerName) { card.addText("Director: " + compinfo.Director_PlayerName); card.addLineBreak(); }
     card.addText("Scoring: " + compinfo.DefaultScoringSystem); card.addLineBreak();
     card.addText("Language: " + compinfo.DefaultLanguage); card.addLineBreak();
 
