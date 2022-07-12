@@ -18,6 +18,8 @@ function MakePage() {
     if (urlparams.has("CompetitionID")) myCompetitionID = Number.parseInt(urlparams.get("CompetitionID"));
     if ("CompetitionID" in myHub.Parameters) myCompetitionID = myHub.Parameters["CompetitionID"];
 
+    console.log(myCompetitionID);
+
     var reqs = myHub.MakeRequestList();
     var reqCompetitionInfo = new dbnHubRequest_Competition(myCompetitionID);
     var reqStandings = new dbnHubRequest_CompiledTable("Competition", myCompetitionID, "Standings");
@@ -40,7 +42,18 @@ function MakePage() {
     var card = div.addTitleCard(compinfo.CompetitionName);
     if (compinfo.Director_PlayerName) card.addText("Director: " + compinfo.Director_PlayerName); card.addLineBreak();
     card.addText("Scoring: " + compinfo.DefaultScoringSystem); card.addLineBreak();
-    card.addText("Language: " + compinfo.DefaultLanguage);
+    card.addText("Language: " + compinfo.DefaultLanguage); card.addLineBreak();
+
+    var cslink = card.addLink();
+    cslink.href = "/competition-group/?GroupType=CS&GroupID=" + compinfo.CompetitionSeries_CompetitionSeriesID;
+    cslink.addText("Go to " + compinfo.CompetitionSeries_CompetitionSeriesName);
+
+    if (compinfo.DBNIYear) {
+        card.addLineBreak();
+        var dbnilink = card.addLink();
+        dbnilink.href = "/competition-group/?GroupType=DBNIQ&GroupID=" + compinfo.DBNIYear;
+        dbnilink.addText("Go to DBNI " + compinfo.DBNIYear + " Qualifying");
+    }
 
     var tabs = div.addTabs();
     if (reqStandings.CompiledTable) tabs.addTab("Standings", reqStandings.MakeUITable());
