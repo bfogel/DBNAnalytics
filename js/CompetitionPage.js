@@ -11,7 +11,7 @@
 /** @type{int|null} */
 var myCompetitionID = null;
 
-myHub.Parameters["CompetitionID"] = 4069;
+//myHub.Parameters["CompetitionID"] = 4069;
 
 function MakePage() {
     var urlparams = new URLSearchParams(window.location.search);
