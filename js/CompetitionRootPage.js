@@ -24,7 +24,7 @@ function MakePage() {
 
     // var groupinfo = reqGroupInfo.ResponseToObjects()[0];
     var card = div.addTitleCard("All Competitions");
-    card.addText("A compendium of all series of competitions covered on DBN");
+    card.addText("A compendium of all competitions covered on DBN");
     document.title = "All Competitions";
 
     card.style = "text-align: center";
@@ -48,10 +48,10 @@ function MakePage() {
             .sort((a, b) => a.Label.localeCompare(b.Label))
             .forEach((x, i) => {
                 data.push([x.Label, x.CompetitionCount, x.Earliest, x.Latest]);
-                urls.push(myHub.MakeCompetitionGroupURL(x.GroupType, x.GroupID))
+                urls.push([i, 0, myHub.MakeCompetitionGroupURL(x.GroupType, x.GroupID)])
             });
         tbl.Data = data;
-        tbl.RowUrls = urls;
+        tbl.CellUrls = urls;
         tbl.Generate();
         card.addLineBreak();
     });

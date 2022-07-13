@@ -430,7 +430,7 @@ class dbnHubRequest_CompetitionSeries extends bfDataRequest {
 
 //#region CompetitionGroup
 
-class dbnCompetitionGroup_Info extends dbnCompetitionSeries {
+class dbnCompetitionGroup_Info {
 	/**@type{string}*/ GroupType;
 	/**@type{number}*/ GroupID;
 	/**@type{string}*/ Label;
