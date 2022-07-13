@@ -238,12 +238,11 @@ function HandleRequest($request)
                                 , Count(C.CompetitionID) AS CompetitionCount, Min(C.CompletionDate) AS Earliest, Max(C.CompletionDate) AS Latest
                         FROM CompetitionSeries as CS
                         INNER JOIN Competition AS C ON C.CompetitionSeries_CompetitionSeriesID = CS.CompetitionSeriesID
+                        WHERE CS.RootKey = ?
                         GROUP BY CS.CompetitionSeriesID, CS.CompetitionSeriesName
                         ";
-                //$sql .= " WHERE CompetitionSeriesID IN (" . str_repeat('?,', count($CompetitionSeriesIDs) - 1) . "?)";
 
-                // return GetResultsetAsJSON($sql, $CompetitionSeriesIDs);
-                return GetResultsetAsJSON($sql);
+                return GetResultsetAsJSON($sql, [$RootKey]);
             }
 
         case "CustomCompetitionGroup": {

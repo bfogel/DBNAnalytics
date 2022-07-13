@@ -7,13 +7,6 @@
 
 function MakePage() {
 
-    // switch (grouptype) {
-    //     case "CS": grouptype = "CompetitionSeries"; break;
-    //     case "CG": grouptype = "CustomCompetitionGroup"; break;
-    //     case "DBNIQ": grouptype = "DBNIQ"; break;
-    //     default: break;
-    // }
-
     var reqs = myHub.MakeRequestList();
     var reqSeries = new dbnHubRequest_CompetitionSeriesByRoot("hi");
 
@@ -40,13 +33,17 @@ function MakePage() {
     // tabs.SelectTabByIndex(0);
 
     var tbl = div.addTable();
+    tbl.Headers = ["Series", "#", "Earliest", "Latest"];
     var data = [];
+    var urls = [];
     reqSeries.ResponseToObjects()
         .sort((a, b) => a.CompetitionSeriesName.localeCompare(b.CompetitionSeriesName))
-        .forEach(x => {
-            data.push([x.CompetitionSeriesName]);
+        .forEach((x, i) => {
+            data.push([x.CompetitionSeriesName, x.CompetitionCount, x.Earliest, x.Latest]);
+            urls.push([i, myHub.MakeCompetitionSeriesURL(x.CompetitionSeriesID)])
         });
     tbl.Data = data;
+    tbl.RowUrls = urls;
     tbl.Generate();
 
 }

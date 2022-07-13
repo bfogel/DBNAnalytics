@@ -355,6 +355,10 @@ class dbnHub {
 
     return null;
   }
+
+  MakeCompetitionURL(pCompetitionID) { return "/competition/?CompetitionID=" + pCompetitionID; }
+  MakeCompetitionSeriesURL(pCompetitionSeriesID) { return "/competition-group/?GroupType=CS&GroupID=" + pCompetitionSeriesID; }
+  MakeDBNIQURL(pYear) { return "/competition-group/?GroupType=DBNIQ&GroupID=" + pYear; }
 }
 var myHub = new dbnHub();
 
@@ -420,10 +424,15 @@ class dbnHubRequest_CompetitionSeries extends bfDataRequest {
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionSeries()); }
 }
 
+class dbnCompetitionSeries_Info extends dbnCompetitionSeries {
+	/**@type{number}*/ CompetitionCount;
+	/**@type{string}*/ Earliest;
+	/**@type{string}*/ Latest;
+}
 class dbnHubRequest_CompetitionSeriesByRoot extends bfDataRequest {
   constructor(pRootKey) { super("CompetitionSeriesByRoot", { "RootKey": pRootKey }); }
-  /** @returns {dbnCompetitionSeries[]} */
-  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionSeries()); }
+  /** @returns {dbnCompetitionSeries_Info[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionSeries_Info()); }
 }
 
 //#endregion

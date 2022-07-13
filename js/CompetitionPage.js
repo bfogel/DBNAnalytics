@@ -46,13 +46,13 @@ function MakePage() {
     card.addText("Language: " + compinfo.DefaultLanguage); card.addLineBreak();
 
     var cslink = card.addLink();
-    cslink.href = "/competition-group/?GroupType=CS&GroupID=" + compinfo.CompetitionSeries_CompetitionSeriesID;
+    cslink.href = myHub.MakeCompetitionSeriesURL(compinfo.CompetitionSeries_CompetitionSeriesID);
     cslink.addText("Go to " + compinfo.CompetitionSeries_CompetitionSeriesName + " Series");
 
     if (compinfo.DBNIYear) {
         card.addLineBreak();
         var dbnilink = card.addLink();
-        dbnilink.href = "/competition-group/?GroupType=DBNIQ&GroupID=" + compinfo.DBNIYear;
+        dbnilink.href = myHub.MakeDBNIQURL(compinfo.DBNIYear);
         dbnilink.addText("Go to DBNI " + compinfo.DBNIYear + " Qualifying");
     }
 
