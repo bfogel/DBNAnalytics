@@ -424,29 +424,28 @@ class dbnHubRequest_CompetitionSeries extends bfDataRequest {
   ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionSeries()); }
 }
 
-class dbnCompetitionSeries_Info extends dbnCompetitionSeries {
-	/**@type{number}*/ CompetitionCount;
-	/**@type{string}*/ Earliest;
-	/**@type{string}*/ Latest;
-}
-class dbnHubRequest_CompetitionSeriesByRoot extends bfDataRequest {
-  constructor(pRootKey) { super("CompetitionSeriesByRoot", { "RootKey": pRootKey }); }
-  /** @returns {dbnCompetitionSeries_Info[]} */
-  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionSeries_Info()); }
-}
-
 //#endregion
 
 //#region CompetitionGroup
 
-class dbnCompetitionGroup {
-	/**@type{number}*/ CompetitionGroupID;
+class dbnCompetitionGroup_Info extends dbnCompetitionSeries {
+	/**@type{string}*/ GroupType;
+	/**@type{number}*/ GroupID;
 	/**@type{string}*/ Label;
+	/**@type{number}*/ CompetitionCount;
+	/**@type{string}*/ Earliest;
+	/**@type{string}*/ Latest;
 }
-class dbnHubRequest_CompetitionGroup extends bfDataRequest {
-  constructor(pCompetitionGroupIDs) { super("compgroup", { "CompetitionGroupIDs": pCompetitionGroupIDs }); }
-  /** @returns {dbnCompetitionGroup[]} */
-  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionGroup()); }
+class dbnHubRequest_CompetitionGroup_FromSeriesByRoot extends bfDataRequest {
+  constructor(pRootKey) { super("CompetitionGroup_FromSeriesByRoot", { "RootKey": pRootKey }); }
+  /** @returns {dbnCompetitionGroup_Info[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionGroup_Info()); }
+}
+
+class dbnHubRequest_CompetitionGroup_FromDBNIQs extends bfDataRequest {
+  constructor() { super("CompetitionGroup_FromDBNIQs", {}); }
+  /** @returns {dbnCompetitionGroup_Info[]} */
+  ResponseToObjects() { return super.ResponseToObjects(() => new dbnCompetitionGroup_Info()); }
 }
 
 //#endregion

@@ -8,7 +8,7 @@
 function MakePage() {
 
     var reqs = myHub.MakeRequestList();
-    var reqSeries = new dbnHubRequest_CompetitionSeriesByRoot("hi");
+    var reqSeries = new dbnHubRequest_CompetitionSeriesByRoot("DBN");
 
     reqs.addRequest([reqSeries]);
 

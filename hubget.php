@@ -230,11 +230,11 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $CompetitionSeriesIDs);
             }
 
-        case "CompetitionSeriesByRoot": {
+        case "CompetitionGroup_FromSeriesByRoot": {
                 if (!array_key_exists("RootKey", $parameters)) return MakeErrorResponse("No RootKey");
                 $RootKey = $parameters["RootKey"];
 
-                $sql = "SELECT CS.CompetitionSeriesID, CS.CompetitionSeriesName
+                $sql = "SELECT 'CS' AS GroupType, CS.CompetitionSeriesID AS GroupID, CS.CompetitionSeriesName AS Label
                                 , Count(C.CompetitionID) AS CompetitionCount, Min(C.CompletionDate) AS Earliest, Max(C.CompletionDate) AS Latest
                         FROM CompetitionSeries as CS
                         INNER JOIN Competition AS C ON C.CompetitionSeries_CompetitionSeriesID = CS.CompetitionSeriesID
@@ -243,6 +243,17 @@ function HandleRequest($request)
                         ";
 
                 return GetResultsetAsJSON($sql, [$RootKey]);
+            }
+
+        case "CompetitionGroup_FromDBNIQs": {
+                $sql = "SELECT 'DBNIQ' AS GroupType, GroupTypeC.DBNIYear AS GroupID, CONCAT('DBNI ', C.DBNIYear, ' ') as Label
+                                , Count(C.CompetitionID) AS CompetitionCount, Min(C.CompletionDate) AS Earliest, Max(C.CompletionDate) AS Latest
+                        FROM Competition AS C
+                        WHERE NOT C.DBNIYear IS NULL
+                        GROUP BY C.DBNIYear
+                        ";
+
+                return GetResultsetAsJSON($sql);
             }
 
         case "CustomCompetitionGroup": {
