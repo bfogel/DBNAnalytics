@@ -34,10 +34,12 @@ function MakePage() {
     // if (reqStatistics.CompiledTable) tabs.addTab("Statistics", reqStatistics.MakeUITable());
     // tabs.SelectTabByIndex(0);
 
-    var groups = [reqSeries.ResponseToObjects(), reqDBNIQ.ResponseToObjects()];
+    card=div.addCard();
+
+    var groups = [reqDBNIQ.ResponseToObjects(), reqSeries.ResponseToObjects()];
 
     groups.forEach(group => {
-        var tbl = div.addTable();
+        var tbl = card.addTable();
         tbl.Headers = ["Series", "#", "Earliest", "Latest"];
         var data = [];
         var urls = [];
@@ -50,6 +52,7 @@ function MakePage() {
         tbl.Data = data;
         tbl.RowUrls = urls;
         tbl.Generate();
+        card.addLineBreak();
     });
 }
 MakePage();

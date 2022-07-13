@@ -246,7 +246,7 @@ function HandleRequest($request)
             }
 
         case "CompetitionGroup_FromDBNIQs": {
-                $sql = "SELECT 'DBNIQ' AS GroupType, C.DBNIYear AS GroupID, CONCAT('DBNI ', C.DBNIYear, ' ') as Label
+                $sql = "SELECT 'DBNIQ' AS GroupType, C.DBNIYear AS GroupID, CONCAT('DBNI ', C.DBNIYear, ' Qualifying') as Label
                                 , Count(C.CompetitionID) AS CompetitionCount, Min(C.CompletionDate) AS Earliest, Max(C.CompletionDate) AS Latest
                         FROM Competition AS C
                         WHERE NOT C.DBNIYear IS NULL
