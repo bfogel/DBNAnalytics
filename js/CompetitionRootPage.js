@@ -47,7 +47,7 @@ function MakePage() {
             .sort((a, b) => a.Label.localeCompare(b.Label))
             .forEach((x, i) => {
                 data.push([x.Label, x.CompetitionCount, x.Earliest, x.Latest]);
-                urls.push([i, myHub.MakeCompetitionGroupURL(x.GroupType, x.GroupID)])
+                urls.push(myHub.MakeCompetitionGroupURL(x.GroupType, x.GroupID))
             });
         tbl.Data = data;
         tbl.RowUrls = urls;
