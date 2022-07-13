@@ -32,7 +32,7 @@ function dbn_GetHTMLWithConn($conn, $category, $id) {
 class dbnResponder
 {
 
-    public $Version = 58;
+    public $Version = 59;
 
     public $CSS_DBNAnalytics = true;
     public $CSS_PowerAuction = false;
@@ -53,6 +53,7 @@ class dbnResponder
 
     public $JS_CompetitionPage = false;
     public $JS_CompetitionGroupPage = false;
+    public $JS_CompetitionRootPage = false;
 
     public function Generate()
     {
@@ -82,6 +83,7 @@ class dbnResponder
 
         if ($this->JS_CompetitionPage) array_push($js_page, "CompetitionPage");
         if ($this->JS_CompetitionGroupPage) array_push($js_page, "CompetitionGroupPage");
+        if ($this->JS_CompetitionRootPage) array_push($js_page, "CompetitionRootPage");
 
         $ret = "";
         foreach ($css as $value) {

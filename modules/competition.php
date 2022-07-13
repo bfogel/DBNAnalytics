@@ -43,3 +43,11 @@ function dbnCompetitionGroup_GetPage($atts = [], $content = null, $tag = '')
     $responder->JS_CompetitionGroupPage = true;
     return $responder->Generate();
 }
+
+add_shortcode( 'dbnCompetitionRootPage', 'dbnCompetitionRoot_GetPage' );
+function dbnCompetitionRoot_GetPage($atts = [], $content = null, $tag = '')
+{
+    $responder = new dbnResponder();
+    $responder->JS_CompetitionRootPage = true;
+    return $responder->Generate();
+}
