@@ -34,7 +34,7 @@ function MakePage() {
     // if (reqStatistics.CompiledTable) tabs.addTab("Statistics", reqStatistics.MakeUITable());
     // tabs.SelectTabByIndex(0);
 
-    card=div.addCard();
+    card = div.addCard();
 
     var groups = [reqDBNIQ.ResponseToObjects(), reqSeries.ResponseToObjects()];
 
@@ -47,7 +47,7 @@ function MakePage() {
             .sort((a, b) => a.Label.localeCompare(b.Label))
             .forEach((x, i) => {
                 data.push([x.Label, x.CompetitionCount, x.Earliest, x.Latest]);
-                urls.push([i, myHub.MakeCompetitionSeriesURL(x.GroupID)])
+                urls.push([i, myHub.MakeCompetitionGroupURL(x.GroupType, x.GroupID)])
             });
         tbl.Data = data;
         tbl.RowUrls = urls;

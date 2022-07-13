@@ -357,8 +357,9 @@ class dbnHub {
   }
 
   MakeCompetitionURL(pCompetitionID) { return "/competition/?CompetitionID=" + pCompetitionID; }
-  MakeCompetitionSeriesURL(pCompetitionSeriesID) { return "/competition-group/?GroupType=CS&GroupID=" + pCompetitionSeriesID; }
-  MakeDBNIQURL(pYear) { return "/competition-group/?GroupType=DBNIQ&GroupID=" + pYear; }
+  MakeCompetitionGroupURL(pGroupType, pGroupID) { return "/competition-group/?GroupType=" + pGroupType + "&GroupID=" + pGroupID; }
+  MakeCompetitionSeriesURL(pCompetitionSeriesID) { return this.MakeCompetitionGroupURL("CS", pCompetitionSeriesID); }
+  MakeDBNIQURL(pYear) { return this.MakeCompetitionGroupURL("DBNIQ", pYear); }
 }
 var myHub = new dbnHub();
 
