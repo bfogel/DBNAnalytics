@@ -47,7 +47,18 @@ class GroupInfo {
             case CompetitionGroupType.DBNIQ: return "DBNI " + this.ItemID + " Qualifying";
             default: throw "Entity type not recognized";
         }
+    }
 
+    get RootKey() {
+        switch (this.Entity) {
+            case CompetitionGroupType.CompetitionSeries: {
+                /**@type{dbnHubRequest_CompetitionSeries} */ var req = this.InfoRequest;
+                return req.ResponseToObjects()[0].RootKey;
+            }
+            case CompetitionGroupType.CustomCompetitionGroup: throw "not implemented"; break;
+            case CompetitionGroupType.DBNIQ: return "DBN";
+            default: throw "Entity type not recognized";
+        }
     }
 }
 
@@ -63,9 +74,9 @@ function MakePage() {
     if ("GroupType" in myHub.Parameters) grouptype = myHub.Parameters["GroupType"];
 
     switch (grouptype) {
-        case "CS": grouptype = "CompetitionSeries"; break;
-        case "CG": grouptype = "CustomCompetitionGroup"; break;
-        case "DBNIQ": grouptype = "DBNIQ"; break;
+        case "CS": grouptype = CompetitionGroupType.CompetitionSeries; break;
+        case "CG": grouptype = CompetitionGroupType.CustomCompetitionGroup; break;
+        case "DBNIQ": grouptype = CompetitionGroupType.DBNIQ; break;
         default: break;
     }
 
@@ -91,7 +102,9 @@ function MakePage() {
     // var groupinfo = reqGroupInfo.ResponseToObjects()[0];
     var card = div.addTitleCard(myGroupInfo.Label);
     document.title = myGroupInfo.Label;
-
+    var alllink = card.addLink();
+    alllink.href = myHub.MakeCompetitionRootURL("DBN");
+    if (myGroupInfo.RootKey == "DBN") alllink.addText("Go to All Competitions");
     card.style = "text-align: center";
 
     var tabs = div.addTabs();

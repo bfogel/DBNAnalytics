@@ -24,6 +24,7 @@ function MakePage() {
 
     // var groupinfo = reqGroupInfo.ResponseToObjects()[0];
     var card = div.addTitleCard("All Competitions");
+    card.addText("A compendium of all series of competitions covered on DBN");
     document.title = "All Competitions";
 
     card.style = "text-align: center";

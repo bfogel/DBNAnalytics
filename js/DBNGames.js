@@ -360,6 +360,7 @@ class dbnHub {
   MakeCompetitionGroupURL(pGroupType, pGroupID) { return "/competition-group/?GroupType=" + pGroupType + "&GroupID=" + pGroupID; }
   MakeCompetitionSeriesURL(pCompetitionSeriesID) { return this.MakeCompetitionGroupURL("CS", pCompetitionSeriesID); }
   MakeDBNIQURL(pYear) { return this.MakeCompetitionGroupURL("DBNIQ", pYear); }
+  MakeCompetitionRootURL(pRootKey) { return "/competition-root/?RootKey=" + pRootKey; }
 }
 var myHub = new dbnHub();
 
@@ -417,7 +418,7 @@ class dbnCompetitionSeries {
 	/**@type{string}*/ CompetitionSeriesName;
 	/**@type{number}*/ CompetitionSeriesType;
   get CompetitionSeriesType_Name() { return CompetitionSeriesTypeEnumFromID(this.CompetitionSeriesType); }
-	/**@type{boolean}*/ IsPrivate;
+	/**@type{string}*/ RootKey;
 }
 class dbnHubRequest_CompetitionSeries extends bfDataRequest {
   constructor(pCompetitionSeriesIDs) { super("CompetitionSeries", { "CompetitionSeriesIDs": pCompetitionSeriesIDs }); }
