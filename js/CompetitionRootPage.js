@@ -8,9 +8,11 @@
 function MakePage() {
 
     var reqs = myHub.MakeRequestList();
-    var reqSeries = new dbnHubRequest_CompetitionSeriesByRoot("DBN");
+    var reqSeries = new dbnHubRequest_CompetitionGroup_FromSeriesByRoot("DBN");
+    var reqDBNIQ = new dbnHubRequest_CompetitionGroup_FromDBNIQs();
 
-    reqs.addRequest([reqSeries]);
+    reqs.addRequest(reqSeries);
+    reqs.addRequest(reqDBNIQ);
 
     var div = dbnHere().addDiv();
     div.addText("Loading...");
@@ -21,8 +23,8 @@ function MakePage() {
     div.innerHTML = "";
 
     // var groupinfo = reqGroupInfo.ResponseToObjects()[0];
-    var card = div.addTitleCard("DBN Competitions");
-    document.title = "DBN Competitions";
+    var card = div.addTitleCard("All Competitions");
+    document.title = "All Competitions";
 
     card.style = "text-align: center";
 
@@ -32,20 +34,23 @@ function MakePage() {
     // if (reqStatistics.CompiledTable) tabs.addTab("Statistics", reqStatistics.MakeUITable());
     // tabs.SelectTabByIndex(0);
 
-    var tbl = div.addTable();
-    tbl.Headers = ["Series", "#", "Earliest", "Latest"];
-    var data = [];
-    var urls = [];
-    reqSeries.ResponseToObjects()
-        .sort((a, b) => a.CompetitionSeriesName.localeCompare(b.CompetitionSeriesName))
-        .forEach((x, i) => {
-            data.push([x.CompetitionSeriesName, x.CompetitionCount, x.Earliest, x.Latest]);
-            urls.push([i, myHub.MakeCompetitionSeriesURL(x.CompetitionSeriesID)])
-        });
-    tbl.Data = data;
-    tbl.RowUrls = urls;
-    tbl.Generate();
+    var groups = [reqSeries.ResponseToObjects(), reqDBNIQ.ResponseToObjects()];
 
+    groups.forEach(group => {
+        var tbl = div.addTable();
+        tbl.Headers = ["Series", "#", "Earliest", "Latest"];
+        var data = [];
+        var urls = [];
+        group
+            .sort((a, b) => a.Label.localeCompare(b.Label))
+            .forEach((x, i) => {
+                data.push([x.Label, x.CompetitionCount, x.Earliest, x.Latest]);
+                urls.push([i, myHub.MakeCompetitionSeriesURL(x.GroupID)])
+            });
+        tbl.Data = data;
+        tbl.RowUrls = urls;
+        tbl.Generate();
+    });
 }
 MakePage();
 
