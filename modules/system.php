@@ -1,38 +1,41 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
 }
 
 include("dataaccess.php");
 
-function dbn_GetHTML($category, $id) {
-	return dbn_GetHTMLWithConn(dbn_GetConnection(), $category, $id);
+function dbn_GetHTML($category, $id)
+{
+    return dbn_GetHTMLWithConn(dbn_GetConnection(), $category, $id);
 }
 
-function dbn_GetHTMLWithConn($conn, $category, $id) {
+function dbn_GetHTMLWithConn($conn, $category, $id)
+{
 
-	$sql = 'SELECT HTML as sHTML
+    $sql = 'SELECT HTML as sHTML
 		FROM CustomHTML
 		WHERE Category = "' . $category . '" AND ID = "' . $id . '"';
-	
-	$result = $conn -> query($sql);
-	
-	if (!$result) {
-		return null;
-	} elseif ($result -> num_rows == 0) {
-		return null;
-	} else {
-		$row = $result -> fetch_assoc();
-		return $row["sHTML"];
-	}
 
+    $result = $conn->query($sql);
+
+    if (!$result) {
+        return null;
+    } elseif ($result->num_rows == 0) {
+        return null;
+    } else {
+        $row = $result->fetch_assoc();
+        return $row["sHTML"];
+    }
 }
 
 class dbnResponder
 {
 
     public $Version = 66;
+
+    public $HubParameters = null;
 
     public $CSS_DBNAnalytics = true;
     public $CSS_PowerAuction = false;
@@ -96,6 +99,14 @@ class dbnResponder
 
         if ($this->JS_PlayerPortal || $this->JS_TDPortal) {
             $ret .= "<script>myHub.Ticket = '" . wp_create_nonce('wp_rest') . "';</script>";
+        }
+
+        if ($this->HubParameters) {
+            $ret .= "<script>";
+            foreach ($this->HubParameters as $key => $value) {
+                $ret .= "  myHub.Parameters[{$key}] = '{$value}';";
+            }
+            $ret .= "</script>";
         }
 
         foreach ($js_page as $value) {

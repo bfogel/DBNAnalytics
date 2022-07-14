@@ -36,8 +36,8 @@ function dbnCompetitionGroup_GetResults()
 add_shortcode('dbnCompetitionPage', 'dbnCompetition_GetPage');
 function dbnCompetition_GetPage($atts = [], $content = null, $tag = '')
 {
-	return json_encode($atts);
 	$responder = new dbnResponder();
+	$responder->HubParameters = $atts;
 	$responder->JS_GameModel = true;
 	$responder->JS_MapView = true;
 	$responder->JS_CompetitionPage = true;
