@@ -317,7 +317,6 @@ class dbnHub {
   MakeRequestList() { return new bfDataRequestList("https://diplobn.com/wp-json/DBNAnalytics/v1/hubget/13"); }
 
   Ticket;
-  DBNRootDescription = "DBNI qualifying events and exhibitions covered by DBN";
 
   /** @type{Object.<string,any>} */
   Parameters = {};
@@ -363,6 +362,9 @@ class dbnHub {
   MakeCompetitionSeriesURL(pCompetitionSeriesID) { return this.MakeCompetitionGroupURL("CS", pCompetitionSeriesID); }
   MakeDBNIQURL(pYear) { return this.MakeCompetitionGroupURL("DBNIQ", pYear); }
   MakeCompetitionRootURL(pRootKey) { return "/competition-root/?RootKey=" + pRootKey; }
+
+  RootDescription = { DBN: "DBNI qualifying events and exhibitions covered by DBN", SBD: "Silent But Deadly" };
+
 }
 var myHub = new dbnHub();
 

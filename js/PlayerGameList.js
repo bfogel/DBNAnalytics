@@ -40,7 +40,7 @@ function MakePage() {
     if (urlparams.has("RootKey")) _RootKey = urlparams.get("RootKey");
 
     var titlecard = dbnHere().addTitleCard("Player Game History");
-    titlecard.addText(myHub.DBNRootDescription);
+    titlecard.addText(myHub.RootDescription[_RootKey]);
 
     cardPlayerComparison = dbnHere().addCard();
     cardPlayerComparison.style = "min-height: 400px";

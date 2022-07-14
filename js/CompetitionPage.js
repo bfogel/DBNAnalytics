@@ -33,7 +33,7 @@ function MakePage() {
 
     reqs.Send();
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
-    reqCompetitionInfo.ReportToConsole();
+    console.log(JSON.parse(reqStandings.CompiledTable.TableJSON));
 
     div.innerHTML = "";
 
