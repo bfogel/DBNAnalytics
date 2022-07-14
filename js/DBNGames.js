@@ -771,8 +771,8 @@ class dbnPlayerList extends dbnDiv {
 //#region Game
 
 class dbnHubRequest_GetGames extends bfDataRequest {
-  constructor(pGameIDs = null, pCompetitionIDs = null, pPlayerIDs = null) {
-    super("getgames", { GameIDs: pGameIDs, CompetitionIDs: pCompetitionIDs, PlayerIDs: pPlayerIDs });
+  constructor(pGameIDs = null, pCompetitionIDs = null, pPlayerIDs = null, pRootKey = null) {
+    super("GetGames", { GameIDs: pGameIDs, CompetitionIDs: pCompetitionIDs, PlayerIDs: pPlayerIDs });
     if (!pGameIDs && !pCompetitionIDs && !pPlayerIDs) throw "Must provide at least one of GameIDs, CompetitionIDs, or PlayerIDs";
   }
   /** @returns {dbnGame[]} */

@@ -43,15 +43,18 @@ function MakePage() {
         var tbl = card.addTable();
         tbl.Headers = ["Series", "#", "Earliest", "Latest"];
         var data = [];
-        var urls = [];
+        var cellurls = [];
+        var rowurls = [];
         group
             .sort((a, b) => a.Label.localeCompare(b.Label))
             .forEach((x, i) => {
                 data.push([x.Label, x.CompetitionCount, x.Earliest, x.Latest]);
-                urls.push([i, 0, myHub.MakeCompetitionGroupURL(x.GroupType, x.GroupID)])
+                cellurls.push([i, 0, myHub.MakeCompetitionGroupURL(x.GroupType, x.GroupID)]);
+                rowurls.push(myHub.MakeCompetitionGroupURL(x.GroupType, x.GroupID));
             });
         tbl.Data = data;
-        tbl.CellUrls = urls;
+        tbl.CellUrls = cellurls;
+        tbl.RowUrls = rowurls;
         tbl.Generate();
         card.addLineBreak();
     });

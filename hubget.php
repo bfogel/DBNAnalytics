@@ -284,14 +284,16 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $vals);
             }
 
-        case "getgames": {
+        case "GetGames": {
                 $GameIDs = null;
                 $CompetitionIDs = null;
                 $PlayerIDs = null;
+                $RootKey = "DBN";
 
                 if (array_key_exists("GameIDs", $parameters)) $GameIDs = $parameters["GameIDs"];
                 if (array_key_exists("CompetitionIDs", $parameters)) $CompetitionIDs = $parameters["CompetitionIDs"];
                 if (array_key_exists("PlayerIDs", $parameters)) $PlayerIDs = $parameters["PlayerIDs"];
+                if (array_key_exists("RootKey", $parameters)) $RootKey = $parameters["RootKey"];
 
                 //return MakeQuerySuccessResponse(!$CompetitionIDs);
 
@@ -321,6 +323,9 @@ function HandleRequest($request)
                         array_push($vals, $pid);
                     }
                 }
+
+                $where = " AND CS.RootKey = ?";
+                array_push($vals, $RootKey);
 
                 $games = GetGames($where, $vals);
 
@@ -559,22 +564,39 @@ function HandleRequest($request)
 
 function GetGames($where, $params)
 {
-    $sql = 'SELECT G.GameID, G.Label, G.EndDate, G.DrawSize, G.GameYearsCompleted, G.GamePlatform_GamePlatformID, G.GamePlatformIdentifier';
-    $sql .= ', C.CompetitionID, C.CompetitionName, C.DBNIYear';
-    $sql .= ', P.PlayerID, P.PlayerName';
-    $sql .= ', CO.CountryName, GCP.Note';
-    $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, GCR.YearOfElimination, GCR.UnexcusedResignation, GCR.SupplyCenters';
-    $sql .= ', GCC.Score, GCC.Rank, GCC.RankScore, GCC.TopShare';
+    // $sql = 'SELECT G.GameID, G.Label, G.EndDate, G.DrawSize, G.GameYearsCompleted, G.GamePlatform_GamePlatformID, G.GamePlatformIdentifier';
+    // $sql .= ', C.CompetitionID, C.CompetitionName, C.DBNIYear';
+    // $sql .= ', P.PlayerID, P.PlayerName';
+    // $sql .= ', CO.CountryName, GCP.Note';
+    // $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, GCR.YearOfElimination, GCR.UnexcusedResignation, GCR.SupplyCenters';
+    // $sql .= ', GCC.Score, GCC.Rank, GCC.RankScore, GCC.TopShare';
 
-    $sql .= ' FROM Game as G';
-    $sql .= ' INNER JOIN Competition as C on G.Competition_CompetitionID = C.CompetitionID';
-    $sql .= ' INNER JOIN GameCountryPlayer as GCP on GCP.Game_GameID = G.GameID';
-    $sql .= ' INNER JOIN GameCountryResult as GCR on GCR.Game_GameID = G.GameID AND GCP.Country_CountryID = GCR.Country_CountryID';
-    $sql .= ' INNER JOIN GameCountryComputations as GCC on GCC.Game_GameID = G.GameID AND GCP.Country_CountryID = GCC.Country_CountryID';
-    $sql .= ' INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID';
-    $sql .= ' INNER JOIN Country as CO on GCP.Country_CountryID = CO.CountryID';
-    $sql .= ' WHERE ' . $where;
-    $sql .= ' ORDER BY G.GameID, CO.CountryName';
+    // $sql .= ' FROM Game as G';
+    // $sql .= ' INNER JOIN Competition as C on G.Competition_CompetitionID = C.CompetitionID';
+    // $sql .= ' INNER JOIN GameCountryPlayer as GCP on GCP.Game_GameID = G.GameID';
+    // $sql .= ' INNER JOIN GameCountryResult as GCR on GCR.Game_GameID = G.GameID AND GCP.Country_CountryID = GCR.Country_CountryID';
+    // $sql .= ' INNER JOIN GameCountryComputations as GCC on GCC.Game_GameID = G.GameID AND GCP.Country_CountryID = GCC.Country_CountryID';
+    // $sql .= ' INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID';
+    // $sql .= ' INNER JOIN Country as CO on GCP.Country_CountryID = CO.CountryID';
+    // $sql .= ' WHERE ' . $where;
+    // $sql .= ' ORDER BY G.GameID, CO.CountryName';
+
+    $sql = "SELECT G.GameID, G.Label, G.EndDate, G.DrawSize, G.GameYearsCompleted, G.GamePlatform_GamePlatformID, G.GamePlatformIdentifier
+                , C.CompetitionID, C.CompetitionName, C.DBNIYear
+                , P.PlayerID, P.PlayerName
+                , CO.CountryName, GCP.Note
+                , GCR.InGameAtEnd, GCR.CenterCount, GCR.YearOfElimination, GCR.UnexcusedResignation, GCR.SupplyCenters
+                , GCC.Score, GCC.Rank, GCC.RankScore, GCC.TopShare
+            FROM Game as G
+            INNER JOIN Competition as C on G.Competition_CompetitionID = C.CompetitionID
+            INNER JOIN CompetitionSeries as CS on C.CompetitionSeries_CompetitionSeriesID = CS.CompetitionSeriesID
+            INNER JOIN GameCountryPlayer as GCP on GCP.Game_GameID = G.GameID
+            INNER JOIN GameCountryResult as GCR on GCR.Game_GameID = G.GameID AND GCP.Country_CountryID = GCR.Country_CountryID
+            INNER JOIN GameCountryComputations as GCC on GCC.Game_GameID = G.GameID AND GCP.Country_CountryID = GCC.Country_CountryID
+            INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID
+            INNER JOIN Country as CO on GCP.Country_CountryID = CO.CountryID
+            WHERE {$where}
+            ORDER BY G.GameID, CO.CountryName";
 
     $rs = new dbnResultSet($sql, $params);
 
