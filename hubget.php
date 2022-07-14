@@ -293,7 +293,9 @@ function HandleRequest($request)
                 if (array_key_exists("GameIDs", $parameters)) $GameIDs = $parameters["GameIDs"];
                 if (array_key_exists("CompetitionIDs", $parameters)) $CompetitionIDs = $parameters["CompetitionIDs"];
                 if (array_key_exists("PlayerIDs", $parameters)) $PlayerIDs = $parameters["PlayerIDs"];
-                if (array_key_exists("RootKey", $parameters)) $RootKey = $parameters["RootKey"];
+
+                if (!array_key_exists("RootKey", $parameters)) return MakeErrorResponse("No RootKey");
+                $RootKey = $parameters["RootKey"];
 
                 //return MakeQuerySuccessResponse(!$CompetitionIDs);
 
@@ -338,8 +340,8 @@ function HandleRequest($request)
                 $playerids = json_decode($parameters["PlayerIDs"]);
                 if (!is_array($playerids)) return MakeErrorResponse("No players");
 
-                $RootKey = "DBN";
-                if (array_key_exists("RootKey", $parameters)) $RootKey = $parameters["RootKey"];
+                if (!array_key_exists("RootKey", $parameters)) return MakeErrorResponse("No RootKey");
+                $RootKey = $parameters["RootKey"];
 
                 $where = "";
                 $vals = [];

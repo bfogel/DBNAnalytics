@@ -120,7 +120,7 @@ function MakeFilter(games) {
 function ClearTables() {
     divGames.innerHTML = "";
     divSummary.innerHTML = "";
-   // _Games = null;
+    // _Games = null;
 }
 
 function MakeDataTables() {
