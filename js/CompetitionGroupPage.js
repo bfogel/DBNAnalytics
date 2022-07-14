@@ -44,7 +44,7 @@ class GroupInfo {
                 return req.ResponseToObjects()[0].CompetitionSeriesName;
             }
             case CompetitionGroupType.CustomCompetitionGroup: throw "not implemented"; break;
-            case CompetitionGroupType.DBNIQ: return "DBNI " + this.ItemID + " Qualifying";
+            case CompetitionGroupType.DBNIQ: return this.ItemID + " DBN Invitational " + " Qualifying";
             default: throw "Entity type not recognized";
         }
     }
