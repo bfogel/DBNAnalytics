@@ -33,7 +33,7 @@ function dbn_GetHTMLWithConn($conn, $category, $id)
 class dbnResponder
 {
 
-    public $Version = 66;
+    public $Version = 67;
 
     public $HubParameters = null;
 
@@ -104,7 +104,7 @@ class dbnResponder
         if ($this->HubParameters) {
             $ret .= "<script>";
             foreach ($this->HubParameters as $key => $value) {
-                $ret .= "  myHub.Parameters[{$key}] = '{$value}';";
+                $ret .= "  myHub.Parameters['{$key}'] = '{$value}';";
             }
             $ret .= "</script>";
         }
