@@ -67,7 +67,6 @@ function MakePage() {
 
     if (urlparams.has("Players")) {
         var pps = JSON.parse(urlparams.get("Players"));
-        console.log(pps);
         if (pps) {
             pps.forEach(pid => _PlayerList.AddPlayer(myHub.Players.find(x => x.PlayerID == pid)));
         }
@@ -117,8 +116,6 @@ function LoadComparison() {
  * @param {dbnGame[]} games 
  */
 function MakeFilter(games) {
-    console.log("Making filter");
-
     divFilter.innerHTML = "";
 
     var DBNIYears = [];
@@ -137,8 +134,6 @@ function MakeFilter(games) {
     });
 
     selFilter.onchange = MakeDataTables;
-
-    console.log("Made filter");
 }
 
 //----------------------
