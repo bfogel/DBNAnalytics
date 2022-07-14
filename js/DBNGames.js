@@ -330,7 +330,6 @@ class dbnHub {
   #players = [];
   get Players() {
     if (this.#players.length == 0) {
-      console.log("Retrieving players");
       var req = new dbnHubRequest_Players();
       req.SendAlone();
       this.#players = req.ResponseToPlayers();
@@ -363,6 +362,7 @@ class dbnHub {
   MakeDBNIQURL(pYear) { return this.MakeCompetitionGroupURL("DBNIQ", pYear); }
   MakeCompetitionRootURL(pRootKey) { return "/competition-root/?RootKey=" + pRootKey; }
 
+  //Should probably be in the DB
   RootDescription = { DBN: "DBNI qualifying events and exhibitions covered by DBN", SBD: "Silent But Deadly" };
 
 }
