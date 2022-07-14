@@ -16,7 +16,7 @@ var myCompetitionID = null;
 function MakePage() {
     var urlparams = new URLSearchParams(window.location.search);
     if (urlparams.has("CompetitionID")) myCompetitionID = Number.parseInt(urlparams.get("CompetitionID"));
-    if ("CompetitionID" in myHub.Parameters) myCompetitionID = myHub.Parameters["CompetitionID"];
+    if ("competitionid" in myHub.Parameters) myCompetitionID = Number.parseInt(myHub.Parameters["competitionid"]);
 
     var reqs = myHub.MakeRequestList();
     var reqCompetitionInfo = new dbnHubRequest_Competition(myCompetitionID);
