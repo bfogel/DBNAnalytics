@@ -285,6 +285,7 @@ function HandleRequest($request)
             }
 
         case "GetGames": {
+                //You need to reevaluate this path.  It's currently only used for getting games for a competition.  The logic here is probably too broad.
                 $GameIDs = null;
                 $CompetitionIDs = null;
                 $PlayerIDs = null;
@@ -294,8 +295,8 @@ function HandleRequest($request)
                 if (array_key_exists("CompetitionIDs", $parameters)) $CompetitionIDs = $parameters["CompetitionIDs"];
                 if (array_key_exists("PlayerIDs", $parameters)) $PlayerIDs = $parameters["PlayerIDs"];
 
-                if (!array_key_exists("RootKey", $parameters)) return MakeErrorResponse("No RootKey");
-                $RootKey = $parameters["RootKey"];
+                // if (!array_key_exists("RootKey", $parameters)) return MakeErrorResponse("No RootKey");
+                // $RootKey = $parameters["RootKey"];
 
                 //return MakeQuerySuccessResponse(!$CompetitionIDs);
 
@@ -326,8 +327,8 @@ function HandleRequest($request)
                     }
                 }
 
-                $where .= " AND CS.RootKey = ?";
-                array_push($vals, $RootKey);
+                // $where .= " AND CS.RootKey = ?";
+                // array_push($vals, $RootKey);
 
                 $games = GetGames($where, $vals);
 
