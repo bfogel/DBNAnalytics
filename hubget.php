@@ -324,7 +324,7 @@ function HandleRequest($request)
                     }
                 }
 
-                $where = " AND CS.RootKey = ?";
+                $where .= " AND CS.RootKey = ?";
                 array_push($vals, $RootKey);
 
                 $games = GetGames($where, $vals);
@@ -338,6 +338,9 @@ function HandleRequest($request)
                 $playerids = json_decode($parameters["PlayerIDs"]);
                 if (!is_array($playerids)) return MakeErrorResponse("No players");
 
+                $RootKey = "DBN";
+                if (array_key_exists("RootKey", $parameters)) $RootKey = $parameters["RootKey"];
+
                 $where = "";
                 $vals = [];
                 foreach ($playerids as $pid) {
@@ -345,6 +348,10 @@ function HandleRequest($request)
                     $where .= 'GameID IN (SELECT Game_GameID FROM GameCountryPlayer WHERE PlayerOfRecord_PlayerID = ?)';
                     array_push($vals, $pid);
                 }
+
+                $where .= " AND CS.RootKey = ?";
+                array_push($vals, $RootKey);
+
                 $games = GetGames($where, $vals);
 
                 if ($games instanceof dbnResultSet) return $games->ToJSON();
