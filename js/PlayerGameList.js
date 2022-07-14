@@ -5,6 +5,9 @@
  * @typedef {import('./DBNGames.js')}
  */
 
+/**@type{string} */
+var _RootKey = "DBN";
+
 var cardPlayerComparison = null;
 
 var _PlayerList = new dbnPlayerList();
@@ -32,12 +35,17 @@ var tblSummary = null;
 
 function MakePage() {
 
+    var urlparams = new URLSearchParams(window.location.search);
+
+    if (urlparams.has("RootKey")) _RootKey = urlparams.get("RootKey");
+
     var titlecard = dbnHere().addTitleCard("Player Game History");
-    titlecard.addText("DBNI qualifying events and exhibitions covered by DBN");
+    titlecard.addText(myHub.DBNRootDescription);
 
     cardPlayerComparison = dbnHere().addCard();
     cardPlayerComparison.style = "min-height: 400px";
 
+    _PlayerList.OnSelectionChanged = UpdateURL;
     cardPlayerComparison.add(_PlayerList);
 
     cardPlayerComparison.addLineBreak();
@@ -57,11 +65,29 @@ function MakePage() {
 
     divGamesStatus = cardPlayerComparison.addDiv();
 
+    if (urlparams.has("Players")) {
+        var pps = JSON.parse(urlparams.get("Players"));
+        console.log(pps);
+        if (pps) {
+            pps.forEach(pid => _PlayerList.AddPlayer(myHub.Players.find(x => x.PlayerID == pid)));
+        }
+        LoadComparison();
+    }
     // _PlayerList.AddPlayer(myHub.Players.find(x => x.PlayerID == 203));
     // _PlayerList.AddPlayer(myHub.Players.find(x => x.PlayerID == 222));
     // LoadComparison();
 }
 MakePage();
+
+function UpdateURL() {
+    var url = new URL(document.URL);
+
+    url.searchParams.set("RootKey", _RootKey);
+    url.searchParams.set("Players", JSON.stringify(_PlayerList.Players.map(x => x.PlayerID)));
+
+    window.history.replaceState(null, document.title, url)
+
+}
 
 function LoadComparison() {
     ClearTables();
@@ -75,7 +101,7 @@ function LoadComparison() {
         return;
     }
 
-    _Games = myHub.GetGamesForPlayers(players.map(x => x.PlayerID));
+    _Games = myHub.GetGamesForPlayers(players.map(x => x.PlayerID), _RootKey);
 
     if (_Games == null || _Games.length == 0) {
         divFilter.innerHTML = "";

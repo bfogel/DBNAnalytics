@@ -207,13 +207,13 @@ function HandleRequest($request)
                 $CompetitionIDs = $parameters["CompetitionIDs"];
                 if (gettype($CompetitionIDs) != "array") $CompetitionIDs = [$CompetitionIDs];
 
-                $sql = "SELECT C.*";
-                $sql .= ", CS.CompetitionSeriesName AS CompetitionSeries_CompetitionSeriesName";
-                $sql .= ", P.PlayerName AS Director_PlayerName";
-                $sql .= " FROM Competition AS C";
-                $sql .= " INNER JOIN CompetitionSeries AS CS ON CS.CompetitionSeriesID = C.CompetitionSeries_CompetitionSeriesID";
-                $sql .= " LEFT JOIN Player AS P ON P.PlayerID = C.Director_PlayerID";
-                $sql .= " WHERE CompetitionID IN (" . str_repeat('?,', count($CompetitionIDs) - 1) . "?)";
+                $sql = "SELECT C.*
+                        , CS.CompetitionSeriesName AS CompetitionSeries_CompetitionSeriesName
+                        , P.PlayerName AS Director_PlayerName
+                        FROM Competition AS C
+                        INNER JOIN CompetitionSeries AS CS ON CS.CompetitionSeriesID = C.CompetitionSeries_CompetitionSeriesID
+                        LEFT JOIN Player AS P ON P.PlayerID = C.Director_PlayerID
+                        WHERE CompetitionID IN (" . str_repeat('?,', count($CompetitionIDs) - 1) . "?)";
 
                 return GetResultsetAsJSON($sql, $CompetitionIDs);
             }
@@ -223,9 +223,9 @@ function HandleRequest($request)
                 $CompetitionSeriesIDs = $parameters["CompetitionSeriesIDs"];
                 if (gettype($CompetitionSeriesIDs) != "array") $CompetitionSeriesIDs = [$CompetitionSeriesIDs];
 
-                $sql = "SELECT CS.*";
-                $sql .= " FROM CompetitionSeries as CS";
-                $sql .= " WHERE CompetitionSeriesID IN (" . str_repeat('?,', count($CompetitionSeriesIDs) - 1) . "?)";
+                $sql = "SELECT CS.*
+                        FROM CompetitionSeries as CS
+                        WHERE CompetitionSeriesID IN (" . str_repeat('?,', count($CompetitionSeriesIDs) - 1) . "?)";
 
                 return GetResultsetAsJSON($sql, $CompetitionSeriesIDs);
             }
@@ -261,9 +261,9 @@ function HandleRequest($request)
                 $CompetitionGroupIDs = $parameters["CustomCompetitionGroupIDs"];
                 if (gettype($CompetitionGroupIDs) != "array") $CompetitionGroupIDs = [$CompetitionGroupIDs];
 
-                $sql = "SELECT CG.*";
-                $sql .= " FROM CustomCompetitionGroupIDs AS CG";
-                $sql .= " WHERE CustomCompetitionGroupIDs IN (" . str_repeat('?,', count($CompetitionGroupIDs) - 1) . "?)";
+                $sql = "SELECT CG.*
+                        FROM CustomCompetitionGroupIDs AS CG
+                        WHERE CustomCompetitionGroupIDs IN (" . str_repeat('?,', count($CompetitionGroupIDs) - 1) . "?)";
 
                 return GetResultsetAsJSON($sql, $CompetitionGroupIDs);
             }
@@ -277,8 +277,8 @@ function HandleRequest($request)
                 if (!array_key_exists("Category", $parameters)) return MakeErrorResponse("No Category");
                 $Category = $parameters["Category"];
 
-                $sql = "SELECT * FROM CompiledTable";
-                $sql .= " WHERE Entity = ? AND ItemID = ? AND Category = ?";
+                $sql = "SELECT * FROM CompiledTable
+                        WHERE Entity = ? AND ItemID = ? AND Category = ?";
                 $vals = [$Entity, $ItemID, $Category];
 
                 return GetResultsetAsJSON($sql, $vals);
@@ -477,8 +477,8 @@ function HandleRequest($request)
                 $rs = new dbnResultSet($sql, [$competitionID]);
                 if (!$rs->success) return MakeErrorResponse("(clearing) " . $rs->message);
 
-                $sql = 'INSERT INTO CompetitionPlayerSchedule (Competition_CompetitionID, Player_PlayerID, `Round`, BidsLocked, Board, Country_CountryID)';
-                $sql .= ' VALUES (?,?,?,?,?,?)';
+                $sql = 'INSERT INTO CompetitionPlayerSchedule (Competition_CompetitionID, Player_PlayerID, `Round`, BidsLocked, Board, Country_CountryID)
+                        VALUES (?,?,?,?,?,?)';
 
                 foreach ($schedules as $sched) {
                     if ($sched["CompetitionID"] == $competitionID) {
@@ -512,12 +512,13 @@ function HandleRequest($request)
             }
 
         case "bids": {
-                $sql = 'SELECT P.PlayerID, CO.CountryName as Country, B.Competition_CompetitionID as CompetitionID';
-                $sql .= ', B.Round, B.Bid';
-                $sql .= ' FROM Player as P';
-                $sql .= ' INNER JOIN PlayerCountryBid as B on B.Player_PlayerID = P.PlayerID';
-                $sql .= ' INNER JOIN Country as CO on B.Country_CountryID = CO.CountryID';
-                $sql .= ' INNER JOIN Competition as C on B.Competition_CompetitionID = C.CompetitionID';
+                $sql = 'SELECT P.PlayerID, CO.CountryName as Country, B.Competition_CompetitionID as CompetitionID
+                                , B.Round, B.Bid
+                        FROM Player as P
+                        INNER JOIN PlayerCountryBid as B on B.Player_PlayerID = P.PlayerID
+                        INNER JOIN Country as CO on B.Country_CountryID = CO.CountryID
+                        INNER JOIN Competition as C on B.Competition_CompetitionID = C.CompetitionID
+                        ';
 
                 $asTD = false;
                 if ($parameters != null && array_key_exists("asTD", $parameters)) $asTD = $parameters["asTD"];
@@ -538,8 +539,8 @@ function HandleRequest($request)
                 $round = $parameters["round"];
                 $bids = json_decode($parameters["bids"], true);
 
-                $sql = 'SELECT BidsLocked FROM CompetitionPlayerSchedule';
-                $sql .= ' WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
+                $sql = 'SELECT BidsLocked FROM CompetitionPlayerSchedule
+                        WHERE Competition_CompetitionID = ? AND Player_PlayerID = ? AND Round = ?';
                 $rs = new dbnResultSet($sql, [$competitionID, $userinfo->PlayerID, $round]);
                 if (!$rs->success) return MakeErrorResponse($rs->message);
 

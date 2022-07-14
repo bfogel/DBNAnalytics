@@ -317,6 +317,8 @@ class dbnHub {
   MakeRequestList() { return new bfDataRequestList("https://diplobn.com/wp-json/DBNAnalytics/v1/hubget/13"); }
 
   Ticket;
+  DBNRootDescription = "DBNI qualifying events and exhibitions covered by DBN";
+
   /** @type{Object.<string,any>} */
   Parameters = {};
 
@@ -696,6 +698,7 @@ class dbnPlayerListLine extends dbnSpan {
 }
 class dbnPlayerList extends dbnDiv {
 
+  /**@type{function} */
   OnSelectionChanged;
 
   PlayerSelector = new dbnPlayerSelector();
