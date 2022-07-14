@@ -41,19 +41,29 @@ function MakePage() {
     document.title = compinfo.CompetitionName;
 
     var card = div.addTitleCard(compinfo.CompetitionName);
-    if (compinfo.Director_PlayerName) { card.addText("Director: " + compinfo.Director_PlayerName); card.addLineBreak(); }
-    card.addText("Scoring: " + compinfo.DefaultScoringSystem); card.addLineBreak();
-    card.addText("Language: " + compinfo.DefaultLanguage); card.addLineBreak();
 
-    var cslink = card.addLink();
-    cslink.href = myHub.MakeCompetitionSeriesURL(compinfo.CompetitionSeries_CompetitionSeriesID);
-    cslink.addText("Go to " + compinfo.CompetitionSeries_CompetitionSeriesName + " Series");
+    {
+        var divInfo = card.addDiv();
+        divInfo.style.display = "inline-block";
+        if (compinfo.Director_PlayerName) { divInfo.addText("Director: " + compinfo.Director_PlayerName); divInfo.addLineBreak(); }
+        divInfo.addText("Scoring: " + compinfo.DefaultScoringSystem); divInfo.addLineBreak();
+        divInfo.addText("Language: " + compinfo.DefaultLanguage); divInfo.addLineBreak();
 
-    if (compinfo.DBNIYear) {
-        card.addLineBreak();
-        var dbnilink = card.addLink();
-        dbnilink.href = myHub.MakeDBNIQURL(compinfo.DBNIYear);
-        dbnilink.addText("Go to DBNI " + compinfo.DBNIYear + " Qualifying");
+        var divLinks = card.addDiv();
+        divLinks.style.display = "inline-block";
+        divLinks.style.verticalAlign = "top";
+        divLinks.style.float = "right";
+        divLinks.style.marginRight = "30px";
+        var cslink = divLinks.addLink();
+        cslink.href = myHub.MakeCompetitionSeriesURL(compinfo.CompetitionSeries_CompetitionSeriesID);
+        cslink.addText("Go to " + compinfo.CompetitionSeries_CompetitionSeriesName + " Series");
+
+        if (compinfo.DBNIYear) {
+            divLinks.addLineBreak();
+            var dbnilink = divLinks.addLink();
+            dbnilink.href = myHub.MakeDBNIQURL(compinfo.DBNIYear);
+            dbnilink.addText("Go to DBNI " + compinfo.DBNIYear + " Qualifying");
+        }
     }
 
     var tabs = div.addTabs();
