@@ -341,8 +341,8 @@ class dbnHub {
    * @param {number[]} playerids 
    * @returns 
    */
-  GetGamesForPlayers(playerids) {
-    var vals = { "PlayerIDs": JSON.stringify(playerids) };
+  GetGamesForPlayers(playerids, rootkey = "DBN") {
+    var vals = { "PlayerIDs": JSON.stringify(playerids), RootKey: rootkey };
 
     var req = new bfDataRequest("games", vals);
     req.SendAlone();
