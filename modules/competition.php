@@ -48,6 +48,7 @@ add_shortcode('dbnCompetitionGroupPage', 'dbnCompetitionGroup_GetPage');
 function dbnCompetitionGroup_GetPage($atts = [], $content = null, $tag = '')
 {
 	$responder = new dbnResponder();
+	$responder->HubParameters = $atts;
 	$responder->JS_CompetitionGroupPage = true;
 	return $responder->Generate();
 }
