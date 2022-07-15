@@ -68,10 +68,10 @@ function MakePage() {
     var groupid = 0; var grouptype = "";
 
     if (urlparams.has("GroupID")) groupid = Number.parseInt(urlparams.get("GroupID"));
-    if ("GroupID" in myHub.Parameters) groupid = myHub.Parameters["GroupID"];
+    if ("groupid" in myHub.Parameters) groupid = myHub.Parameters["groupid"];
 
     if (urlparams.has("GroupType")) grouptype = urlparams.get("GroupType");
-    if ("GroupType" in myHub.Parameters) grouptype = myHub.Parameters["GroupType"];
+    if ("grouptype" in myHub.Parameters) grouptype = myHub.Parameters["grouptype"];
 
     switch (grouptype) {
         case "CS": grouptype = CompetitionGroupType.CompetitionSeries; break;
