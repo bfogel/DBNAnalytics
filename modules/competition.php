@@ -60,3 +60,12 @@ function dbnCompetitionRoot_GetPage($atts = [], $content = null, $tag = '')
 	$responder->JS_CompetitionRootPage = true;
 	return $responder->Generate();
 }
+
+add_shortcode('dbnMapView', 'dbnMapView_GetPage');
+function dbnMapView_GetPage($atts = [], $content = null, $tag = '')
+{
+	$responder = new dbnResponder();
+	$responder->JS_MapView = true;
+	$responder->JS_GameModel = true;
+	return $responder->Generate();
+}
