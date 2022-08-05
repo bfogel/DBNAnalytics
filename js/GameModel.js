@@ -151,23 +151,36 @@ class gmGamePhase {
 
         if (this.Units) {
             var newo = {};
-            Object.keys(this.Units).forEach(x => newo[x] = this.Units[x].map(y => new gmUnitWithLocation(y)));
+            Object.keys(this.Units).forEach(x => newo[x] = this.Units[x].map(y => gmUnitWithLocation.FromJSON(y)));
             this.Units = newo;
         }
         if (this.Orders) {
             var newo = {};
-            Object.keys(this.Orders).forEach(x => newo[x] = this.Orders[x].map(y => new gmOrderAndResolution(y)));
+            Object.keys(this.Orders).forEach(x => newo[x] = this.Orders[x].map(y => gmOrderAndResolution.FromJSON(y)));
             this.Orders = newo;
         }
         if (this.RetreatOrders) {
             var newo = {};
-            Object.keys(this.RetreatOrders).forEach(x => newo[x] = this.RetreatOrders[x].map(y => new gmOrderAndResolution(y)));
+            Object.keys(this.RetreatOrders).forEach(x => newo[x] = this.RetreatOrders[x].map(y => gmOrderAndResolution.FromJSON(y)));
             this.RetreatOrders = newo;
         }
     }
 
     /**@type{number} */
     Phase;
+    get PhaseTextLong() {
+        var year = Math.floor(this.Phase / 10);
+        var season = this.Phase % 10;
+        var ss = "";
+        switch (season) {
+            case 1: ss = "Spring"; break;
+            case 2: ss = "Fall"; break;
+            case 3: ss = "Winter"; break;
+            default: break;
+        }
+        return ss + " " + year;
+    }
+
     /**@type{string} */
     Status;
     /**@type{gmDrawVote} */
@@ -179,10 +192,10 @@ class gmGamePhase {
     /**@type{Object.<string,string[]>} */
     SupplyCenters; //key is CountryEnum, value is ProvinceEnum[]
 
-    /**@type{Object.<string,any[]>} */
+    /**@type{Object.<string,gmUnitWithLocation[]>} */
     Units; //key is CountryEnum, value is UnitWithLocation[]
 
-    /**@type{Object.<string,any[]>} */
+    /**@type{Object.<string,gmOrderAndResolution[]>} */
     Orders; //key is CountryEnum, value is OrderAndResolution[]
 
     /**@type{string[]} */
@@ -196,6 +209,16 @@ class gmGamePhase {
         var ret = {};
         Object.entries(this.SupplyCenters).forEach(kv => (kv[1] ?? []).forEach(x => ret[x] = kv[0]));
         return ret;
+    }
+
+    GetUnitWithLocation(province) {
+        for (const country in this.Units) {
+            const units = this.Units[country];
+            for (const uwl of units) {
+                if (uwl.Location.Province == province) return uwl;
+            }
+        }
+        return null;
     }
 }
 
@@ -229,32 +252,62 @@ class gmDrawVote {
 //#region Locataion and UnitWithLocation
 
 class gmLocation {
-    constructor(json) {
-        if (typeof json == "string") {
-            this.Province = json;
-            this.ProvinceCoast = ProvinceCoastEnum.None;
-        } else {
-            this.Province = json[0];
-            if (json.length > 1) this.ProvinceCoast = json[1];
-        }
+    /**
+     * 
+     * @param {string} province 
+     * @param {string} provincecoast 
+     */
+    constructor(province, provincecoast = null) {
+        this.Province = province;
+        this.ProvinceCoast = provincecoast ?? ProvinceCoastEnum.None;
     }
 
     /**@type{string} */
     Province;
     /**@type{string} */
     ProvinceCoast;
+
+    get Key() { return JSON.stringify(this.ToJSON()); }
+    ToString() { return this.Province + ((this.ProvinceCoast ?? ProvinceCoastEnum.None) != ProvinceCoastEnum.None ? this.ProvinceCoast : ""); }
+
+    ToJSON() { return (this.ProvinceCoast ?? ProvinceCoastEnum.None) == ProvinceCoastEnum.None ? this.Province : [this.Province, this.ProvinceCoast]; }
+    static FromJSON(json) {
+        if (typeof json == "string") {
+            return new gmLocation(json, ProvinceCoastEnum.None);
+        } else {
+            return new gmLocation(json[0], (json.length > 1) ? json[1] : ProvinceCoastEnum.None);
+        }
+    }
+
+    /**
+     * 
+     * @param {string} unittype
+     */
+    ToUnitWithLocation(unittype) { return new gmUnitWithLocation(unittype, this); }
 }
 
 class gmUnitWithLocation {
-    constructor(json) {
-        this.UnitType = json[0];
-        this.Location = new gmLocation(json[1]);
+    /**
+     * 
+     * @param {string} unittype 
+     * @param {gmLocation} location 
+     */
+    constructor(unittype, location) {
+        this.UnitType = unittype;
+        this.Location = location;
     }
 
-    /**@type{string} */
+    /**@type{string} */  //UnitTypeEnum
     UnitType;
-    /**@type{any} */
+    /**@type{gmLocation} */
     Location;
+
+    get Key() { return JSON.stringify(this.ToJSON()); };
+    ToString() { return this.UnitType.substring(0, 1) + " " + this.Location.ToString(); }
+
+    ToJSON() { return [this.UnitType, this.Location.ToJSON()]; }
+    static FromJSON(json) { return new gmUnitWithLocation(json[0], gmLocation.FromJSON(json[1])); }
+
 }
 
 //#endregion
@@ -262,18 +315,206 @@ class gmUnitWithLocation {
 //#region OrderAndResolution
 
 class gmOrderAndResolution {
-    constructor(json) {
-        this.Province = json[0];
-        this.Order = json[1];
-        if (json.length > 2) this.Result = json[2];
+    /**
+     * 
+     * @param {*} province 
+     * @param {*} order 
+     * @param {*} result 
+     */
+    constructor(province, order, result) {
+        this.Province = province;
+        this.Order = order;
+        this.Result = result;
     }
+
+    static FromJSON(json) { return new gmOrderAndResolution(json[0], gmOrder.FromJSON(json[1]), (json.length > 2) ? gmOrderResult.FromJSON(json[2]) : null); }
 
     /**@type{string} */
     Province;
-    /**@type{any} */
+    /**@type{gmOrder} */
     Order;
-    /**@type{any} */
+    /**@type{gmOrderResult} */
     Result;
+}
+
+class gmOrderResult {
+    /**
+     * 
+     * @param {boolean} succeeded 
+     * @param {string} reason 
+     */
+
+    constructor(succeeded, reason) { this.Succeeded = succeeded; this.Reason = reason; }
+    /**@type{boolean} */ Succeeded;
+    /**@type{string} */ Reason;
+
+    ToJSON() {
+        var s = this.Succeeded ? "s" : "f";
+        if ((this.Reason ?? "") == "") return s;
+        return [s, this.Reason];
+    }
+
+    static FromJSON(json) {
+        if (typeof json == "string") {
+            switch (json) {
+                case "s": return new gmOrderResult(true, null);
+                case "f": return new gmOrderResult(false, null);
+                default: throw "Invalid order result: " + json;
+            }
+        }
+
+        if (!(Array.isArray(json)) || json.length == 0) throw "Invalid OrderResult: " + JSON.stringify(json);
+        var ret = new gmOrderResult(null, null);
+        switch (json[0]) {
+            case "s": ret.Succeeded = true; break;
+            case "f": ret.Succeeded = false; break;
+            default: throw "Invalid order result: " + JSON.stringify(json);
+        }
+        if (json.length > 1) ret.Reason = json[1];
+        return ret;
+    }
+}
+
+class gmOrder {
+
+    /**
+     * 
+     * @param {string} type 
+     */
+    constructor(type) { this.Type = type; }
+
+    /**@type{string} */
+    Type;
+
+    ToJSON() { throw "NIE"; }
+
+    static FromJSON(json) {
+        if (typeof json == "string") {
+            switch (json) {
+                case "h": return new gmOrderHold();
+                case "d": return new gmOrderDisband();
+                default: throw "Order not recognized: " + json;
+            }
+        }
+
+        if (!(Array.isArray(json)) || json.length == 0) throw "Invalid order: " + JSON.stringify(json);
+        switch (json[0]) {
+            case "h": return new gmOrderHold();
+            case "m": return gmOrderMove.FromJSON(json);
+            case "sh": return gmOrderSupportHold.FromJSON(json);
+            case "sm": return gmOrderSupportMove.FromJSON(json);
+            case "c": return gmOrderConvoy.FromJSON(json);
+            case "b": return gmOrderBuild.FromJSON(json);
+            case "d": return new gmOrderDisband();
+            default: throw "Invalid order: " + JSON.stringify(json);
+        }
+    }
+}
+
+class gmOrderHold extends gmOrder {
+    constructor() { super("h"); }
+
+    ToString() { return "H"; };
+    ToJSON() { return this.Type; };
+}
+
+class gmOrderMove extends gmOrder {
+    /**
+     * 
+     * @param {gmLocation} tolocation 
+     */
+    constructor(tolocation) { super("m"); this.ToLocation = tolocation; }
+
+    /**@type{gmLocation} */ ToLocation;
+    ToString() { return "- " + this.ToLocation.ToString(); }
+
+    ToJSON() { return [this.Type, this.ToLocation.ToJSON()]; }
+    static FromJSON(json) {
+        if (!Array.isArray(json)) throw "gmOrderMove: json must be an array";
+        if (json.length != 2) throw "Bad move order: " + JSON.stringify(json);
+        return new gmOrderMove(gmLocation.FromJSON(json[1]));
+    }
+}
+
+class gmOrderSupportHold extends gmOrder {
+    /**
+     * 
+     * @param {gmLocation} holdlocation 
+     */
+    constructor(holdlocation) { super("sh"); this.HoldLocation = holdlocation; }
+
+    /**@type{gmLocation} */ HoldLocation;
+    ToString() { return "S " + this.HoldLocation.ToString(); }
+
+    ToJSON() { return [this.Type, this.HoldLocation.ToJSON()]; }
+    static FromJSON(json) {
+        if (!Array.isArray(json)) throw "gmOrderSupportHold: json must be an array";
+        if (json.length != 2) throw "Bad support hold order: " + JSON.stringify(json);
+        return new gmOrderSupportHold(gmLocation.FromJSON(json[1]));
+    }
+}
+
+class gmOrderSupportMove extends gmOrder {
+    /**
+     * 
+     * @param {gmLocation} fromlocation 
+     * @param {gmLocation} tolocation 
+     */
+    constructor(fromlocation, tolocation) { super("sm"); this.FromLocation = fromlocation; this.ToLocation = tolocation; }
+
+    /**@type{gmLocation} */ FromLocation;
+    /**@type{gmLocation} */ ToLocation;
+    ToString() { return "S " + this.FromLocation.ToString() + "-" + this.ToLocation.ToString(); }
+
+    ToJSON() { return [this.Type, this.FromLocation.ToJSON(), this.ToLocation.ToJSON()]; }
+    static FromJSON(json) {
+        if (!Array.isArray(json)) throw "gmOrderSupportMove: json must be an array";
+        if (json.length != 3) throw "Bad support move order: " + JSON.stringify(json);
+        return new gmOrderSupportMove(gmLocation.FromJSON(json[1]), gmLocation.FromJSON(json[2]));
+    }
+}
+
+class gmOrderConvoy extends gmOrder {
+    /**
+     * 
+     * @param {gmLocation} fromlocation 
+     * @param {gmLocation} tolocation 
+     */
+    constructor(fromlocation, tolocation) { super("c"); this.FromLocation = fromlocation; this.ToLocation = tolocation; }
+
+    /**@type{gmLocation} */ FromLocation;
+    /**@type{gmLocation} */ ToLocation;
+    ToString() { return "C " + this.FromLocation.ToString() + "-" + this.ToLocation.ToString(); }
+
+    ToJSON() { return [this.Type, this.FromLocation.ToJSON(), this.ToLocation.ToJSON()]; }
+    static FromJSON(json) {
+        if (!Array.isArray(json)) throw "gmOrderConvoy: json must be an array";
+        if (json.length != 3) throw "Bad convoy order: " + JSON.stringify(json);
+        return new gmOrderConvoy(gmLocation.FromJSON(json[1]), gmLocation.FromJSON(json[2]));
+    }
+}
+
+class gmOrderBuild extends gmOrder {
+    /**
+     * 
+     * @param {gmUnitWithLocation} UnitWithLocation 
+     */
+    constructor(unitwithlocation) { super("b"); this.UnitWithLocation = unitwithlocation; }
+
+    ToString() { return "Build " + this.UnitWithLocation.ToString(); }
+
+    ToJSON() { return [this.Type, this.UnitWithLocation.ToJSON()]; }
+    static FromJSON(json) {
+        if (!Array.isArray(json)) throw "gmOrderBuild: json must be an array";
+        if (json.length != 2) throw "Bad build order: " + JSON.stringify(json);
+        return new gmOrderBuild(gmUnitWithLocation.FromJSON(json[1]));
+    }
+}
+
+class gmOrderDisband extends gmOrder {
+    constructor() { super("d"); }
+    ToString() { return "Disb"; };
+    ToJSON() { return this.Type; };
 }
 
 //#endregion
