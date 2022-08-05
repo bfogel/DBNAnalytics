@@ -42,7 +42,7 @@ function ProcessMapData(gamedata) {
 
     mv.Game = game;
     //mv.GamePhase = game.GamePhases[game.GamePhases.length - 1];
-    var phase = game.GamePhases[10];
+    var phase = game.GamePhases[0];
     // MakeAllAustrianArmies(phase, mv.MapData);
     //MakeAllFleets(phase, mv.MapData);
     mv.GamePhase = phase;
