@@ -14,6 +14,21 @@ class gmGameModel {
 
     SupplyCenters = [ProvinceEnum.Vie, ProvinceEnum.Tri, ProvinceEnum.Bud, ProvinceEnum.Edi, ProvinceEnum.Lvp, ProvinceEnum.Lon, ProvinceEnum.Bre, ProvinceEnum.Par, ProvinceEnum.Mar, ProvinceEnum.Kie, ProvinceEnum.Mun, ProvinceEnum.Ber, ProvinceEnum.Ven, ProvinceEnum.Rom, ProvinceEnum.Nap, ProvinceEnum.Stp, ProvinceEnum.Mos, ProvinceEnum.War, ProvinceEnum.Sev, ProvinceEnum.Con, ProvinceEnum.Ank, ProvinceEnum.Smy, ProvinceEnum.Nwy, ProvinceEnum.Swe, ProvinceEnum.Den, ProvinceEnum.Bel, ProvinceEnum.Hol, ProvinceEnum.Por, ProvinceEnum.Spa, ProvinceEnum.Tun, ProvinceEnum.Ser, ProvinceEnum.Rum, ProvinceEnum.Bul, ProvinceEnum.Gre];
 
+    /**@type{Object.<string,string[]>} */
+    #SupplyCentersByCountry;
+    get SupplyCentersByCountry() {
+        if (!this.#SupplyCentersByCountry) {
+            this.#SupplyCentersByCountry = {};
+            Object.values(CountryEnum).forEach(x => this.#SupplyCentersByCountry[x] = []);
+            this.SupplyCenters.forEach(province => {
+                var country = this.GetHomeCountryForProvince(province);
+                if (!country) return;
+                this.#SupplyCentersByCountry[country].push(province);
+            });
+        }
+        return this.#SupplyCentersByCountry;
+    }
+
     GetHomeCountryForProvince(province) {
         switch (province) {
             case ProvinceEnum.Tyr: return CountryEnum.Austria;
@@ -180,13 +195,25 @@ class gmGamePhase {
         }
         return ss + " " + year;
     }
+    get PhaseTextShort() {
+        var year = Math.floor(this.Phase / 10);
+        var season = this.Phase % 10;
+        var ss = "";
+        switch (season) {
+            case 1: ss = "S"; break;
+            case 2: ss = "F"; break;
+            case 3: ss = "W"; break;
+            default: break;
+        }
+        return ss + String(year).substring(2);
+    }
 
-    /**@type{string} */
+    /**@type{string}  - GamePhaseStatusEnum*/
     Status;
     /**@type{gmDrawVote} */
     DrawVote;
 
-    /**@type{Object.<string,number>} */
+    /**@type{Object.<string,number>}*/
     CenterCounts; //key is CountryEnum
 
     /**@type{Object.<string,string[]>} */
@@ -219,6 +246,21 @@ class gmGamePhase {
             }
         }
         return null;
+    }
+
+    GetOrdersForProvince(province) {
+        /**@type{Object.<string,gmOrderAndResolution[]>} */
+        var ret = {};
+        for (const country in this.Orders) {
+            const orders = this.Orders[country];
+            for (const oar of orders) {
+                if (oar.Province == province) {
+                    if (!ret.hasOwnProperty(country)) ret[country] = [];
+                    ret[country].push(oar);
+                }
+            }
+        }
+        return ret;
     }
 }
 
@@ -329,6 +371,8 @@ class gmOrderAndResolution {
 
     static FromJSON(json) { return new gmOrderAndResolution(json[0], gmOrder.FromJSON(json[1]), (json.length > 2) ? gmOrderResult.FromJSON(json[2]) : null); }
 
+    ToString() { return this.Province + " " + this.Order.ToString(); }
+
     /**@type{string} */
     Province;
     /**@type{gmOrder} */
@@ -386,7 +430,10 @@ class gmOrder {
     /**@type{string} */
     Type;
 
+    ToString() { throw "NIE"; }
     ToJSON() { throw "NIE"; }
+
+    get IsAdjustment() { return this.Type == "b" || this.Type == "d"; }
 
     static FromJSON(json) {
         if (typeof json == "string") {
@@ -497,11 +544,11 @@ class gmOrderConvoy extends gmOrder {
 class gmOrderBuild extends gmOrder {
     /**
      * 
-     * @param {gmUnitWithLocation} UnitWithLocation 
+     * @param {gmUnitWithLocation} unitwithlocation 
      */
     constructor(unitwithlocation) { super("b"); this.UnitWithLocation = unitwithlocation; }
 
-    ToString() { return "Build " + this.UnitWithLocation.ToString(); }
+    ToString() { return "Build " + this.UnitWithLocation.UnitType; }
 
     ToJSON() { return [this.Type, this.UnitWithLocation.ToJSON()]; }
     static FromJSON(json) {

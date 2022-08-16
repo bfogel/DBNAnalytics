@@ -1180,9 +1180,10 @@ class dbnPoint {
      * @returns 
      */
     MultiplyBy(c) { return new dbnPoint(this.X * c, this.Y * c) };
+
     /**
      * 
-     * @param {dbnPoint} pt 
+     * @param {dbnPoint} point 
      * @returns 
      */
     AddTo(point) { return this.WithOffset(point.X, point.Y) };
@@ -1297,21 +1298,22 @@ class dbnLineSegment {
     GetInterimPoint(frac) { return new dbnPoint((1 - frac) * this.FromPoint.X + frac * this.ToPoint.X, (1 - frac) * this.FromPoint.Y + frac * this.ToPoint.Y); };
 
     /// <summary>
-    /// From -180 to 180, oriented clockwise
+    /// From -180 to 180, oriented clockwise (neg x-axis is 180)
     /// </summary>
     get AngleToHorizontal() {
+        return this.AngleToHorizontalInRadians * 180 / Math.PI;
+    }
+    get AngleToHorizontalInRadians() {
         if (this.DeltaX == 0) {
             if (this.DeltaY == 0) throw "LineSegment has no length";
-            return this.DeltaY > 0 ? 90 : -90;
+            return Math.PI / 2 * (this.DeltaY > 0 ? 1 : -1);
         }
         else {
-            var angle = 180 * Math.atan(this.DeltaY / this.DeltaX) / Math.PI;
-            if (this.DeltaX < 0) angle += -Math.sign(angle) * 180;
+            var angle = Math.atan(this.DeltaY / this.DeltaX);
+            if (this.DeltaX < 0) angle += (this.DeltaY >= 0 ? 1 : -1) * Math.PI;
             return angle;
         }
-
     }
-    get AngleToHorizontalInRadians() { return Math.PI * this.AngleToHorizontal / 180; }
 
     /**
      * 
@@ -1376,7 +1378,7 @@ class dbnSVGElement {
 
     /**
      * 
-     * @returns SVGRect
+     * @returns {SVGRect}
      */
     getBBox() { return this.domelement.getBBox(); }
 
@@ -1389,8 +1391,112 @@ class dbnSVGElement {
     set onmouseenter(value) { this.domelement.onmouseenter = value; }
     get onmouseleave() { return this.domelement.onmouseleave; }
     set onmouseleave(value) { this.domelement.onmouseleave = value; }
+    get onmousemove() { return this.domelement.onmousemove; }
+    set onmousemove(value) { this.domelement.onmousemove = value; }
+    get onmouseout() { return this.domelement.onmouseout; }
+    set onmouseout(value) { this.domelement.onmouseout = value; }
+
+    SetPointerEventsNone() { this.domelement.style.pointerEvents = "none"; }
+    SetPointerEventsAll() { this.domelement.style.pointerEvents = "all"; }
 
     //#region Container functions
+
+    /**
+     * 
+     * @param {dbnPoint} point 
+     */
+    MoveTo(point) { dbnSVGElement.MoveDOMTo(this.domelement, point); }
+
+    /**
+     * 
+     * @param {SVGElement} elm 
+     * @param {dbnPoint} point 
+     */
+    static MoveDOMTo(elm, point) {
+        if (!elm.tagName) return;
+
+        try {
+            /**@type{SVGRect} */ var rect = elm.getBBox();
+            var dx = point.X - rect.x, dy = point.Y - rect.y;
+
+            switch (elm.tagName) {
+                case "circle":
+                    elm.setAttribute("cx", point.X);
+                    elm.setAttribute("cy", point.Y);
+                    break;
+                case "path":
+                    var d = elm.getAttribute("d");
+                    var pb = dbnSVGPathBuilder.FromD(d);
+                    pb.Translate(dx, dy);
+                    elm.setAttribute("d", pb.ToD());
+                    break;
+                // case "text":
+                //     node.setAttribute("x", dx + rect.x);
+                //     node.setAttribute("y", dy + rect.y + rect.height);
+                //     break;
+                case "button":
+                case "a":
+                    break;
+                default:
+                    elm.setAttribute("x", point.X);
+                    elm.setAttribute("y", point.Y);
+                    break;
+            }
+
+        } catch (error) {
+            throw "dbnSVGElement.MoveDOMTo (" + elm.tagName + "): " + error;
+        }
+
+        elm.childNodes.forEach(node => {
+            if (node.tagName) {
+                try {
+                    var noderect = node.getBBox();
+                    dbnSVGElement.MoveDOMTo(node, new dbnPoint(noderect.x, noderect.y).WithOffset(dx, dy));
+                } catch (error) {
+                    throw "dbnSVGElement.MoveDOMTo.node (" + node.tagName + "): " + error;
+                }
+            }
+        });
+
+    }
+
+    //#endregion
+
+    /**@type{dbnDiv} */
+    static #ToolTip = dbnHere().addDiv();
+
+    //#region tooltip
+    static ShowTooltip(event, content) {
+        if (!dbnSVGElement.#ToolTip.id) {
+            var tt = dbnSVGElement.#ToolTip;
+            tt.style = "position: absolute; display: none;";
+            tt.id = "svgToolTip";
+            tt.domelement.style.background = "cornsilk";
+            tt.domelement.style.border = "1px solid black";
+            tt.domelement.style.borderRadius = "3px";
+            tt.domelement.style.padding = "2px 4px";
+        }
+
+        let element = event.target;
+        let tooltipElement = dbnSVGElement.#ToolTip;
+
+        if (typeof content == "string") {
+            tooltipElement.innerHTML = content;
+        } else if (content instanceof dbnElement) {
+            tooltipElement.innerHTML = "";
+            tooltipElement.appendChild(content);
+        } else {
+            throw "dbnSVGElement.ShowTooltip: unrecognized content type";
+        }
+
+        tooltipElement.style.display = 'block';
+        tooltipElement.style.left = event.layerX + 10 + 'px';
+        tooltipElement.style.top = event.layerY + 10 + 'px';
+    }
+
+    static HideTooltip() {
+        dbnSVGElement.#ToolTip.style.display = 'none';
+    }
 
     //#endregion
 
@@ -1587,7 +1693,7 @@ class dbnSVGArrowPath extends dbnSVGPath {
     constructor(parent) {
         super(parent);
         this.stroke = "black";
-        this.fill = "red";
+        this.fill = "black";
         this.strokeWidth = 1;
         this.#DrawPath();
     }
@@ -1598,18 +1704,18 @@ class dbnSVGArrowPath extends dbnSVGPath {
     #LineWidth = 2; get LineWidth() { return this.#LineWidth; } set LineWidth(value) { this.#LineWidth = value; this.#DrawPath(); }
     #ArrowSize = 1; get ArrowSize() { return this.#ArrowSize; } set ArrowSize(value) { this.#ArrowSize = value; this.#DrawPath(); }
 
+    static GetDefaultEndCapDimension(linewidth, arrowsize) { return 2 * linewidth * arrowsize; }
+
     #DrawPath() {
         if (!this.#LineSegment) return;
         var length = this.#LineSegment.Length;
         if (length == 0) return;
 
         var startcapsize = new dbnSize(0, 0);
-        var endcapsize = new dbnSize(1, 1).MultiplyBy(Math.min(length, 2 * this.#LineWidth * this.#ArrowSize));
+        var endcapsize = new dbnSize(1, 1).MultiplyBy(Math.min(length, dbnSVGArrowPath.GetDefaultEndCapDimension(this.#LineWidth, this.#ArrowSize)));
 
         var middlerect = new dbnRect(new dbnPoint(0, - this.#LineWidth / 2), new dbnSize(length - startcapsize.Width - endcapsize.Width, this.#LineWidth));
         var endcaprect = new dbnRect(new dbnPoint(middlerect.Size.Width, -endcapsize.Height / 2), endcapsize);
-
-        console.log(startcapsize, endcapsize, middlerect, endcaprect);
 
         /**@type{dbnPoint[]} */
         var pts = [];
@@ -1617,17 +1723,13 @@ class dbnSVGArrowPath extends dbnSVGPath {
         if (length > 0) {
             pts.push(middlerect.UpperRight, middlerect.UpperLeft, middlerect.LowerLeft, middlerect.LowerRight);
         }
-        console.log(pts);
 
         pts.push(endcaprect.LowerLeft,
             endcaprect.LowerRight.WithOffset(0, -endcapsize.Height / 2),
             endcaprect.LowerLeft.WithOffset(0, -endcapsize.Height)
         );
 
-        console.log(pts);
-
         var sb = dbnSVGPathBuilder.FromPoints(pts);
-        console.log(sb.ToD());
         sb.Rotate(this.LineSegment.AngleToHorizontalInRadians);
         sb.Translate(this.#LineSegment.FromPoint.X, this.#LineSegment.FromPoint.Y);
         this.d = sb.ToD();
@@ -1689,7 +1791,7 @@ class dbnSVGPathBuilder {
             if (/^[a-zA-Z]+$/.test(char)) {
                 aCheckCloseNumber();
                 curElement = ret.Add(char, []);
-            } else if (/^[0-9.]+$/.test(char)) {
+            } else if (/^[0-9.-]+$/.test(char)) {
                 curNumber += char;
             } else {
                 aCheckCloseNumber();
@@ -1808,34 +1910,38 @@ class dbnSVGButton extends dbnSVGLink {
         this.domelement.childNodes.forEach(node => node.style.cursor = "default");
     }
 
-    MoveTo(x, y) {
-    /**@type{SVGRect} */ var rect = this.Border.getBBox();
-        var dx = x - rect.x, dy = y - rect.y;
-        this.domelement.childNodes.forEach(node => {
-            rect = node.getBBox();
+    // /**
+    //  * 
+    //  * @param {dbnPoint} point 
+    //  */
+    // MoveTo(point) {
+    // /**@type{SVGRect} */ var rect = this.Border.getBBox();
+    //     var dx = point.X - rect.x, dy = point.Y - rect.y;
+    //     this.domelement.childNodes.forEach(node => {
+    //         rect = node.getBBox();
 
-            switch (node.tagName) {
-                case "circle":
-                    node.setAttribute("cx", dx + rect.x);
-                    node.setAttribute("cy", dy + rect.y);
-                    break;
-                case "path":
-                    var d = node.getAttribute("d");
-                    var pb = dbnSVGPathBuilder.FromD(d);
-                    pb.Translate(dx, dy);
-                    node.setAttribute("d", pb.ToD());
-                    break;
-                // case "text":
-                //     node.setAttribute("x", dx + rect.x);
-                //     node.setAttribute("y", dy + rect.y + rect.height);
-                //     break;
-                default:
-                    node.setAttribute("x", dx + rect.x);
-                    node.setAttribute("y", dy + rect.y);
-                    break;
-            }
-        });
-    }
+    //         switch (node.tagName) {
+    //             case "circle":
+    //                 node.setAttribute("cx", dx + rect.x);
+    //                 node.setAttribute("cy", dy + rect.y);
+    //                 break;
+    //             case "path":
+    //                 var d = node.getAttribute("d");
+    //                 var pb = dbnSVGPathBuilder.FromD(d);
+    //                 pb.Translate(dx, dy);
+    //                 node.setAttribute("d", pb.ToD());
+    //                 break;
+    //             // case "text":
+    //             //     node.setAttribute("x", dx + rect.x);
+    //             //     node.setAttribute("y", dy + rect.y + rect.height);
+    //             //     break;
+    //             default:
+    //                 node.setAttribute("x", dx + rect.x);
+    //                 node.setAttribute("y", dy + rect.y);
+    //                 break;
+    //         }
+    //     });
+    // }
 
     FitToContents(topmargin = 0, rightmargin = 0, bottommargin = 0, leftmargin = 0) {
         var x, y, r, b;
@@ -1860,7 +1966,7 @@ class dbnSVGButton extends dbnSVGLink {
 
 //#endregion
 
-class dbnSVGText extends dbnSVGElement {
+class dbnSVGText extends dbnSVGStrokableElement {
     constructor(parent) {
         super("text", parent);
         this.SetVerticalAlignHanging();
@@ -1871,9 +1977,17 @@ class dbnSVGText extends dbnSVGElement {
     set y(value) { this.domelement.setAttribute("y", value); }
     get textContent() { return this.domelement.textContent; }
     set textContent(value) { this.domelement.textContent = value; }
+
     get dominantBaseline() { return this.domelement.getAttribute("dominant-baseline"); }
     set dominantBaseline(value) { this.domelement.setAttribute("dominant-baseline", value); }
+    get textAnchor() { return this.domelement.getAttribute("text-anchor"); }
+    set textAnchor(value) { this.domelement.setAttribute("text-anchor", value); }
 
+    SetHorizontalAlignStart() { this.textAnchor = "start"; }
+    SetHorizontalAlignMiddle() { this.textAnchor = "middle"; }
+    SetHorizontalAlignEnd() { this.textAnchor = "end"; }
+
+    SetVerticalAlignMiddle() { this.dominantBaseline = "middle"; }
     SetVerticalAlignHanging() { this.dominantBaseline = "hanging"; }
     SetVerticalAlignAuto() { this.dominantBaseline = "auto"; }
 }

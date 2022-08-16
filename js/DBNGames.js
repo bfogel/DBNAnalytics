@@ -37,6 +37,7 @@ function GameAnonymityTypeEnumFromID(id) { switch (id) { case 0: return "None"; 
 
 const GameViewingModeEnum = { ProvincesOnly: "ProvincesOnly", ProvincesAndUnitsOnly: "ProvincesAndUnitsOnly", EverythingWithReveal: "EverythingWithReveal", EverythingWithoutReveal: "EverythingWithoutReveal" };
 const UnitTypeEnum = { Army: "A", Fleet: "F" };
+const GamePhaseStatusEnum = {AwaitingOrders:"AwaitingOrders",AwaitingRetreats:"AwaitingRetreats",Completed:"Completed",GameEnded:"GameEnded"};
 
 //#endregion
 

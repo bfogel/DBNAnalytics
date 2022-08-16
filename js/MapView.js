@@ -2,12 +2,9 @@
 
 /*Note: Add CoastLines to MapData
         - ADD CANALS TO MapData in Dipcast
+        - Add Coastlines to MapData and make sure the calculation doesn't still happen
         - remove WaterColor and UseBackgroundMap
-        - Fix label
-        - Add Game Over indicator
         - Add scoreboard
-        - +- numbers on winter phases
-        - Finish nav panel (improve buttons, add first and last)
 */
 
 /**
@@ -33,6 +30,8 @@ var myMapDataRawNEW = { "Properties": { "Label": "Backstabbr", "CornerRadius": 2
  * @param {any} gamedata 
  */
 function ProcessMapData(gamedata) {
+    // [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]].forEach(x => console.log(new dbnLineSegment([0, 0], x).AngleToHorizontal));
+    // return;
 
     var game = new gmGame(gamedata);
     console.log(gamedata);
@@ -51,7 +50,7 @@ function ProcessMapData(gamedata) {
 
     mv.Game = game;
     //mv.GamePhase = game.GamePhases[game.GamePhases.length - 1];
-    var phase = game.GamePhases[6];
+    var phase = game.GamePhases[2];
     // MakeAllAustrianArmies(phase, mv.MapData);
     //MakeAllFleets(phase, mv.MapData);
     mv.GamePhase = phase;
@@ -269,6 +268,7 @@ class dbnMapData {
         }
 
         if (!this.CoastLines) this.CoastLines = this.#FindCoastlines();
+        if (!this.AdjustmentLocations) this.AdjustmentLocations = this.#FindAdjustmentLocations();
     }
 
     /**@type{string} */
@@ -280,8 +280,11 @@ class dbnMapData {
     // /**@type{boolean} */
     // UseBackgroundMap;
 
-    /**@type{Object.<string,dbnProvinceData>} */
+    /**@type{Object.<string,dbnProvinceData>} - Keys are ProvinceEnum*/
     ProvinceData;
+
+    /**@type{Object.<string,dbnPoint>} - Keys are CountryEnum*/
+    AdjustmentLocations;
 
     /**@type{dbnPoint[]} */
     Canals;
@@ -382,6 +385,57 @@ class dbnMapData {
 
     //#endregion
 
+    //#region FindAdjustmentLocations
+
+    #FindAdjustmentLocations() {
+
+        /**@type{Object.<string,dbnPoint>} */
+        var ret = {};
+
+        Object.entries(myGameModel.SupplyCentersByCountry).forEach(x => {
+            var country = x[0];
+            var provinces = x[1];
+            var points = provinces.map(pp => dbnPoint.FromNumberArray(this.ProvinceData[pp].DotLocation));
+
+            var pp = new dbnPoint(0, 0);
+            points.forEach(x => pp = pp.AddTo(x));
+            pp = pp.MultiplyBy(1 / points.length);
+
+            ret[country] = pp;
+        });
+
+        Object.values(CountryEnum).forEach(country => {
+            /**@type{string[]} */ var provinces;
+            switch (country) {
+                case CountryEnum.Austria: provinces = [ProvinceEnum.Ser, ProvinceEnum.Tri, ProvinceEnum.Bud]; break;
+                case CountryEnum.England: provinces = [ProvinceEnum.Lvp, ProvinceEnum.IRI]; break;
+                case CountryEnum.France: provinces = [ProvinceEnum.Par, ProvinceEnum.Mar]; break;
+                case CountryEnum.Germany: provinces = [ProvinceEnum.Mun, ProvinceEnum.Kie, ProvinceEnum.Ruh]; break;
+                case CountryEnum.Italy: provinces = [ProvinceEnum.Tus, ProvinceEnum.TYS]; break;
+                case CountryEnum.Russia: provinces = [ProvinceEnum.Mos, ProvinceEnum.War]; break;
+                case CountryEnum.Turkey: provinces = [ProvinceEnum.Arm, ProvinceEnum.Smy]; break;
+
+                default:
+                    break;
+            }
+            if (provinces) {
+                var points = provinces.map(pp => {
+                    var pd = this.ProvinceData[pp];
+                    return dbnPoint.FromNumberArray(pd.GetLocationForUnit(pd.GetDefaultUnitWithLocation()));
+                });
+
+                var pp = new dbnPoint(0, 0);
+                points.forEach(x => pp = pp.AddTo(x));
+                pp = pp.MultiplyBy(1 / points.length);
+
+                ret[country] = pp;
+            }
+        });
+
+        return ret;
+    }
+
+    //#endregion
 }
 
 //#endregion
@@ -403,20 +457,13 @@ class dbnMapView extends dbnSVG {
 
     //#region SVG Definitions
 
-    #RegularArrowheadLabel = "RegArrowhead";
-    #ArrowheadLabel = "arrowhead";
-    #SupportEndCap = "supportEndCap";
     #RetreatFillColor = "white";
     #RetreatStrokeColor = "orange";
+    #SupportEndCap = "supportEndCap";
 
     #AddSVGDefinitions() {
         [true, false].forEach(succeeded => {
             var strokecolor = succeeded ? "black" : "red";
-
-            Object.values(CountryEnum).forEach(country => {
-                var color = myHub.ColorScheme.CountryColors[country];
-                this.#MakeArrowhead(this.#ArrowheadLabel + country + succeeded, strokecolor, color);
-            });
 
             //Support hold
             var marker = new dbnSVGMarker();
@@ -428,26 +475,6 @@ class dbnMapView extends dbnSVG {
             line2.strokeDashArray = "1,1";
             this.AddDef(marker);
         });
-
-        this.#MakeArrowhead(this.#ArrowheadLabel + "Retreat", this.#RetreatStrokeColor, this.#RetreatFillColor);
-
-        var xx = this.#MakeArrowhead(this.#RegularArrowheadLabel, "black", "black");
-    }
-
-    /**
-     * 
-     * @param {string} id 
-     * @param {string} strokecolor 
-     * @param {string} fillcolor 
-     */
-    #MakeArrowhead(id, strokecolor, fillcolor) {
-        var marker = new dbnSVGMarker();
-        marker.id = id;
-        marker.MarkerWidth = 6; marker.MarkerHeight = 6;
-        marker.RefX = 3; marker.RefY = 2.5;
-        marker.AddPolygon(1, 1, [[0, 0], [3, 1.5], [0, 3]], strokecolor, 0.5, fillcolor);
-        this.AddDef(marker);
-        return marker;
     }
 
     //#endregion
@@ -475,74 +502,64 @@ class dbnMapView extends dbnSVG {
     //#region Navigation
 
     #AddNavigationButtons() {
-        var pt = new dbnPoint(15, 35);
-        var length = 30;
-        var aheight = 5;
-        var width = 10;
-        var stroke = 3;
+        var pt = new dbnPoint(5, 35);
+        var length = 20;
+        var mm = 3;
+        var linewidth = 4;
+        var spacing = 3;
 
+        //S01
         var btn = new dbnSVGButton(this);
         btn.BackColor = "none";
-        btn.AddText("Precocious", 0, 12, "black");
-        var alin = new dbnSVGArrowPath(btn);
-        alin.LineSegment = new dbnLineSegment([10, 10], [60, 20]);
-        alin.ArrowSize = 2;
-        alin.LineWidth = 5;
-        alin.strokeWidth = 3;
-        alin.stroke = "black";
-        alin.fill = "green";
-
-        btn.AddCircle(10, 30, 5, "none", null, "purple");
-        btn.FitToContents(3, 1, 0, 1);
-        btn.MoveTo(30, 100);
-
-        var g = this.createAndAppendElement("g");
-        g.domelement.setAttribute("onmouseenter", "console.log('g in')");
-        g.domelement.setAttribute("onmouseout", "console.log('g out')");
-        g.domelement.classList.add("svglink");
+        btn.AddText("S01");
+        btn.FitToContents(3, 1, -3, 1);
+        btn.MoveTo(pt);
+        btn.onclick = this.GoToFirstPhase.bind(this);
+        btn.createAndAppendElement("title").AddText("Go to Spring 01");
+        pt = pt.WithOffset(btn.getBBox().width + spacing, 0);
 
         //Previous
-        var link = g.AddLink();
-        link.onclick = this.GoToPreviousPhase.bind(this);
-        link.domelement.setAttribute("onmouseenter", "console.log('link in')");
-        link.domelement.setAttribute("onmouseout", "console.log('link out')");
-        var rect = link.AddRectangle(pt.X, pt.Y, length, 2 * aheight, "black", 1, "none");
-        rect.rx = 4;
-        //rect.domelement.classList.add("svglink");
-
-        // var path = link.AddLine(pt.X + length, pt.Y + 5, pt.X, pt.Y + 5, "black", stroke, this.#RegularArrowheadLabel);
-
-        var pp = pt.WithOffset(length, aheight); var d = pp.ToPath("M");
-        pp = pp.WithOffset(-length + width, 0); d += pp.ToPath("L");
-        pp = pp.WithOffset(0, -aheight); d += pp.ToPath("L");
-        pp = pp.WithOffset(-width, aheight); d += pp.ToPath("L");
-        pp = pp.WithOffset(width, aheight); d += pp.ToPath("L");
-        pp = pp.WithOffset(0, -aheight); d += pp.ToPath("L");
-        d += "Z";
-        var path = link.AddPath(d, "black", stroke, this.#RegularArrowheadLabel);
-        //path.domelement.classList.add("svglink");
+        btn = new dbnSVGButton(this);
+        btn.BackColor = "none";
+        var alin = new dbnSVGArrowPath(btn);
+        alin.LineSegment = new dbnLineSegment([0, 0], [-length, 0]);
+        alin.LineWidth = linewidth;
+        btn.FitToContents(mm, mm, mm, mm);
+        btn.MoveTo(pt);
+        btn.onclick = this.GoToPreviousPhase.bind(this);
+        btn.createAndAppendElement("title").AddText("Previous phase");
+        pt = pt.WithOffset(btn.getBBox().width + spacing, 0);
 
         //Next
-        link = g.AddLink();
-        link.onclick = this.GoToNextPhase.bind(this);
-        //link.domelement.classList.add("svglink");
-        link.fill = "grey";
+        btn = new dbnSVGButton(this);
+        btn.BackColor = "none";
+        alin = new dbnSVGArrowPath(btn);
+        alin.LineSegment = new dbnLineSegment([0, 0], [length, 0]);
+        alin.LineWidth = linewidth;
+        btn.FitToContents(mm, mm, mm, mm);
+        btn.MoveTo(pt);
+        btn.onclick = this.GoToNextPhase.bind(this);
+        btn.createAndAppendElement("title").AddText("Next phase");
+        pt = pt.WithOffset(btn.getBBox().width + spacing, 0);
 
-        rect = link.AddRectangle(pt.X + length, pt.Y, length, 2 * aheight, "black", 1, "green");
-        rect.rx = 4;
-        //rect.domelement.classList.add("svglink");
-        //link.AddLine(pt.X + 25, pt.Y + 5, pt.X + 25 + length, pt.Y + 5, "black", stroke, this.#RegularArrowheadLabel);
+        //Last
+        var btn = new dbnSVGButton(this);
+        btn.BackColor = "none";
+        btn.AddText(this.Game.GamePhases[this.Game.GamePhases.length - 1].PhaseTextShort);
+        btn.FitToContents(3, 1, -3, 1);
+        btn.MoveTo(pt);
+        btn.onclick = this.GoToLastPhase.bind(this);
+        btn.createAndAppendElement("title").AddText("Go to Spring 01");
+        pt = pt.WithOffset(btn.getBBox().width + spacing, 0);
+    }
 
-        pp = pt.WithOffset(length + width, aheight); d = pp.ToPath("M");
-        pp = pp.WithOffset(length - width, 0); d += pp.ToPath("L");
-        pp = pp.WithOffset(0, -aheight); d += pp.ToPath("L");
-        pp = pp.WithOffset(width, aheight); d += pp.ToPath("L");
-        pp = pp.WithOffset(-width, aheight); d += pp.ToPath("L");
-        pp = pp.WithOffset(0, -aheight); d += pp.ToPath("L");
-        d += "Z";
-        path = link.AddPath(d, "black", stroke, this.#RegularArrowheadLabel);
-        //path.domelement.classList.add("svglink");
-
+    GoToFirstPhase() {
+        if (!this.Game || this.Game.GamePhases.length == 0) return;
+        this.GamePhase = this.Game.GamePhases[0];
+    }
+    GoToLastPhase() {
+        if (!this.Game || this.Game.GamePhases.length == 0) return;
+        this.GamePhase = this.Game.GamePhases[this.Game.GamePhases.length - 1];
     }
 
     GoToPreviousPhase() { this.#AdvancePhase(false); }
@@ -610,22 +627,35 @@ class dbnMapView extends dbnSVG {
             }
         }
 
-        //Phase label
-        this.AddText(this.GamePhase.PhaseTextLong, 5, 23, "Black", "font-weight: bold; font-size: 20px");
-
-        // }
+        if (this.GamePhase.Phase % 10 == 3) this.#DrawAdjustmentCounts();
 
         // if (Map.ShowPlayerNames) DrawNames(gr);
 
-        // DrawGameStatus(gr);
+        this.#DrawGameLabels();
 
         this.#AddNavigationButtons();
 
     }
 
+    #DrawGameLabels() {
+
+        //Phase label
+        this.AddText(this.GamePhase.PhaseTextLong, 5, 8, "Black", "font-weight: bold; font-size: 20px");
+
+        if (this.GamePhase.Status == GamePhaseStatusEnum.GameEnded) {
+            var xx = this.AddText("Game Over", 5, 60, "Red", "font-weight: bold; font-size: 30px");
+            xx.stroke = "black";
+        }
+    }
+
+    /**@type{Object.<string,dbnSVGPath>} */
+    #ProvinceSVGs;
+
     #DrawProvinces() {
         var owners = this.GamePhase?.MakeSupplyCentersByProvince();
         var colors = myHub.ColorScheme;
+
+        this.#ProvinceSVGs = {};
 
         Object.values(this.MapData.ProvinceData).forEach(x => {
             var fill;
@@ -638,7 +668,27 @@ class dbnMapView extends dbnSVG {
                 fill = owner ? colors.CountryColors[owner] : colors.NeutralColor;
                 fill += "aa";
             }
-            this.AddPath(x.BorderPath, "black", "2", fill);
+
+            var provincesvg = this.AddPath(x.BorderPath, "black", "2", fill);
+            this.#ProvinceSVGs[x.Province] = provincesvg;
+
+            //Show orders on tooltip
+            var orders = this.GamePhase.GetOrdersForProvince(x.Province);
+            var orddiv = new dbnDiv();
+            for (const country in orders) {
+                orders[country].forEach(oar => {
+                    var thisdiv = orddiv.addDiv();
+                    thisdiv.addText(oar.ToString());
+                    thisdiv.style.color = myHub.ColorScheme.CountryColors[country];
+                });
+            }
+
+            if (orddiv.domelement.childNodes.length == 0) orddiv.addText(x.Province + " (no orders)");
+
+            if (orddiv.domelement.childNodes.length > 0) {
+                provincesvg.onmousemove = (e) => dbnSVGElement.ShowTooltip(e, orddiv);
+                provincesvg.onmouseout = (e) => dbnSVGElement.HideTooltip();
+            }
 
             if (x.Canal && x.Canal.length == 2) {
                 var pps = x.Canal.map(ptx => {
@@ -648,8 +698,12 @@ class dbnMapView extends dbnSVG {
                     return ptf.AddTo(ptc);
                 });
                 var segCanal = new dbnLineSegment(pps[0], pps[1]);
-                this.AddLineFromSegment(segCanal, "black", 5).strokeDashArray = "1,1";
-                this.AddLineFromSegment(segCanal, colors.WaterColor, 3);
+                var line1 = this.AddLineFromSegment(segCanal, "black", 5);
+                line1.strokeDashArray = "1,1";
+                line1.SetPointerEventsNone();
+
+                var line2 = this.AddLineFromSegment(segCanal, colors.WaterColor, 3);
+                line2.SetPointerEventsNone();
             }
         });
         // if (MapData.CornerRadius > 0) {
@@ -664,7 +718,8 @@ class dbnMapView extends dbnSVG {
 
     #DrawSupplyCenters() {
         Object.values(this.MapData.ProvinceData).filter(x => x.HasSupplyCenter).forEach(x => {
-            this.AddCircle(x.DotLocation[0], x.DotLocation[1], 3);
+            var circle = this.AddCircle(x.DotLocation[0], x.DotLocation[1], 3);
+            circle.SetPointerEventsNone();
         });
     }
 
@@ -674,6 +729,7 @@ class dbnMapView extends dbnSVG {
             var loc = pd.TextLocation;
             var text = this.AddText(x[0], loc[0], loc[1], null, "font-size:10px; ");
             text.SetVerticalAlignAuto();
+            text.SetPointerEventsNone();
         });
     }
 
@@ -709,19 +765,21 @@ class dbnMapView extends dbnSVG {
         if (provdata) {
             var loc = provdata.UnitLocations[uwl.Key];
             if (loc) {
+                /**@type{dbnSVGElement} */ var unit;
+                /**@type{dbnSVGElement} */ var back;
                 switch (uwl.UnitType) {
                     case "A":
                         var rad = this.UnitSize / 2;
-                        this.AddCircle(loc[0], loc[1], rad, color, 4, innercolor);
-                        this.AddCircle(loc[0], loc[1], rad, "black", 2, "none");
+                        unit = this.AddCircle(loc[0], loc[1], rad, color, 4, innercolor);
+                        back = this.AddCircle(loc[0], loc[1], rad, "black", 2, "none");
                         break;
 
                     case "F":
                         // this.AddPolygon(loc[0], loc[1], fleet, color, 4, innercolor);
                         // this.AddPolygon(loc[0], loc[1], fleet, "black", 2, "none");
 
-                        this.AddPolygon(loc[0], loc[1], this.#FleetPoints, color, 4, innercolor);
-                        this.AddPolygon(loc[0], loc[1], this.#FleetPoints, "black", 2, "none");
+                        unit = this.AddPolygon(loc[0], loc[1], this.#FleetPoints, color, 4, innercolor);
+                        back = this.AddPolygon(loc[0], loc[1], this.#FleetPoints, "black", 2, "none");
 
                         // this.AddRectangle(loc[0] - this.UnitSize, loc[1], 2 * this.UnitSize, this.UnitSize, color, 4, color + "cc");
                         // this.AddRectangle(loc[0] - this.UnitSize, loc[1], 2 * this.UnitSize, this.UnitSize, "black", 2, "none");
@@ -729,6 +787,10 @@ class dbnMapView extends dbnSVG {
                         // this.AddRectangle(loc[0] - this.UnitSize / 2, loc[1] - this.UnitSize, this.UnitSize, 2 * this.UnitSize, "black", 2, "none");
                         break;
                     default: console.log("UNKNOWN UnitType: " + uwl.UnitType); break;
+                }
+                if (unit) {
+                    unit.SetPointerEventsNone();
+                    back.SetPointerEventsNone();
                 }
             } else {
                 console.log("LOCATION NOT FOUND: " + uwl.Key);
@@ -817,6 +879,7 @@ class dbnMapView extends dbnSVG {
         var loc = pd.GetLocationForUnit(uwl);
         var text = this.AddText("H", loc[0] - 3.2, loc[1] + 3.3, "black", "font-size: 8px; font-weight: bold");
         text.SetVerticalAlignAuto();
+        text.SetPointerEventsNone();
     }
 
     /**
@@ -837,14 +900,20 @@ class dbnMapView extends dbnSVG {
         return moveline;
     }
 
+    #MoveLineWidth = 4;
+    #MoveArrowsize = 2;
+    #MoveArrowEndCapWidth = dbnSVGArrowPath.GetDefaultEndCapDimension(this.#MoveLineWidth, this.#MoveArrowsize);
+
     /**
      * 
      * @param {dbnLineSegment} line 
      * @returns 
      */
     #ShortenMovement(line) {
-        var shorten = this.UnitSize * 0.75;
-        if (line.Length < 4 * shorten) shorten = 0.5 * (line.Length - 2 * shorten);
+        var shorten = this.UnitSize * 0.6;
+        //if (line.Length < 4 * shorten) shorten = 0.5 * (line.Length - 2 * shorten);
+        if (line.Length < 3 * this.#MoveArrowEndCapWidth) shorten = 0;
+        //shorten = 0;
 
         // if (shorten > 0) return line.WithNewLength(-shorten, -shorten);
         if (shorten > 0) return line.WithNewLength(0, -shorten);
@@ -863,17 +932,22 @@ class dbnMapView extends dbnSVG {
 
         var line = this.#GetMoveSegment(oar.Province, order.ToLocation);
 
-        var linewidth = 4;
-
         var strokecolor = isretreat ? this.#RetreatStrokeColor : (oar.Result.Succeeded ? "black" : "red");
-
-        var arrowhead = this.#ArrowheadLabel + (isretreat ? "Retreat" : country + oar.Result.Succeeded);
-        this.AddLineFromSegment(line, strokecolor, 5, arrowhead);
-
         var fillcolor = isretreat ? this.#RetreatFillColor : myHub.ColorScheme.CountryColors[country];
-        var filline = this.AddLineFromSegment(line, fillcolor, 1.5);
-        //if (isretreat) filline.strokeDashArray = "5,3,1,3";
 
+        // var arrowhead = this.#ArrowheadLabel + (isretreat ? "Retreat" : country + oar.Result.Succeeded);
+        // this.AddLineFromSegment(line, strokecolor, 5, arrowhead);
+        // this.AddLineFromSegment(line, fillcolor, 1.5);
+
+        var arrow = new dbnSVGArrowPath(this);
+        arrow.LineSegment = line;
+        arrow.LineWidth = this.#MoveLineWidth;
+        arrow.ArrowSize = this.#MoveArrowsize;
+        arrow.stroke = strokecolor;
+        arrow.strokeWidth = 2.25;
+        arrow.fill = fillcolor;
+
+        arrow.SetPointerEventsNone();
     }
 
     /**
@@ -891,14 +965,16 @@ class dbnMapView extends dbnSVG {
 
         var moveline = this.#GetMoveSegment(order.FromLocation.Province, order.ToLocation);
         var ptDest = moveline.GetInterimPoint(0.75);
+        ptDest = moveline.WithNewLength(0, -this.#MoveArrowEndCapWidth).ToPoint;
 
         var color = oar.Result.Succeeded ? "black" : "red";
 
         var d = ptThis.ToPath("M") + moveline.FromPoint.ToPath("Q") + ptDest.ToPath("");
         var path = this.AddPath(d, color, 3, "none");
+        path.SetPointerEventsNone();
         path = this.AddPath(d, "white", 1, "none");
         path.strokeDashArray = "5,5";
-
+        path.SetPointerEventsNone();
     }
 
     #DrawOrderSupportMoveCounts() {
@@ -945,10 +1021,13 @@ class dbnMapView extends dbnSVG {
 
         var d = ptThis.ToPath("M") + moveline.FromPoint.ToPath("Q") + ptDest.ToPath("");
         var path = this.AddPath(d, color, 3, "none");
+        path.SetPointerEventsNone();
         path = this.AddPath(d, "white", 1, "none");
         path.strokeDashArray = "10,5";
+        path.SetPointerEventsNone();
 
-        this.AddCircle(ptDest.X, ptDest.Y, 5, "none", 0, "blue");
+        var circle = this.AddCircle(ptDest.X, ptDest.Y, 5, "none", 0, "blue");
+        circle.SetPointerEventsNone();
     }
 
     /**
@@ -974,9 +1053,11 @@ class dbnMapView extends dbnSVG {
 
         var svgline = this.AddLineFromSegment(line, color, 3);
         svgline.markerEnd = this.#SupportEndCap + oar.Result.Succeeded;
+        svgline.SetPointerEventsNone();
 
         svgline = this.AddLineFromSegment(line, "white", 1);
         svgline.strokeDashArray = "2,2";
+        svgline.SetPointerEventsNone();
     }
 
     /**
@@ -997,12 +1078,16 @@ class dbnMapView extends dbnSVG {
         var l1 = new dbnLineSegment(pt.WithOffset(f, f), pt.WithOffset(-f, -f));
         var l2 = new dbnLineSegment(pt.WithOffset(f, -f), pt.WithOffset(-f, f));
 
+        /**@type{dbnSVGLine[]} */
+        var lines = [];
         var thickness = 4;
-        this.AddLineFromSegment(l1, "black", thickness);
-        this.AddLineFromSegment(l2, "black", thickness);
+        lines.push(this.AddLineFromSegment(l1, "black", thickness));
+        lines.push(this.AddLineFromSegment(l2, "black", thickness));
 
-        this.AddLineFromSegment(l1.WithNewLength(-1, -1), "red", thickness / 2);
-        this.AddLineFromSegment(l2.WithNewLength(-1, -1), "red", thickness / 2);
+        lines.push(this.AddLineFromSegment(l1.WithNewLength(-1, -1), "red", thickness / 2));
+        lines.push(this.AddLineFromSegment(l2.WithNewLength(-1, -1), "red", thickness / 2));
+
+        lines.forEach(x => x.SetPointerEventsNone());
     }
 
     /**
@@ -1023,12 +1108,45 @@ class dbnMapView extends dbnSVG {
 
         var f = this.UnitSize * 0.9;
 
-        this.AddCircle(pt.X, pt.Y, f, "black", 4, "none");
-        var circ = this.AddCircle(pt.X, pt.Y, f, "white", 1.5, "none");
-        circ.strokeDashArray = "2,3";
+        var circ1 = this.AddCircle(pt.X, pt.Y, f, "black", 4, "none");
+        circ1.SetPointerEventsNone();
+
+        var circ2 = this.AddCircle(pt.X, pt.Y, f, "white", 1.5, "none");
+        circ2.strokeDashArray = "2,3";
+        circ2.SetPointerEventsNone();
     }
 
     //#endregion
+
+    //#region Adjustment Counts
+
+    #DrawAdjustmentCounts() {
+        var n = 0;
+
+        Object.values(CountryEnum).forEach(country => {
+            var units = this.GamePhase.Units[country];
+            if (!units) return;
+            var cc = this.GamePhase.CenterCounts[country];
+            if (!cc) return;
+            if (units.length != cc) {
+                var pt = this.MapData.AdjustmentLocations[country];
+                var text = (cc > units.length ? "+" : "") + new String(cc - units.length);
+
+                var circle = this.AddCircle(pt.X, pt.Y, 15, "black", 2, "white");
+                circle.SetPointerEventsNone();
+
+                var txt = this.AddText(text, pt.X, pt.Y, myHub.ColorScheme.CountryColors[country], "font-size: 20px; font-weight:bold;");
+                txt.SetVerticalAlignMiddle();
+                txt.SetHorizontalAlignMiddle();
+                txt.SetPointerEventsNone();
+                n++;
+            }
+
+        });
+    }
+
+    //#endregion
+
 }
 
 //#endregion
