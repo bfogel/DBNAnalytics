@@ -291,7 +291,7 @@ function HandleRequest($request)
                 $RootKey = $parameters["RootKey"];
 
                 $sql = "SELECT * FROM GameOrderData
-                        WHERE GameID = ?";
+                        WHERE Game_GameID = ?";
                 $vals = [$GameID];
 
                 return GetResultsetAsJSON($sql, $vals);

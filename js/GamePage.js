@@ -20,19 +20,15 @@ function MakePage() {
     //if ("competitionid" in myHub.Parameters) myCompetitionID = Number.parseInt(myHub.Parameters["competitionid"]);
 
     var reqs = myHub.MakeRequestList();
-    var reqCompetitionInfo = new dbnHubRequest_Competition(myCompetitionID);
-
-    var reqs = myHub.MakeRequestList();
-    var reqSeries = new dbnHubRequest_CompetitionGroup_FromSeriesByRoot("DBN");
-    var reqDBNIQ = new dbnHubRequest_CompetitionGroup_FromDBNIQs();
-
-    reqs.addRequest(reqSeries);
-    reqs.addRequest(reqDBNIQ);
+    var reqGameData = new dbnHubRequest_GetGameData(myGameID);
+    reqs.addRequest(reqGameData);
 
     var div = dbnHere().addDiv();
     div.addText("Loading...");
 
     reqs.Send();
+    reqs.ReportToConsole(); return;
+
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
 
     div.innerHTML = "";
@@ -42,37 +38,6 @@ function MakePage() {
     card.addText("A compendium of all competitions covered on DBN");
     document.title = "All Competitions";
 
-    card.style = "text-align: center";
-
-    // var tabs = div.addTabs();
-    // if (reqCompetitions.CompiledTable) tabs.addTab("Competitions", reqCompetitions.MakeUITable());
-    // if (reqStandings.CompiledTable) tabs.addTab("Standings", reqStandings.MakeUITable());
-    // if (reqStatistics.CompiledTable) tabs.addTab("Statistics", reqStatistics.MakeUITable());
-    // tabs.SelectTabByIndex(0);
-
-    card = div.addCard();
-
-    var groups = [reqDBNIQ.ResponseToObjects(), reqSeries.ResponseToObjects()];
-
-    groups.forEach(group => {
-        var tbl = card.addTable();
-        tbl.Headers = ["Series", "#", "Earliest", "Latest"];
-        var data = [];
-        var cellurls = [];
-        var rowurls = [];
-        group
-            .sort((a, b) => a.Label.localeCompare(b.Label))
-            .forEach((x, i) => {
-                data.push([x.Label, x.CompetitionCount, x.Earliest, x.Latest]);
-                cellurls.push([i, 0, myHub.MakeCompetitionGroupURL(x.GroupType, x.GroupID)]);
-                rowurls.push(myHub.MakeCompetitionGroupURL(x.GroupType, x.GroupID));
-            });
-        tbl.Data = data;
-        tbl.CellUrls = cellurls;
-        tbl.RowUrls = rowurls;
-        tbl.Generate();
-        card.addLineBreak();
-    });
 }
 MakePage();
 
