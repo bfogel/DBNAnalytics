@@ -37,7 +37,7 @@ function GameAnonymityTypeEnumFromID(id) { switch (id) { case 0: return "None"; 
 
 const GameViewingModeEnum = { ProvincesOnly: "ProvincesOnly", ProvincesAndUnitsOnly: "ProvincesAndUnitsOnly", EverythingWithReveal: "EverythingWithReveal", EverythingWithoutReveal: "EverythingWithoutReveal" };
 const UnitTypeEnum = { Army: "A", Fleet: "F" };
-const GamePhaseStatusEnum = {AwaitingOrders:"AwaitingOrders",AwaitingRetreats:"AwaitingRetreats",Completed:"Completed",GameEnded:"GameEnded"};
+const GamePhaseStatusEnum = { AwaitingOrders: "AwaitingOrders", AwaitingRetreats: "AwaitingRetreats", Completed: "Completed", GameEnded: "GameEnded" };
 
 //#endregion
 
@@ -786,6 +786,12 @@ class dbnPlayerList extends dbnDiv {
 //#endregion
 
 //#region Game
+
+class dbnHubRequest_GetGameData extends bfDataRequest {
+  constructor(pGameID = null, pRootKey = null) {
+    super("GetGameData", { GameID: pGameID, RootKey: pRootKey });
+  }
+}
 
 class dbnHubRequest_GetGames extends bfDataRequest {
   constructor(pGameIDs = null, pCompetitionIDs = null, pPlayerIDs = null, pRootKey = null) {

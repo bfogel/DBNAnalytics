@@ -284,6 +284,19 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $vals);
             }
 
+        case "GetGameData": {
+                if (!array_key_exists("GameID", $parameters)) return MakeErrorResponse("No GameID");
+                $GameID = $parameters["GameID"];
+                if (!array_key_exists("RootKey", $parameters)) return MakeErrorResponse("RootKey");
+                $RootKey = $parameters["RootKey"];
+
+                $sql = "SELECT * FROM GameOrderData
+                        WHERE GameID = ?";
+                $vals = [$GameID];
+
+                return GetResultsetAsJSON($sql, $vals);
+            }
+
         case "GetGames": {
                 //You need to reevaluate this path.  It's currently only used for getting games for a competition.  The logic here is probably too broad.
                 $GameIDs = null;
