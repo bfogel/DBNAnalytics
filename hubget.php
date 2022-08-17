@@ -791,14 +791,17 @@ function GetGames_GameModel($where, $params)
                     break;
             }
 
-            $games[$gamekey] = $game;
             $playernames = [];
             $lines = [];
         }
 
         $country =  $row[$cCountryName];
         $playernames[$country] = $row[$cPlayerName];
-        $game["Players"] = $playernames; //updated array must be copied into the game object
+
+        if($country=="Turkey"){
+            $game["Players"] = $playernames; //updated array must be copied into the game object
+            $games[$gamekey] = $game; //updated game object must copied into return list
+        }
 
         // $line = [
         //     "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote], "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination], "UnexcusedResignation" => $row[$cUnexcusedResignation], "SupplyCenters" => $row[$cSupplyCenters], "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
@@ -807,7 +810,6 @@ function GetGames_GameModel($where, $params)
         // $lines[$line["Country"]] = $line;
         // // array_push($lines, $line);
         // $game["ResultLines"] = $lines;
-        $games[$gamekey] = $game; //updated game object must copied into return list
     }
 
     return array_values($games);
