@@ -704,8 +704,8 @@ function GetGames_GameModel($where, $params)
             INNER JOIN GameCommunicationType as COMM on G.CommunicationType_GameCommunicationTypeID = COMM.GameCommunicationTypeID
             INNER JOIN GameLanguage as LANG on G.Language_GameLanguageID = LANG.GameLanguageID
             INNER JOIN GameDeadlineType as DEAD on G.DeadlineType_GameDeadlineTypeID = DEAD.GameDeadlineTypeID
-            INNER JOIN GameLimitType as LIM on G.GameLimitType_GameLimitTypeID = LANG.GameLimitTypeID
-            INNER JOIN GameAnonymityType as ANON on G.AnonymityType_GameAnonymityTypeID = LANG.GameAnonymityTypeID
+            INNER JOIN GameLimitType as LIM on G.GameLimitType_GameLimitTypeID = LIM.GameLimitTypeID
+            INNER JOIN GameAnonymityType as ANON on G.AnonymityType_GameAnonymityTypeID = ANON.GameAnonymityTypeID
             WHERE {$where}
             ORDER BY G.GameID, CO.CountryName";
 
