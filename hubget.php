@@ -791,10 +791,10 @@ function GetGames_GameModel($where, $params)
                     break;
             }
 
-            $games[$gamekey] = $game;
             $playernames = [];
             $game["Players"] = $playernames;
 
+            $games[$gamekey] = $game;
             $lines = [];
         }
 
