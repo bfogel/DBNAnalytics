@@ -60,6 +60,15 @@ function dbnCompetitionRoot_GetPage($atts = [], $content = null, $tag = '')
 	return $responder->Generate();
 }
 
+add_shortcode('dbnGamePage', 'dbnGamePage_GetPage');
+function dbnGamePage_GetPage($atts = [], $content = null, $tag = '')
+{
+	$responder = new dbnResponder();
+	$responder->JS_MapView = true;
+	$responder->JS_GamePage = true;
+	return $responder->Generate();
+}
+
 add_shortcode('dbnMapView', 'dbnMapView_GetPage');
 function dbnMapView_GetPage($atts = [], $content = null, $tag = '')
 {

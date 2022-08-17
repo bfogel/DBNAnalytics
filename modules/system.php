@@ -33,7 +33,7 @@ function dbn_GetHTMLWithConn($conn, $category, $id)
 class dbnResponder
 {
 
-    public $Version = 74;
+    public $Version = 75;
 
     public $HubParameters = null;
 
@@ -45,6 +45,7 @@ class dbnResponder
 
     public $JS_PlayerGameList = false;
 
+    public $JS_GamePage = false;
     public $JS_MapView = false;
 
     public $JS_PowerAuction = false;
@@ -77,6 +78,7 @@ class dbnResponder
         $js_page = [];
         if ($this->JS_PlayerGameList) array_push($js_page, "PlayerGameList");
 
+        if ($this->JS_GamePage) array_push($js_page, "GamePage");
         if ($this->JS_MapView) array_push($js_page, "MapView");
 
         if ($this->JS_PowerAuction) array_push($js_page, "PowerAuction");

@@ -28,21 +28,33 @@ function MakePage() {
     div.addText("Loading...");
 
     reqs.Send();
-    reqs.ReportToConsole();
     var game = reqGame.ResponseToObject();
-    console.log(game);
-    console.log(game.ResultSummary);
-    return;
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
 
     div.innerHTML = "";
 
-    //    var gamephases =
+    document.title = "Game: " + game.GameLabel;
+    var card = div.addTitleCard(document.title);
+    //    card.addText("A compendium of all competitions covered on DBN");
 
-    // var groupinfo = reqGroupInfo.ResponseToObjects()[0];
-    var card = div.addTitleCard("All Competitions");
-    card.addText("A compendium of all competitions covered on DBN");
-    document.title = "All Competitions";
+    div = card.addDiv();
+    div.style.display = "table-row";
+    // div.domelement.style.whiteSpace = "nowrap";
+    // div.domelement.style.verticalAlign = "top";
+
+    var div2 = div.addDiv();
+    var table = game.MakeResultTable();
+    div2.style.display = "table-cell";
+    div2.style.verticalAlign = "top";
+    div2.add(table);
+
+    div2 = div.addDiv();
+    div2.style.display = "table-cell";
+    div2.style.width = "100%";
+    var mv = new dbnMapView(div2);
+    //    mv.style.display = "inline-block";
+    mv.Game = game;
+    mv.GamePhase = game.GamePhases[0];
 
 }
 MakePage();

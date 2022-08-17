@@ -454,7 +454,7 @@ class dbnMapView extends dbnSVG {
 
     constructor(parent = null) {
         super(parent);
-        this.domelement.setAttribute("preserveAspectRatio", "none");
+        //this.domelement.setAttribute("preserveAspectRatio", "none");
         super.style = "background-color: white; user-select: none;";
         //this.SetSize(800, 600);
 
@@ -515,10 +515,11 @@ class dbnMapView extends dbnSVG {
         var mm = 3;
         var linewidth = 4;
         var spacing = 3;
+        var backcolor = "gray";
 
         //S01
         var btn = new dbnSVGButton(this);
-        btn.BackColor = "none";
+        btn.BackColor = backcolor;
         btn.AddText("S01");
         btn.FitToContents(3, 1, -3, 1);
         btn.MoveTo(pt);
@@ -528,7 +529,7 @@ class dbnMapView extends dbnSVG {
 
         //Previous
         btn = new dbnSVGButton(this);
-        btn.BackColor = "none";
+        btn.BackColor = backcolor;
         var alin = new dbnSVGArrowPath(btn);
         alin.LineSegment = new dbnLineSegment([0, 0], [-length, 0]);
         alin.LineWidth = linewidth;
@@ -540,7 +541,7 @@ class dbnMapView extends dbnSVG {
 
         //Next
         btn = new dbnSVGButton(this);
-        btn.BackColor = "none";
+        btn.BackColor = backcolor;
         alin = new dbnSVGArrowPath(btn);
         alin.LineSegment = new dbnLineSegment([0, 0], [length, 0]);
         alin.LineWidth = linewidth;
@@ -552,7 +553,7 @@ class dbnMapView extends dbnSVG {
 
         //Last
         var btn = new dbnSVGButton(this);
-        btn.BackColor = "none";
+        btn.BackColor = backcolor;
         btn.AddText(this.Game.GamePhases[this.Game.GamePhases.length - 1].PhaseTextShort);
         btn.FitToContents(3, 1, -3, 1);
         btn.MoveTo(pt);
@@ -688,6 +689,8 @@ class dbnMapView extends dbnSVG {
                     var thisdiv = orddiv.addDiv();
                     thisdiv.addText(oar.ToString());
                     thisdiv.style.color = myHub.ColorScheme.CountryColors[country];
+                    thisdiv.style.fontWeight = "bold";
+                    thisdiv.style.stroke = "black";
                 });
             }
 

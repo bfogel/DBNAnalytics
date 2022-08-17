@@ -792,6 +792,33 @@ class dbnGameGM extends gmGame {
   /** @type {Object.<string,number>} */ PlayerIDs;
   /** @type {Object.<string,dbnGameResultLineGM>} */ ResultSummary;
 
+  MakeResultTable(includeTitle = false) {
+    var ret = new dbnTable();
+
+    if (includeTitle) ret.Title = this.GameLabel;
+    // if (this.URL) {
+    //   var titlink = new dbnLink();
+    //   titlink.addText(ret.GameLabel + " ");
+    //   var icon = titlink.createAndAppendElement("i");
+    //   icon.className = "fa fa-external-link";
+    //   icon.domelement.setAttribute("aria-hidden", "true");
+    //   titlink.href = this.URL;
+    //   ret.Title = titlink;
+    // }
+
+    var data = [];
+    Object.entries(this.ResultSummary).forEach(x => {
+      var country = x[0];
+      var line = x[1];
+      data.push([country, this.Players[country], "(" + line.CenterCount + ")", line.Score]);
+    });
+    ret.Data = data;
+    ret.CountryRows = Object.keys(this.ResultSummary);
+    ret.Generate();
+
+    return ret;
+  }
+
 }
 
 class dbnGameResultLineGM extends gmResultLine {
