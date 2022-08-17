@@ -749,6 +749,7 @@ function GetGames_GameModel($where, $params)
     $game = null;
     $gamekey = null;
     $playernames = null;
+    $playerids = null;
     $lines = null;
 
     foreach ($rs->data as $row) {
@@ -793,15 +794,20 @@ function GetGames_GameModel($where, $params)
             }
 
             $playernames = [];
+            $playerids = [];
             $lines = [];
         }
 
         $playernames[$country] = $row[$cPlayerName];
+        $playerids[$country] = $row[$cPlayerID];
 
         if ($country == "Turkey") {
             $gamekey = "game" . $row[$cGameID];
             $game["Players"] = $playernames;
-            $games[$gamekey] = $game; 
+
+            $game["PlayerIDs"] = $playerids;
+
+            $games[$gamekey] = $game;
             $game = null;
         }
 
