@@ -20,7 +20,7 @@ function MakePage() {
     //if ("competitionid" in myHub.Parameters) myCompetitionID = Number.parseInt(myHub.Parameters["competitionid"]);
 
     var reqs = myHub.MakeRequestList();
-    var reqGame = new dbnHubRequest_GetGameJSON([myGameID]);
+    var reqGame = new dbnHubRequest_GetGameJSON(myGameID);
     // var reqGameData = new dbnHubRequest_GetGameData(myGameID);
     reqs.addRequest([reqGame]);
 

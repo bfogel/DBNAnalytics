@@ -291,15 +291,13 @@ function HandleRequest($request)
                 $RootKey = $parameters["RootKey"];
 
                 $sql = "SELECT * FROM GameOrderData WHERE Game_GameID = ?";
-                $vals = [$GameID];
 
-                $rs = new dbnResultSet($sql, $vals);
+                $rs = new dbnResultSet($sql, [$GameID]);
                 if (!$rs->success) {
                     $rs->message = "(On get order data) " . $rs->message;
                     return $rs->ToJSON();
                 }
 
-                $vals = [$GameID];
                 $games = GetGames_GameModel('GameID = ?', [$GameID]);
 
                 if ($games instanceof dbnResultSet) {
@@ -308,7 +306,7 @@ function HandleRequest($request)
                 }
 
                 $ret = $games[0];
-                if (array_count_values($rs->data) > 0) $ret["GamePhases"] = $rs->data[0][1];
+                if (array_count_values($rs->data) > 0) $ret["GamePhases"] = json_decode($rs->data[0][1]);
                 return MakeQuerySuccessResponse($ret);
             }
 
