@@ -78,8 +78,8 @@ class dbnResponder
         $js_page = [];
         if ($this->JS_PlayerGameList) array_push($js_page, "PlayerGameList");
 
-        if ($this->JS_GamePage) array_push($js_page, "GamePage");
         if ($this->JS_MapView) array_push($js_page, "MapView");
+        if ($this->JS_GamePage) array_push($js_page, "GamePage");
 
         if ($this->JS_PowerAuction) array_push($js_page, "PowerAuction");
         if ($this->JS_PowerAuctionDemo) array_push($js_page, "PowerAuctionDemo");
