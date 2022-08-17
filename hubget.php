@@ -294,12 +294,18 @@ function HandleRequest($request)
                 $vals = [$GameID];
 
                 $rs = new dbnResultSet($sql, $vals);
-                if (!$rs->success) return MakeErrorResponse("Could not get order data: " . json_encode($rs->ToJSON()));
+                if (!$rs->success) {
+                    $rs->message = "(On get order data) " . $rs->message;
+                    return $rs->ToJSON();
+                }
 
                 $vals = [$GameID];
                 $games = GetGames_GameModel('GameID = ?', [$GameID]);
 
-                if ($games instanceof dbnResultSet) return MakeErrorResponse("Could not get game info: " . json_encode($rs->ToJSON()));
+                if ($games instanceof dbnResultSet) {
+                    $rs->message = "(On get game info) " . $rs->message;
+                    return $rs->ToJSON();
+                }
 
                 $ret = $games[0];
                 if (array_count_values($rs->data) > 0) $ret["GamePhases"] = $rs->data[0][1];
