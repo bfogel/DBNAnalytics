@@ -138,7 +138,7 @@ class gmGame {
      */
     MapByCountries(obj, func) {
         var ret = {};
-        Object.keys(CountryEnum).forEach(k => { if (obj.hasOwnProperty(k)) ret[k] = func(obj[k]); });
+        Object.keys(CountryEnum).forEach(k => { if (k in obj) ret[k] = func(obj[k]); });
         return ret;
     }
 

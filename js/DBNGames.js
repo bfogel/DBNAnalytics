@@ -779,6 +779,8 @@ class dbnGameGM extends gmGame {
     super(json);
     var theseprops = ["GameID", "DrawSize", "GameYearsCompleted", "CompetitionID", "DBNIYear", "PlayerIDs"];
     theseprops.forEach(x => { if (x in json) this[x] = json[x]; })
+
+    if ("ResultSummary" in json) this.ResultSummary = this.MapByCountries(json["ResultSummary"], x => new dbnGameResultLineGM(x));
   }
 
   /** @type {number>} */ GameID;
@@ -787,9 +789,37 @@ class dbnGameGM extends gmGame {
   /** @type {number>} */ CompetitionID;
   /** @type {number>} */ DBNIYear;
 
-  /** @type {Object.<string,number>} */ PlayerIDs = {};
+  /** @type {Object.<string,number>} */ PlayerIDs;
+  /** @type {Object.<string,dbnGameResultLineGM>} */ ResultSummary;
 
 }
+
+class dbnGameResultLineGM extends gmResultLine {
+  /**
+   * 
+   * @param {gmResultLine} gmline 
+   * @param {any} json 
+   */
+  constructor(json) {
+    super({});
+    Object.keys(this).forEach(x => { if (x in json) this[x] = json[x]; });
+    if (this.SupplyCenters) this.SupplyCenters = JSON.parse(this.SupplyCenters);
+    if (typeof this.UnexcusedResignation == "string") this.UnexcusedResignation = this.UnexcusedResignation == "true";
+    if (typeof this.InGameAtEnd == "string") this.InGameAtEnd = this.InGameAtEnd == "true";
+  }
+
+  /**@type{string} */ Country;
+
+  /**@type {dbnPlayer} */ Player;
+
+  /**@type{boolean} */ UnexcusedResignation;
+  /**@type{string[]} */ SupplyCenters;
+  /**@type{number} */ RankScore;
+  /**@type{number} */ TopShare;
+  /**@type{string} */ Note;
+
+}
+
 
 class dbnGame {
 

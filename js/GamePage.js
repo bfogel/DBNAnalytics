@@ -28,9 +28,10 @@ function MakePage() {
     div.addText("Loading...");
 
     reqs.Send();
-    reqs.ReportToConsole(); 
-    console.log(reqGame.ResponseToObjects()[0]);
-    console.log(reqGame.ResponseToObjects()[0].ResultSummary);
+    reqs.ReportToConsole();
+    var game = reqGame.ResponseToObjects()[0];
+    console.log(game);
+    console.log(game.ResultSummary);
     return;
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
 

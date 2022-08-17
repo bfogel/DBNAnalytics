@@ -690,7 +690,8 @@ function GetGames_GameModel($where, $params)
                 , SS.ScoringSystemName, COMM.GameCommunicationTypeName, LANG.GameLanguageName, DEAD.GameDeadlineTypeName, LIM.GameLimitTypeName, ANON.GameAnonymityTypeName
                 , P.PlayerID, P.PlayerName
                 , CO.CountryName, GCP.Note
-                , IF(GCR.InGameAtEnd=1,'true','false') AS InGameAtEnd, GCR.CenterCount, GCR.YearOfElimination, GCR.UnexcusedResignation, GCR.SupplyCenters
+                , IF(GCR.InGameAtEnd = 1,'true','false') AS InGameAtEnd, GCR.CenterCount, GCR.YearOfElimination
+                , IF(GCR.UnexcusedResignation = 1,'true','false') AS UnexcusedResignation, GCR.SupplyCenters
                 , GCC.Score, GCC.Rank, GCC.RankScore, GCC.TopShare
             FROM Game as G
             INNER JOIN Competition as C on G.Competition_CompetitionID = C.CompetitionID
