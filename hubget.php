@@ -676,8 +676,8 @@ function GetGames($where, $params)
 
         $lines[$line["Country"]] = $line;
         // array_push($lines, $line);
-        $game["ResultLines"] = $lines;
-        $games[$gamekey] = $game;
+        $game["ResultLines"] = $lines;  //updated array must be copied into the game object
+        $games[$gamekey] = $game;  //updated game object must be copied into the return list
     }
 
     return array_values($games);
@@ -752,8 +752,9 @@ function GetGames_GameModel($where, $params)
     $lines = null;
 
     foreach ($rs->data as $row) {
-        $gamekey = "game" . $row[$cGameID];
-        if (!array_key_exists($gamekey, $games)) {
+        $country =  $row[$cCountryName];
+
+        if ($game == null) {
             $game = [
                 //Properties in GameModel
                 "Competition" => $row[$cCompetitionName],
@@ -795,12 +796,13 @@ function GetGames_GameModel($where, $params)
             $lines = [];
         }
 
-        $country =  $row[$cCountryName];
         $playernames[$country] = $row[$cPlayerName];
 
-        if($country=="Turkey"){
-            $game["Players"] = $playernames; //updated array must be copied into the game object
-            $games[$gamekey] = $game; //updated game object must copied into return list
+        if ($country == "Turkey") {
+            $gamekey = "game" . $row[$cGameID];
+            $game["Players"] = $playernames;
+            $games[$gamekey] = $game; 
+            $game = null;
         }
 
         // $line = [
