@@ -17,11 +17,50 @@ class dbnColorScheme {
   /**@type{Object.<string,string>} */
   CountryColors = {};
 
-  static RGB2HTML(red, green, blue) {
-    var decColor = 0x1000000 + blue + 0x100 * green + 0x10000 * red;
-    return '#' + decColor.toString(16).substr(1);
+  /**@type{Object.<string,string>} */
+  #CountryBackColors;
+  get CountryBackColors() {
+    if (!this.#CountryBackColors) {
+      this.#CountryBackColors = {};
+      for (const country in this.CountryColors) {
+        const color = this.CountryColors[country];
+        var rgb = dbnColorScheme.HTML2RGB(color);
+        rgb = rgb.map(x => Math.floor(x + (255 - x) * 0.375));
+        this.#CountryBackColors[country] = dbnColorScheme.RGB2HTML(...rgb);
+      }
+    }
+    return this.#CountryBackColors;
   }
 
+  /**
+   * 
+   * @param {number} red 
+   * @param {number} green 
+   * @param {number} blue 
+   * @param {number|null} alpha 
+   */
+  static RGB2HTML(red, green, blue, alpha = null) {
+    var decColor = 0x1000000 + blue + 0x100 * green + 0x10000 * red;
+    var ret = '#' + decColor.toString(16).substring(1);
+    if (alpha) ret += alpha.toString(16).padStart(2, "0");
+    return ret;
+  }
+
+  /**
+   * 
+   * @param {string} color 
+   */
+  static HTML2RGB(color) {
+    /**@type{number[]}*/ var ret = [];
+    if (color[0] != "#") throw "Color is not a hex value";
+    if (color.length < 7) throw "Color is not long enough";
+    ret.push(color.substring(1, 3));
+    ret.push(color.substring(3, 5));
+    ret.push(color.substring(5, 7));
+    if (color.length > 7) ret.push(color.substring(7, 9));
+    ret = ret.map(x => parseInt(x, 16));
+    return ret;
+  }
 }
 
 class dbnColorScheme_OriginalWebsite extends dbnColorScheme {

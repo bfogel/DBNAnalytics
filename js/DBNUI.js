@@ -783,6 +783,7 @@ class dbnTable extends dbnElement {
 
         this.EnsureRows();
 
+        /**@type{HTMLTableElement} */
         var table = this.domelement;
         table.innerHTML = null;
 
@@ -871,7 +872,10 @@ class dbnTable extends dbnElement {
                 }
             }
 
-            if (rr.Country != null) row.className += " bf" + rr.Country + "Back";
+            if (rr.Country != null) {
+                row.style.backgroundColor = myHub.ColorScheme.CountryBackColors[rr.Country];
+                // row.className += " bf" + rr.Country + "Back";
+            }
 
             if (rr.CellUrls != null) {
                 for (iCol in rr.CellUrls) {
@@ -1472,9 +1476,10 @@ class dbnSVGElement {
             tt.style = "position: absolute; display: none;";
             tt.id = "svgToolTip";
             tt.domelement.style.background = "cornsilk";
-            tt.domelement.style.border = "1px solid black";
-            tt.domelement.style.borderRadius = "3px";
-            tt.domelement.style.padding = "2px 4px";
+            tt.domelement.style.border = "4px solid black";
+            tt.domelement.style.borderRadius = "4px";
+            tt.domelement.style.borderStyle = "double";
+            //tt.domelement.style.padding = "2px 4px";
         }
 
         let element = event.target;

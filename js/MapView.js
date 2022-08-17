@@ -257,8 +257,6 @@ class dbnProvinceData {
 class dbnMapData {
 
     constructor(json) {
-        console.log(json);
-
         if ("Properties" in json) {
             var props = json["Properties"];
             if ("Label" in props) this.Label = props["Label"];
@@ -504,6 +502,7 @@ class dbnMapView extends dbnSVG {
     get GamePhase() { return this.#GamePhase; }
     set GamePhase(value) { this.#GamePhase = value; this.#Draw(); }
 
+    ShowNavigationButtons = true;
     ViewingMode = GameViewingModeEnum.EverythingWithoutReveal;
     UnitSize = 15;
 
@@ -619,30 +618,26 @@ class dbnMapView extends dbnSVG {
 
         // FillTerritories(gr);
         this.#DrawProvinces();
-        this.#DrawProvinceLabels();
-        this.#DrawSupplyCenters();
 
         if (this.ViewingMode != GameViewingModeEnum.ProvincesOnly) {
+            this.#DrawProvinceLabels();
+            this.#DrawSupplyCenters();
+
             if (this.ViewingMode != GameViewingModeEnum.ProvincesAndUnitsOnly) {
                 if (this.GamePhase.Orders) this.#DrawOrders(["m", "c", "sh", "sm"]);
                 if (this.GamePhase.RetreatOrders) this.#DrawOrders(["m"], true);
-                // DrawWrittenOrders(gr);
             }
             if (this.GamePhase.Units) this.#DrawUnits();
             if (this.ViewingMode != GameViewingModeEnum.ProvincesAndUnitsOnly) {
                 if (this.GamePhase.Orders) { this.#DrawOrders(["d", "b", "h"]); }
                 if (this.GamePhase.RetreatOrders) this.#DrawOrders(["d"], true);
-                // DrawWrittenOrders(gr);
             }
+
+            if (this.GamePhase.Phase % 10 == 3) this.#DrawAdjustmentCounts();
+
+            this.#DrawGameLabels();
+            if (this.ShowNavigationButtons) this.#AddNavigationButtons();
         }
-
-        if (this.GamePhase.Phase % 10 == 3) this.#DrawAdjustmentCounts();
-
-        // if (Map.ShowPlayerNames) DrawNames(gr);
-
-        this.#DrawGameLabels();
-
-        this.#AddNavigationButtons();
 
     }
 
@@ -671,11 +666,8 @@ class dbnMapView extends dbnSVG {
             if (x.ProvinceType == ProvinceTypeEnum.Water) {
                 fill = colors.WaterColor;
             } else {
-                //NOTE: Printing white and then colored with lower alpha is inefficient and should be replaced with one painting with a modified color
-                this.AddPath(x.BorderPath, null, null, "white");
                 var owner = owners ? owners[x.Province] : null;
-                fill = owner ? colors.CountryColors[owner] : colors.NeutralColor;
-                fill += "aa";
+                fill = owner ? colors.CountryBackColors[owner] : colors.NeutralColor;
             }
 
             var provincesvg = this.AddPath(x.BorderPath, "black", "2", fill);
@@ -687,16 +679,20 @@ class dbnMapView extends dbnSVG {
             for (const country in orders) {
                 orders[country].forEach(oar => {
                     var thisdiv = orddiv.addDiv();
+                    thisdiv.style.padding = "2px 4px";
                     thisdiv.addText(oar.ToString());
-                    thisdiv.style.color = myHub.ColorScheme.CountryColors[country];
+                    thisdiv.style.backgroundColor = myHub.ColorScheme.CountryBackColors[country];
                     thisdiv.style.fontWeight = "bold";
-                    thisdiv.style.stroke = "black";
+                    thisdiv.style.color = "black";
                 });
             }
 
-            if (orddiv.domelement.childNodes.length == 0) orddiv.addText(x.Province + " (no orders)");
+            if (orddiv.domelement.childNodes.length == 0) {
+                orddiv.addText(x.Province + " (no orders)");
+                orddiv.style.padding = "2px 4px";
+            }
 
-            if (orddiv.domelement.childNodes.length > 0) {
+            if (orddiv.domelement.childNodes.length > 0 && this.ViewingMode != GameViewingModeEnum.ProvincesOnly) {
                 provincesvg.onmousemove = (e) => dbnSVGElement.ShowTooltip(e, orddiv);
                 provincesvg.onmouseout = (e) => dbnSVGElement.HideTooltip();
             }

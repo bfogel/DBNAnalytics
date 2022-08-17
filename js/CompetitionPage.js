@@ -10,6 +10,7 @@
 
 /** @type{int|null} */
 var myCompetitionID = null;
+var myDraft = false;
 
 //myHub.Parameters["CompetitionID"] = 4069;
 
@@ -17,6 +18,8 @@ function MakePage() {
     var urlparams = new URLSearchParams(window.location.search);
     if (urlparams.has("CompetitionID")) myCompetitionID = Number.parseInt(urlparams.get("CompetitionID"));
     if ("competitionid" in myHub.Parameters) myCompetitionID = Number.parseInt(myHub.Parameters["competitionid"]);
+
+    if (urlparams.has("Draft")) myDraft = urlparams.get("Draft") == "true";
 
     var reqs = myHub.MakeRequestList();
     var reqCompetitionInfo = new dbnHubRequest_Competition(myCompetitionID);
@@ -33,7 +36,6 @@ function MakePage() {
 
     reqs.Send();
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
-    console.log(JSON.parse(reqStandings.CompiledTable.TableJSON));
 
     div.innerHTML = "";
 
@@ -111,7 +113,6 @@ function MakeGameList(games) {
             table.Title = titlink;
         }
 
-
         var data = [];
         Object.values(x.ResultLines).forEach(rl => {
             data.push([rl.Country, rl.Player.PlayerName, "(" + rl.CenterCount + ")", rl.Score]);
@@ -121,8 +122,12 @@ function MakeGameList(games) {
         table.Generate();
 
         //Unfalse this to show final map state
-        if (false) {
-            var mv = new dbnMapView(div);
+        if (myDraft) {
+            var link = div.addLink();
+            link.href = "game/GameID=" + x.GameID;
+
+            var mv = new dbnMapView(link);
+            mv.ViewingMode = GameViewingModeEnum.ProvincesOnly;
 
             var game = new gmGame(x);
             mv.Game = game;
@@ -135,7 +140,7 @@ function MakeGameList(games) {
             game.GamePhases = [gp];
             mv.GamePhase = gp;
 
-            mv.Draw();
+            //mv.Draw();
 
             ret.addHardRule();
         }
