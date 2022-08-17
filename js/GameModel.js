@@ -110,6 +110,8 @@ class gmGame {
         // if ("Competition" in json) this.Competition = json["Competition"];
 
         if (this.GamePhases) this.GamePhases = this.GamePhases.map(x => new gmGamePhase(x));
+
+        if (this.GamePhases) this.GamePhases = this.GamePhases.map(x => new gmGamePhase(x));
         //if (this.ResultSummary) this.ResultSummary = this.ResultSummary.map(x => new gmResultLine(x));
 
     }
