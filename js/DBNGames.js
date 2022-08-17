@@ -821,6 +821,9 @@ class dbnGameResultLineGM extends gmResultLine {
 }
 
 
+//Deprecated -- Eliminate asap
+
+
 class dbnGame {
 
   GameID = null;

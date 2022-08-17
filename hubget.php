@@ -290,17 +290,20 @@ function HandleRequest($request)
                 if (!array_key_exists("RootKey", $parameters)) return MakeErrorResponse("RootKey");
                 $RootKey = $parameters["RootKey"];
 
-                // $sql = "SELECT * FROM GameOrderData
-                //         WHERE Game_GameID = ?";
-                // $vals = [$GameID];
+                $sql = "SELECT * FROM GameOrderData WHERE Game_GameID = ?";
+                $vals = [$GameID];
 
-                // return GetResultsetAsJSON($sql, $vals);
+                // $rs = new dbnResultSet($sql, $vals);
+                // if (!$rs->success) return $rs->ToJSON();
 
                 $vals = [$GameID];
                 $games = GetGames_GameModel('GameID = ?', $GameID);
 
                 if ($games instanceof dbnResultSet) return $games->ToJSON();
-                return MakeQuerySuccessResponse($games);
+
+                $ret = $games[0];
+
+                return MakeQuerySuccessResponse($ret);
             }
 
         case "GetGames": {
