@@ -124,7 +124,7 @@ function MakeGameList(games) {
         //Unfalse this to show final map state
         if (myDraft) {
             var link = div.addLink();
-            link.href = "/game/GameID=" + x.GameID;
+            link.href = "/game/?GameID=" + x.GameID;
 
             var mv = new dbnMapView(link);
             mv.ViewingMode = GameViewingModeEnum.ProvincesOnly;
