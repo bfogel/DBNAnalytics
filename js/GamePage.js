@@ -29,6 +29,7 @@ function MakePage() {
 
     reqs.Send();
     console.log(reqGame.ResponseToObjects()[0]);
+    console.log(reqGame.ResponseToObjects()[0].ResultSummary);
     reqs.ReportToConsole(); return;
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
 

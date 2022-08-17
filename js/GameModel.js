@@ -126,12 +126,20 @@ const myGameModel = new gmGameModel();
 class gmGame {
 
     constructor(json) {
-
         Object.keys(this).forEach(x => { if (x in json) this[x] = json[x]; });
-
+        if (this.ResultSummary) this.ResultSummary = this.MapByCountries(this.ResultSummary, x => new gmResultLine(x));
         if (this.GamePhases) this.GamePhases = this.GamePhases.map(x => new gmGamePhase(x));
-        //if (this.ResultSummary) this.ResultSummary = this.ResultSummary.map(x => new gmResultLine(x));
+    }
 
+    /**
+     * 
+     * @param {object} obj 
+     * @param {Function} func 
+     */
+    MapByCountries(obj, func) {
+        var ret = {};
+        Object.keys(CountryEnum).forEach(k => { if (obj.hasOwnProperty(k)) ret[k] = func(obj[k]); });
+        return ret;
     }
 
     /**@type{string} */
@@ -291,6 +299,8 @@ class gmGamePhase {
 class gmResultLine {
     constructor(json) {
         Object.keys(this).forEach(x => { if (x in json) this[x] = json[x]; });
+
+        if (typeof this.InGameAtEnd == "string") this.InGameAtEnd = this.InGameAtEnd == "true";
     }
 
     /**@type{number} */
