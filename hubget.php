@@ -296,7 +296,8 @@ function HandleRequest($request)
 
                 // return GetResultsetAsJSON($sql, $vals);
 
-                $games = GetGames('GameID = ?', [$GameID]);
+                $vals = [$GameID];
+                $games = GetGames('GameID = ?', $GameID);
 
                 if ($games instanceof dbnResultSet) return $games->ToJSON();
                 return MakeQuerySuccessResponse($games);

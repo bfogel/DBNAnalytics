@@ -793,6 +793,14 @@ class dbnHubRequest_GetGameData extends bfDataRequest {
   }
 }
 
+class dbnHubRequest_GetGameJSON extends bfDataRequest {
+  constructor(pGameID = null, pRootKey = null) {
+    super("GetGameJSON", { GameID: pGameID, RootKey: pRootKey });
+  }
+  /** @returns {dbnGame[]} */
+  ResponseToObjects() { return this.ResponseContent.map(x => new gmGame(x)); }
+}
+
 class dbnHubRequest_GetGames extends bfDataRequest {
   constructor(pGameIDs = null, pCompetitionIDs = null, pPlayerIDs = null, pRootKey = null) {
     super("GetGames", { GameIDs: pGameIDs, CompetitionIDs: pCompetitionIDs, PlayerIDs: pPlayerIDs });
