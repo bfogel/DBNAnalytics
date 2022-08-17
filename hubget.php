@@ -297,7 +297,7 @@ function HandleRequest($request)
                 if (!$rs->success) return $rs->ToJSON();
 
                 $vals = [$GameID];
-                $games = GetGames_GameModel('GameID = ?', $GameID);
+                $games = GetGames_GameModel('GameID = ?', [$GameID]);
 
                 if ($games instanceof dbnResultSet) return $games->ToJSON();
 
