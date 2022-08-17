@@ -28,12 +28,13 @@ function MakePage() {
     div.addText("Loading...");
 
     reqs.Send();
+    console.log(reqGame.ResponseToObjects());
     reqs.ReportToConsole(); return;
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
 
     div.innerHTML = "";
 
-//    var gamephases =
+    //    var gamephases =
 
     // var groupinfo = reqGroupInfo.ResponseToObjects()[0];
     var card = div.addTitleCard("All Competitions");

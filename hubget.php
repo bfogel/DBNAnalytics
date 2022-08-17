@@ -748,6 +748,7 @@ function GetGames_GameModel($where, $params)
     $games = [];
     $game = null;
     $gamekey = null;
+    $playernames = null;
     $lines = null;
 
     foreach ($rs->data as $row) {
@@ -756,7 +757,7 @@ function GetGames_GameModel($where, $params)
             $game = [
                 //Properties in GameModel
                 "Competition" => $row[$cCompetitionName],
-                "Label" => $row[$cLabel],
+                "GameLabel" => $row[$cLabel],
                 "DatePlayed" => $row[$cEndDate],
 
                 "ScoringSystem" => $row[$cScoringSystemName],
@@ -791,8 +792,14 @@ function GetGames_GameModel($where, $params)
             }
 
             $games[$gamekey] = $game;
+            $playernames = [];
+            $game["Players"] = $playernames;
+
             $lines = [];
         }
+
+        $country =  $row[$cCountryName];
+        $playernames[$country] = $row[$cPlayerName];
 
         // $line = [
         //     "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote], "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination], "UnexcusedResignation" => $row[$cUnexcusedResignation], "SupplyCenters" => $row[$cSupplyCenters], "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
