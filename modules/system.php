@@ -71,7 +71,7 @@ class dbnResponder
         $js_system = [];
         if ($this->JS_DBNUI) array_push($js_system, "DBNUI");
         if ($this->JS_DBNGames) {
-            array_push($js_page, "GameModel");
+            array_push($js_system, "GameModel");
             array_push($js_system, "DBNGames");
         }
 
