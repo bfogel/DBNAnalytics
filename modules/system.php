@@ -45,7 +45,6 @@ class dbnResponder
 
     public $JS_PlayerGameList = false;
 
-    public $JS_GameModel = false;
     public $JS_MapView = false;
 
     public $JS_PowerAuction = false;
@@ -70,12 +69,14 @@ class dbnResponder
 
         $js_system = [];
         if ($this->JS_DBNUI) array_push($js_system, "DBNUI");
-        if ($this->JS_DBNGames) array_push($js_system, "DBNGames");
+        if ($this->JS_DBNGames) {
+            array_push($js_page, "GameModel");
+            array_push($js_system, "DBNGames");
+        }
 
         $js_page = [];
         if ($this->JS_PlayerGameList) array_push($js_page, "PlayerGameList");
 
-        if ($this->JS_GameModel) array_push($js_page, "GameModel");
         if ($this->JS_MapView) array_push($js_page, "MapView");
 
         if ($this->JS_PowerAuction) array_push($js_page, "PowerAuction");

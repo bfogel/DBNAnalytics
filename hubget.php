@@ -757,7 +757,7 @@ function GetGames_GameModel($where, $params)
 
         if ($game == null) {
             $game = [
-                //Properties in GameModel
+                //GameModel properties
                 "Competition" => $row[$cCompetitionName],
                 "GameLabel" => $row[$cLabel],
                 "DatePlayed" => $row[$cEndDate],
@@ -769,7 +769,7 @@ function GetGames_GameModel($where, $params)
                 "LimitType" => $row[$cGameLimitTypeName],
                 "AnonymityType" => $row[$cGameAnonymityTypeName],
 
-                //Custom properties
+                //DBN-specific properties
                 "GameID" => $row[$cGameID],
                 "DrawSize" => $row[$cDrawSize],
                 "GameYearsCompleted" => $row[$cGameYearsCompleted],
@@ -801,23 +801,36 @@ function GetGames_GameModel($where, $params)
         $playernames[$country] = $row[$cPlayerName];
         $playerids[$country] = $row[$cPlayerID];
 
-        if ($country == "Turkey") {
-            $gamekey = "game" . $row[$cGameID];
-            $game["Players"] = $playernames;
+        $lines[$country] = [
+            //GameModel properties
+            "CenterCount" => $row[$cCenterCount],
+            "InGameAtEnd" => $row[$cInGameAtEnd],
+            "YearOfElimination" => $row[$cYearOfElimination],
+            "Score" => $row[$cScore],
+            "Rank" => $row[$cRank],
 
+            //DBN-specific properties
+            "UnexcusedResignation" => $row[$cUnexcusedResignation],
+            "SupplyCenters" => $row[$cSupplyCenters],
+            "RankScore" => $row[$cRankScore],
+            "TopShare" => $row[$cTopShare],
+            "Note" => $row[$cNote]
+        ];
+
+        if ($country == "Turkey") {
+            //GameModel properties
+            $game["Players"] = $playernames;
+            $game["ResultSummary"] = $lines;
+
+            //DBN-specific properties
             $game["PlayerIDs"] = $playerids;
 
+            $gamekey = "game" . $row[$cGameID];
             $games[$gamekey] = $game;
             $game = null;
         }
 
-        // $line = [
-        //     "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote], "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination], "UnexcusedResignation" => $row[$cUnexcusedResignation], "SupplyCenters" => $row[$cSupplyCenters], "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
-        // ];
-
-        // $lines[$line["Country"]] = $line;
         // // array_push($lines, $line);
-        // $game["ResultLines"] = $lines;
     }
 
     return array_values($games);
