@@ -791,15 +791,14 @@ function GetGames_GameModel($where, $params)
                     break;
             }
 
-            $playernames = [];
-            $game["Players"] = $playernames;
-
             $games[$gamekey] = $game;
+            $playernames = [];
             $lines = [];
         }
 
         $country =  $row[$cCountryName];
         $playernames[$country] = $row[$cPlayerName];
+        $game["Players"] = $playernames;
 
         // $line = [
         //     "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote], "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination], "UnexcusedResignation" => $row[$cUnexcusedResignation], "SupplyCenters" => $row[$cSupplyCenters], "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
