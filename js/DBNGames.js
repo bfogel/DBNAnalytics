@@ -761,8 +761,8 @@ class dbnHubRequest_GetGameJSON extends bfDataRequest {
   constructor(pGameID = null, pRootKey = null) {
     super("GetGameJSON", { GameID: pGameID, RootKey: pRootKey });
   }
-  /** @returns {dbnGameGM[]} */
-  ResponseToObjects() { return this.ResponseContent.map(x => new dbnGameGM(x)); }
+  /** @returns {dbnGameGM} */
+  ResponseToObject() { return new dbnGameGM(this.ResponseContent); }
 }
 
 class dbnHubRequest_GetGames extends bfDataRequest {

@@ -293,8 +293,8 @@ function HandleRequest($request)
                 $sql = "SELECT * FROM GameOrderData WHERE Game_GameID = ?";
                 $vals = [$GameID];
 
-                // $rs = new dbnResultSet($sql, $vals);
-                // if (!$rs->success) return $rs->ToJSON();
+                $rs = new dbnResultSet($sql, $vals);
+                if (!$rs->success) return $rs->ToJSON();
 
                 $vals = [$GameID];
                 $games = GetGames_GameModel('GameID = ?', $GameID);
@@ -302,7 +302,7 @@ function HandleRequest($request)
                 if ($games instanceof dbnResultSet) return $games->ToJSON();
 
                 $ret = $games[0];
-
+                if (array_count_values($rs->data) > 0) $ret["GamePhases"] = $rs->data[0][1];
                 return MakeQuerySuccessResponse($ret);
             }
 
