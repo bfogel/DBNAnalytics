@@ -20,18 +20,20 @@ function MakePage() {
     //if ("competitionid" in myHub.Parameters) myCompetitionID = Number.parseInt(myHub.Parameters["competitionid"]);
 
     var reqs = myHub.MakeRequestList();
+    var reqGameInfo = new dbnHubRequest_GetGames([myGameID]);
     var reqGameData = new dbnHubRequest_GetGameData(myGameID);
-    reqs.addRequest(reqGameData);
+    reqs.addRequest([reqGameInfo, reqGameData]);
 
     var div = dbnHere().addDiv();
     div.addText("Loading...");
 
     reqs.Send();
     reqs.ReportToConsole(); return;
-
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
 
     div.innerHTML = "";
+
+//    var gamephases =
 
     // var groupinfo = reqGroupInfo.ResponseToObjects()[0];
     var card = div.addTitleCard("All Competitions");

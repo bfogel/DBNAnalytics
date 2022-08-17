@@ -284,17 +284,22 @@ function HandleRequest($request)
                 return GetResultsetAsJSON($sql, $vals);
             }
 
-        case "GetGameData": {
+        case "GetGameJSON": {
                 if (!array_key_exists("GameID", $parameters)) return MakeErrorResponse("No GameID");
                 $GameID = $parameters["GameID"];
                 if (!array_key_exists("RootKey", $parameters)) return MakeErrorResponse("RootKey");
                 $RootKey = $parameters["RootKey"];
 
-                $sql = "SELECT * FROM GameOrderData
-                        WHERE Game_GameID = ?";
-                $vals = [$GameID];
+                // $sql = "SELECT * FROM GameOrderData
+                //         WHERE Game_GameID = ?";
+                // $vals = [$GameID];
 
-                return GetResultsetAsJSON($sql, $vals);
+                // return GetResultsetAsJSON($sql, $vals);
+
+                $games = GetGames('GameID = ?', [$GameID]);
+
+                if ($games instanceof dbnResultSet) return $games->ToJSON();
+                return MakeQuerySuccessResponse($games);
             }
 
         case "GetGames": {
@@ -588,23 +593,6 @@ function HandleRequest($request)
 
 function GetGames($where, $params)
 {
-    // $sql = 'SELECT G.GameID, G.Label, G.EndDate, G.DrawSize, G.GameYearsCompleted, G.GamePlatform_GamePlatformID, G.GamePlatformIdentifier';
-    // $sql .= ', C.CompetitionID, C.CompetitionName, C.DBNIYear';
-    // $sql .= ', P.PlayerID, P.PlayerName';
-    // $sql .= ', CO.CountryName, GCP.Note';
-    // $sql .= ', GCR.InGameAtEnd, GCR.CenterCount, GCR.YearOfElimination, GCR.UnexcusedResignation, GCR.SupplyCenters';
-    // $sql .= ', GCC.Score, GCC.Rank, GCC.RankScore, GCC.TopShare';
-
-    // $sql .= ' FROM Game as G';
-    // $sql .= ' INNER JOIN Competition as C on G.Competition_CompetitionID = C.CompetitionID';
-    // $sql .= ' INNER JOIN GameCountryPlayer as GCP on GCP.Game_GameID = G.GameID';
-    // $sql .= ' INNER JOIN GameCountryResult as GCR on GCR.Game_GameID = G.GameID AND GCP.Country_CountryID = GCR.Country_CountryID';
-    // $sql .= ' INNER JOIN GameCountryComputations as GCC on GCC.Game_GameID = G.GameID AND GCP.Country_CountryID = GCC.Country_CountryID';
-    // $sql .= ' INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID';
-    // $sql .= ' INNER JOIN Country as CO on GCP.Country_CountryID = CO.CountryID';
-    // $sql .= ' WHERE ' . $where;
-    // $sql .= ' ORDER BY G.GameID, CO.CountryName';
-
     $sql = "SELECT G.GameID, G.Label, G.EndDate, G.DrawSize, G.GameYearsCompleted, G.GamePlatform_GamePlatformID, G.GamePlatformIdentifier
                 , C.CompetitionID, C.CompetitionName, C.DBNIYear
                 , P.PlayerID, P.PlayerName
@@ -689,6 +677,130 @@ function GetGames($where, $params)
         // array_push($lines, $line);
         $game["ResultLines"] = $lines;
         $games[$gamekey] = $game;
+    }
+
+    return array_values($games);
+}
+
+function GetGames_GameModel($where, $params)
+{
+    $sql = "SELECT G.GameID, G.Label, G.EndDate, G.DrawSize, G.GameYearsCompleted, G.GamePlatform_GamePlatformID, G.GamePlatformIdentifier
+                , C.CompetitionID, C.CompetitionName, C.DBNIYear
+                , SS.ScoringSystemName, COMM.GameCommunicationTypeName, LANG.GameLanguageName, DEAD.GameDeadlineTypeName, LIM.GameLimitTypeName, ANON.GameAnonymityTypeName
+                , P.PlayerID, P.PlayerName
+                , CO.CountryName, GCP.Note
+                , GCR.InGameAtEnd, GCR.CenterCount, GCR.YearOfElimination, GCR.UnexcusedResignation, GCR.SupplyCenters
+                , GCC.Score, GCC.Rank, GCC.RankScore, GCC.TopShare
+            FROM Game as G
+            INNER JOIN Competition as C on G.Competition_CompetitionID = C.CompetitionID
+            INNER JOIN CompetitionSeries as CS on C.CompetitionSeries_CompetitionSeriesID = CS.CompetitionSeriesID
+            INNER JOIN GameCountryPlayer as GCP on GCP.Game_GameID = G.GameID
+            INNER JOIN GameCountryResult as GCR on GCR.Game_GameID = G.GameID AND GCP.Country_CountryID = GCR.Country_CountryID
+            INNER JOIN GameCountryComputations as GCC on GCC.Game_GameID = G.GameID AND GCP.Country_CountryID = GCC.Country_CountryID
+            INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID
+            INNER JOIN Country as CO on GCP.Country_CountryID = CO.CountryID
+            INNER JOIN ScoringSystem as SS on G.ScoringSystem_ScoringSystemID = SS.ScoringSystemID
+            INNER JOIN GameCommunicationType as COMM on G.CommunicationType_GameCommunicationTypeID = COMM.GameCommunicationTypeID
+            INNER JOIN GameLanguage as LANG on G.Language_GameLanguageID = LANG.GameLanguageID
+            INNER JOIN GameDeadlineType as DEAD on G.DeadlineType_GameDeadlineTypeID = DEAD.GameDeadlineTypeID
+            INNER JOIN GameLimitType as LIM on G.LimitType_GameLimitTypeID = LANG.GameLimitTypeID
+            INNER JOIN GameAnonymityType as ANON on G.AnonymityType_GameAnonymityTypeID = LANG.GameAnonymityTypeID
+            WHERE {$where}
+            ORDER BY G.GameID, CO.CountryName";
+
+    $rs = new dbnResultSet($sql, $params);
+
+    if (!$rs->success) return $rs;
+
+    $cGameID = $rs->GetFieldIndex("GameID");
+    $cLabel = $rs->GetFieldIndex("Label");
+    $cEndDate = $rs->GetFieldIndex("EndDate");
+    $cDrawSize = $rs->GetFieldIndex("DrawSize");
+    $cGameYearsCompleted = $rs->GetFieldIndex("GameYearsCompleted");
+    $cGamePlatform_GamePlatformID = $rs->GetFieldIndex("GamePlatform_GamePlatformID");
+    $cGamePlatformIdentifier = $rs->GetFieldIndex("GamePlatformIdentifier");
+    $cCompetitionID = $rs->GetFieldIndex("CompetitionID");
+    $cCompetitionName = $rs->GetFieldIndex("CompetitionName");
+    $cDBNIYear = $rs->GetFieldIndex("DBNIYear");
+
+    $cScoringSystemName = $rs->GetFieldIndex("ScoringSystemName");
+    $cGameCommunicationTypeName = $rs->GetFieldIndex("GameCommunicationTypeName");
+    $cGameLanguageName = $rs->GetFieldIndex("GameLanguageName");
+    $cGameDeadlineTypeName = $rs->GetFieldIndex("GameDeadlineTypeName");
+    $cGameLimitTypeName = $rs->GetFieldIndex("GameLimitTypeName");
+    $cGameAnonymityTypeName = $rs->GetFieldIndex("GameAnonymityTypeName");
+
+    $cPlayerID = $rs->GetFieldIndex("PlayerID");
+    $cPlayerName = $rs->GetFieldIndex("PlayerName");
+    $cCountryName = $rs->GetFieldIndex("CountryName");
+    $cNote = $rs->GetFieldIndex("Note");
+    $cInGameAtEnd = $rs->GetFieldIndex("InGameAtEnd");
+    $cCenterCount = $rs->GetFieldIndex("CenterCount");
+    $cYearOfElimination = $rs->GetFieldIndex("YearOfElimination");
+    $cUnexcusedResignation = $rs->GetFieldIndex("UnexcusedResignation");
+    $cSupplyCenters = $rs->GetFieldIndex("SupplyCenters");
+    $cScore = $rs->GetFieldIndex("Score");
+    $cRank = $rs->GetFieldIndex("Rank");
+    $cRankScore = $rs->GetFieldIndex("RankScore");
+    $cTopShare = $rs->GetFieldIndex("TopShare");
+
+    $games = [];
+    $game = null;
+    $gamekey = null;
+    $lines = null;
+
+    foreach ($rs->data as $row) {
+        $gamekey = "game" . $row[$cGameID];
+        if (!array_key_exists($gamekey, $games)) {
+            $game = [
+                //Properties in GameModel
+                "Competition" => $row[$cCompetitionName],
+                "Label" => $row[$cLabel],
+                "DatePlayed" => $row[$cEndDate],
+
+                "ScoringSystem" => $row[$cScoringSystemName],
+                "CommunicationType" => $row[$cGameCommunicationTypeName],
+                "Language" => $row[$cGameLanguageName],
+                "DeadlineType" => $row[$cGameDeadlineTypeName],
+                "LimitType" => $row[$cGameLimitTypeName],
+                "AnonymityType" => $row[$cGameAnonymityTypeName],
+
+                //Custom properties
+                "GameID" => $row[$cGameID],
+                "DrawSize" => $row[$cDrawSize],
+                "GameYearsCompleted" => $row[$cGameYearsCompleted],
+                "CompetitionID" => $row[$cCompetitionID],
+                "DBNIYear" => $row[$cDBNIYear]
+            ];
+
+            //Game platform (in GameModel)
+            switch ($row[$cGamePlatform_GamePlatformID]) {
+                case 0:
+                    $game["Modality"] = "InPerson";
+                    break;
+
+                case 1:
+                    $game["Modality"] = "Online";
+                    $game["URL"] = 'https://www.backstabbr.com/game/' . $row[$cGamePlatformIdentifier];
+                    break;
+
+                default:
+                    $game["Modality"] = "Unknown";
+                    break;
+            }
+
+            $games[$gamekey] = $game;
+            $lines = [];
+        }
+
+        // $line = [
+        //     "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote], "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination], "UnexcusedResignation" => $row[$cUnexcusedResignation], "SupplyCenters" => $row[$cSupplyCenters], "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
+        // ];
+
+        // $lines[$line["Country"]] = $line;
+        // // array_push($lines, $line);
+        // $game["ResultLines"] = $lines;
+        // $games[$gamekey] = $game;
     }
 
     return array_values($games);
