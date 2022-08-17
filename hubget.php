@@ -798,7 +798,7 @@ function GetGames_GameModel($where, $params)
 
         $country =  $row[$cCountryName];
         $playernames[$country] = $row[$cPlayerName];
-        $game["Players"] = $playernames;
+        $game["Players"] = $playernames; //updated array must be copied into the game object
 
         // $line = [
         //     "Player" => ["PlayerID" => $row[$cPlayerID], "PlayerName" => $row[$cPlayerName]], "Country" => $row[$cCountryName], "Note" => $row[$cNote], "CenterCount" => $row[$cCenterCount], "InGameAtEnd" => $row[$cInGameAtEnd], "YearOfElimination" => $row[$cYearOfElimination], "UnexcusedResignation" => $row[$cUnexcusedResignation], "SupplyCenters" => $row[$cSupplyCenters], "Score" => $row[$cScore], "Rank" => $row[$cRank], "RankScore" => $row[$cRankScore], "TopShare" => $row[$cTopShare]
@@ -807,7 +807,7 @@ function GetGames_GameModel($where, $params)
         // $lines[$line["Country"]] = $line;
         // // array_push($lines, $line);
         // $game["ResultLines"] = $lines;
-        // $games[$gamekey] = $game;
+        $games[$gamekey] = $game; //updated game object must copied into return list
     }
 
     return array_values($games);
