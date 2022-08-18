@@ -9,6 +9,7 @@
 
 
 function MakePage() {
+    console.log(myHub.ColorScheme.MakeMagicLink());
 
     var urlparams = new URLSearchParams(window.location.search);
     if (!urlparams.has("GameID")) {
@@ -37,24 +38,28 @@ function MakePage() {
     var card = div.addTitleCard(document.title);
     //    card.addText("A compendium of all competitions covered on DBN");
 
-    div = card.addDiv();
-    div.style.display = "table-row";
-    // div.domelement.style.whiteSpace = "nowrap";
-    // div.domelement.style.verticalAlign = "top";
+    var divBoard = card.addDiv();
+    divBoard.style.border = "10px solid black";
+    divBoard.style.borderRadius = "10px";
 
-    var div2 = div.addDiv();
-    var table = game.MakeResultTable();
-    div2.style.display = "table-cell";
-    div2.style.verticalAlign = "top";
-    div2.add(table);
+    var divRow = divBoard.addDiv();
+    divRow.style.display = "table-row";
 
-    div2 = div.addDiv();
-    div2.style.display = "table-cell";
-    div2.style.width = "100%";
-    var mv = new dbnMapView(div2);
-    //    mv.style.display = "inline-block";
+    let divsb = divRow.addDiv();
+    divsb.style.display = "table-cell";
+    divsb.style.verticalAlign = "top";
+    var sb = new dbnScoreboard(divsb);
+
+    let divmv = divRow.addDiv();
+    divmv.style.display = "table-cell";
+    divmv.style.width = "100%";
+
+    var mv = new dbnMapView(divmv);
+    sb.BindToMapView(mv);
+
     mv.Game = game;
-    mv.GamePhase = game.GamePhases[0];
+    var phase = game.GamePhases[0];
+    mv.GamePhase = phase;
 
 }
 MakePage();

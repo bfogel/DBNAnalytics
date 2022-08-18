@@ -61,6 +61,13 @@ class dbnColorScheme {
     ret = ret.map(x => parseInt(x, 16));
     return ret;
   }
+
+  MakeMagicLink() {
+    var ret = "https://davidmathlogic.com/colorblind/#";
+    //%23D81B60-%231E88E5-%23FFC107-%23004D40-%237df68e-%236e8473-%234b48c0
+    [...Object.values(this.CountryColors), this.NeutralColor, this.WaterColor].forEach((x, i) => ret += (i >= 1 ? "-" : "") + "%23" + x.substring(1));
+    return ret;
+  }
 }
 
 class dbnColorScheme_OriginalWebsite extends dbnColorScheme {
@@ -339,6 +346,7 @@ class dbnHub {
 
   /** @type{dbnColorScheme} */
   // ColorScheme = new dbnColorScheme_OriginalWebsite();
+  // ColorScheme = new dbnColorScheme_OriginalOnAir();
   ColorScheme = new dbnColorScheme_Proposed();
 
   /** @type{dbnPlayer[]} */

@@ -1,4 +1,3 @@
-
 .svglink:hover {
     stroke: blue;
     fill: blue;
@@ -22,6 +21,34 @@
     color: #AAAAAA;
     margin: 10px;
     border: solid 3px;
+}
+
+.dbnScoreboard {
+    /* border-radius: 10px !important; */
+    border: 1px solid black;
+    margin: 0px;
+    padding: 0px;
+    /* margin: 0px 10px 10px 0px; */
+    border-spacing: 0px !important;
+    /* border: solid 8px #AAAAAA; */
+    width: fit-content;
+    display: inline-block;
+    vertical-align: top;
+    table-layout: fixed;
+}
+
+.dbnScoreboard td {
+    color: black;
+    font-family: Arial;
+    font-size: medium;
+    font-weight: bold;
+    border: 0px;
+    padding: 4px 4px;
+    white-space: nowrap;
+}
+
+.dbnScoreboard td:nth-child(4) {
+    width: 100px;
 }
 
 .bftable {

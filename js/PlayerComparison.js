@@ -4,7 +4,7 @@ var cardPlayerComparison = null;
 var selPlayer1 = null;
 var selPlayer2 = null;
 
-var divGames = null;
+/**@type{dbnDiv} */ var divGames = null;
 var divGamesStatus = null;
 var tblGames = null;
 
@@ -60,7 +60,7 @@ function LoadComparison() {
     if (games != null) {
         divGamesStatus.domelement.innerHTML = "";
 
-        tblGames = new dbnTable(divGames);
+        tblGames = divGames.addTable();
         var cellcountries = [];
         var cellurls = [];
         var cellclasses = [];

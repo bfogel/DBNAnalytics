@@ -78,6 +78,7 @@ class dbnElement {
     addButton(text, onclick = null, className = null) { var ret = new dbnButton(text, onclick, className, this); return ret; }
     addButtonBar() { var ret = new dbnButtonBar(this); return ret; }
     addTable() { var ret = new dbnTable(this); return ret; }
+    addBaseTable() { var ret = new dbnBaseTable(this); return ret; }
 
     /**
      * @param {boolean} ordered 
@@ -669,7 +670,153 @@ class dbnTabs extends dbnCard {
 
 //#endregion
 
-//#region Tables
+
+//#region Base table
+
+class dbnBaseTableRow {
+    Values = null;
+    Url = null;
+    Highlighted = false;
+    CellUrls = null;
+    CellClasses = null;
+}
+
+class dbnBaseTable extends dbnElement {
+
+    constructor(parent = null) {
+        super("table", parent);
+        this.domelement.dbnTable = this;
+
+        this.ColGroup = document.createElement("colgroup");
+        this.domelement.append(this.ColGroup);
+        this.Head = this.domelement.createTHead();
+        this.Body = this.domelement.createTBody();
+    }
+
+    /**@type{HTMLTableElement} */
+    get domelement() { return this.domelement; }
+
+    /**@type{HTMLTableColElement} */
+    ColGroup;
+    /**@type{HTMLTableSectionElement} */
+    Head;
+    /**@type{HTMLTableSectionElement} */
+    Body;
+
+    //#region Columns
+
+    GetColumn(index) {
+        while (this.ColGroup.childElementCount <= index) this.ColGroup.append(document.createElement("col"));
+        /**@type{HTMLTableColElement} */
+        var ret = this.ColGroup.childNodes.item(index);
+        return ret;
+    }
+
+    /**
+     * @callback applyStyleCallback
+     * @param {CSSStyleDeclaration} style
+     */
+
+    /**@type{applyStyleCallback[]} */
+    #ColumnStyles = [];
+    get ColumnStyles() { return this.#ColumnStyles; }
+    
+    /**
+     * @param {number} colindex
+     * @param {applyStyleCallback} func 
+     */
+    ApplyStyleToColumn(colindex, func) {
+        this.#ColumnStyles[colindex] = func;
+        for (let ri = 0; ri < this.domelement.rows.length; ri++) {
+            const row = this.domelement.rows[ri];
+            if (row.cells.length > colindex) func(row.cells.item(colindex).style);
+        }
+    }
+
+    // /**@type{number[]} */
+    // #NumberColumns;
+    // get NumberColumns() { return this.#NumberColumns; }
+    // set NumberColumns(value) {
+    //     this.#NumberColumns = value;
+    //     this.GetBodyCellsForAllRows().forEach(row => {
+    //         row.forEach((cell, ci) => {
+    //             if (this.#NumberColumns.includes(ci)) this.#SetNumberColumnStyle(cell)
+    //         })
+    //     });
+    // }
+    // /**
+    //  * @param {HTMLTableCellElement} cell 
+    //  */
+    // #SetNumberColumnStyle(cell) { cell.style.textAlign = "right"; }
+
+    //#endregion
+
+    GetHeadRow(index) { while (this.Head.rows.length <= index) this.Head.insertRow(); return this.Head.rows.item(index); }
+    GetHeadCell(rowindex, colindex) { var row = this.GetHeadRow(rowindex); while (row.cells.length <= colindex) row.appendChild(document.createElement("th")); return row.cells.item(colindex); }
+    GetBodyRow(index) { while (this.Body.rows.length <= index) this.Body.insertRow(); return this.Body.rows.item(index); }
+    GetBodyCell(rowindex, colindex) {
+        var row = this.GetBodyRow(rowindex);
+        while (row.cells.length <= colindex) {
+            var newcell = row.insertCell();
+            if (this.#ColumnStyles[newcell.cellIndex]) this.#ColumnStyles[newcell.cellIndex](newcell.style);
+        }
+        return row.cells.item(colindex);
+    }
+
+    GetBodyCellsForRow(rowindex) {
+        var ret = [];
+        var cells = this.GetBodyRow(rowindex).cells;
+        for (let ci = 0; ci < cells.length; ci++) ret.push(cells[ci]);
+        return ret;
+    }
+    GetBodyCellsForAllRows() {
+        var ret = [];
+        for (let ri = 0; ri < this.domelement.rows.length; ri++) {
+            var row = [];
+            var cells = this.domelement.rows[ri].cells;
+            for (let ci = 0; ci < cells.length; ci++) row.push(cells[ci]);
+            ret.push(row);
+        }
+        return ret;
+    }
+
+    ClearBody() { this.Body.innerHTML = ""; }
+    /**
+     * 
+     * @param {object[]} content 
+     */
+    LoadHeaders(headers) {
+        headers.forEach((colcon, ci) => {
+            var cell = this.GetHeadCell(0, ci);
+            if (colcon instanceof dbnElement) {
+                cell.appendChild(colcon.domelement);
+            } else {
+                cell.innerHTML = colcon;
+            }
+        });
+    }
+
+    /**
+    * 
+    * @param {object[][]} content 
+    */
+    LoadContent(content) {
+        content.forEach((rowcon, ri) => {
+            rowcon.forEach((colcon, ci) => {
+                var cell = this.GetBodyCell(ri, ci);
+                if (colcon instanceof dbnElement) {
+                    cell.appendChild(colcon.domelement);
+                } else {
+                    cell.innerHTML = colcon;
+                }
+            });
+        });
+    }
+}
+
+//#endregion
+
+//#region Formatted table
 
 class dbnRow {
     Values = null;
@@ -1016,7 +1163,6 @@ class dbnEvent {
 
 // cc.A = null;
 // aa.RaiseTestEvent();
-
 
 //#endregion
 
@@ -1478,7 +1624,7 @@ class dbnSVGElement {
             tt.domelement.style.background = "cornsilk";
             tt.domelement.style.border = "4px solid black";
             tt.domelement.style.borderRadius = "4px";
-            tt.domelement.style.borderStyle = "double";
+            tt.domelement.style.borderStyle = "double   ";
             //tt.domelement.style.padding = "2px 4px";
         }
 

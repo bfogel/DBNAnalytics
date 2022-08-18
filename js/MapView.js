@@ -1,7 +1,7 @@
 "use strict";
 
 /*Note: Add CoastLines to MapData
-        - ADD CANALS TO MapData in Dipcast
+        - MOVE CANALS TO MapData in Dipcast (and remove from dbnMapData constructor)
         - Add Coastlines to MapData and make sure the calculation doesn't still happen
         - remove WaterColor and UseBackgroundMap
         - Add scoreboard
@@ -36,30 +36,32 @@ var myMapDataRawNEW = { "Properties": { "Label": "Backstabbr", "CornerRadius": 2
  * @param {any} gamedata 
  */
 function ProcessMapData(gamedata) {
-    // [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]].forEach(x => console.log(new dbnLineSegment([0, 0], x).AngleToHorizontal));
-    // return;
 
     var game = new gmGame(gamedata);
-    console.log(gamedata);
-    console.log(game);
 
-    var div = dbnHere().addDiv();
-    div.style.display = "inline-block";
-    div.style.width = "800px";
-    div.style.height = "800px";
+    var divBoard = dbnHere().addDiv();
+    divBoard.style.border = "10px solid black";
+    divBoard.style.borderRadius = "10px";
 
-    var mv = new dbnMapView(div);
-    // mv.MapData = new dbnMapData(mapdata);
-    mv.MapData.ProvinceData["Kie"].Canal = [0.5, 10];
-    mv.MapData.ProvinceData["Den"].Canal = [0, 11];
-    mv.MapData.ProvinceData["Con"].Canal = [0.5, 5.5];
+    var divRow = divBoard.addDiv();
+    divRow.style.display = "table-row";
+
+    let divsb = divRow.addDiv();
+    divsb.style.display = "table-cell";
+    divsb.style.verticalAlign = "top";
+    var sb = new dbnScoreboard(divsb);
+
+    let divmv = divRow.addDiv();
+    divmv.style.display = "table-cell";
+    divmv.style.width = "100%";
+    var mv = new dbnMapView(divmv);
 
     mv.Game = game;
     //mv.GamePhase = game.GamePhases[game.GamePhases.length - 1];
     var phase = game.GamePhases[0];
-    // MakeAllAustrianArmies(phase, mv.MapData);
-    //MakeAllFleets(phase, mv.MapData);
     mv.GamePhase = phase;
+
+    sb.BindToMapView(mv);
 }
 
 //#region Change data for testing
@@ -275,6 +277,11 @@ class dbnMapData {
 
         if (!this.CoastLines) this.CoastLines = this.#FindCoastlines();
         if (!this.AdjustmentLocations) this.AdjustmentLocations = this.#FindAdjustmentLocations();
+
+        //NOTE: THIS MUST BE MOVED
+        this.ProvinceData["Kie"].Canal = [0.5, 10];
+        this.ProvinceData["Den"].Canal = [0, 11];
+        this.ProvinceData["Con"].Canal = [0.5, 5.5];
     }
 
     /**@type{string} */
@@ -461,6 +468,13 @@ class dbnMapView extends dbnSVG {
         this.MapData = new dbnMapData(myMapDataRawNEW);
     }
 
+    //#region Events
+
+    OnGameSet = new dbnEvent();
+    OnGamePhaseSet = new dbnEvent();
+
+    //#endregion
+
     //#region SVG Definitions
 
     #RetreatFillColor = "white";
@@ -495,12 +509,14 @@ class dbnMapView extends dbnSVG {
     }
 
     /**@type{gmGame} */
-    Game;
+    #Game;
+    get Game() { return this.#Game; }
+    set Game(value) { this.#Game = value; this.OnGameSet.Raise(); }
 
     /**@type{gmGamePhase} */
     #GamePhase;
     get GamePhase() { return this.#GamePhase; }
-    set GamePhase(value) { this.#GamePhase = value; this.#Draw(); }
+    set GamePhase(value) { this.#GamePhase = value; this.#Draw(); this.OnGamePhaseSet.Raise(); }
 
     ShowNavigationButtons = true;
     ViewingMode = GameViewingModeEnum.EverythingWithoutReveal;
@@ -1158,3 +1174,74 @@ class dbnMapView extends dbnSVG {
 
 //#endregion
 
+//#region Scoreboard
+
+class dbnScoreboard extends dbnBaseTable {
+    constructor(parent = null) {
+        super(parent);
+        this.domelement.classList.add("dbnScoreboard");
+        this.ApplyStyleToColumn(1, x => { x.whiteSpace = "nowrap"; });
+        this.ApplyStyleToColumn(2, x => { x.textAlign = "center"; x.width = "40px"; });
+        this.ApplyStyleToColumn(3, x => { x.textAlign = "right"; x.width = "40px"; });
+        this.#UpdateDisplay();
+    }
+
+    /**@type{gmGame} */
+    #Game;
+    get Game() { return this.#Game; }
+    set Game(value) { this.#Game = value; this.GamePhase = null; }
+
+    /**@type{gmGamePhase} */
+    #GamePhase;
+    get GamePhase() { return this.#GamePhase; }
+    set GamePhase(value) { this.#GamePhase = value; this.#UpdateDisplay(); }
+
+    #UpdateDisplay() {
+        this.ClearBody();
+
+        var lines = [];
+        Object.values(CountryEnum).forEach((country, i) => {
+            var line = [country];
+            line.push((this.#Game && this.#Game.Players && country in this.#Game.Players) ? this.#Game.Players[country] : "-");
+
+            let centercount = "";
+            let score = "------";
+
+            if (this.GamePhase && this.GamePhase.Status == GamePhaseStatusEnum.GameEnded && this.Game && this.Game.ResultSummary && country in this.Game.ResultSummary) {
+                var rl = this.Game.ResultSummary[country];
+                centercount = rl.CenterCount; score = rl.Score;
+            } else if (this.GamePhase && this.GamePhase.CenterCounts && country in this.GamePhase.CenterCounts) {
+                centercount = this.GamePhase.CenterCounts[country];
+            }
+            centercount = "(" + centercount + ")";
+            if (centercount.length == 3) centercount = "&nbsp;" + centercount + "&nbsp;";
+
+            line.push(centercount, score);
+            lines.push(line);
+
+            var row = this.GetBodyRow(i);
+            row.style.backgroundColor = myHub.ColorScheme.CountryBackColors[country];
+        });
+        this.LoadContent(lines);
+    }
+
+    /**@type{dbnMapView} */
+    MapView;
+    #MapViewGameSet() { this.Game = this.MapView.Game; }
+    #MapViewGamePhaseSet() { this.GamePhase = this.MapView.GamePhase; }
+
+    /**
+     * 
+     * @param {dbnMapView} mapview 
+     */
+    BindToMapView(mapview) {
+        this.MapView = mapview;
+        this.Game = mapview.Game;
+        this.GamePhase = mapview.GamePhase;
+        mapview.OnGameSet.AddListener(this.#MapViewGameSet.bind(this));
+        mapview.OnGamePhaseSet.AddListener(this.#MapViewGamePhaseSet.bind(this));
+    }
+
+}
+
+//#endregion
