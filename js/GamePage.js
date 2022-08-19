@@ -54,6 +54,7 @@ function MakePage() {
     let divmv = divRow.addDiv();
     divmv.style.display = "table-cell";
     divmv.style.width = "100%";
+    divmv.style.minWidth = "300px";
 
     var mv = new dbnMapView(divmv);
     sb.BindToMapView(mv);
