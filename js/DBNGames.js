@@ -150,8 +150,9 @@ class dbnColorScheme_Proposed extends dbnColorScheme {
     //this.WaterColor = dbnColorScheme.RGB2HTML(155, 255, 255);//green-blue -- yech
 
 
-    this.CountryColors["France"] = dbnColorScheme.RGB2HTML(0, 140, 255);//blueish
+    this.CountryColors["France"] = dbnColorScheme.RGB2HTML(0, 140, 255);//bright blue
     this.WaterColor = dbnColorScheme.MixColors([68, 160, 196], [255, 255, 255], 0.6);
+    //this.WaterColor = dbnColorScheme.MixColors("#006994", [255, 255, 255], 1);
   }
 }
 //#endregion

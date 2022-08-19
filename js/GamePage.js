@@ -41,6 +41,7 @@ function MakePage() {
     var divBoard = card.addDiv();
     divBoard.style.border = "10px solid black";
     divBoard.style.borderRadius = "10px";
+    divBoard.style.overflowX = "auto";
 
     var divRow = divBoard.addDiv();
     divRow.style.display = "table-row";

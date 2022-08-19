@@ -47,7 +47,7 @@
     white-space: nowrap;
 }
 
-.dbnScoreboard td:nth-child(4) {
+.dbnScoreboard td:nth-child(3) {
     width: 100px;
 }
 
