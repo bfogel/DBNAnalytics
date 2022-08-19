@@ -24,9 +24,12 @@ class dbnColorScheme {
       this.#CountryBackColors = {};
       for (const country in this.CountryColors) {
         const color = this.CountryColors[country];
-        var rgb = dbnColorScheme.HTML2RGB(color);
-        rgb = rgb.map(x => Math.floor(x + (255 - x) * 0.375));
-        this.#CountryBackColors[country] = dbnColorScheme.RGB2HTML(...rgb);
+
+        this.#CountryBackColors[country] = dbnColorScheme.MixColors(color, [255, 255, 255], 0.625);
+
+        // var rgb = dbnColorScheme.HTML2RGB(color);
+        // rgb = rgb.map(x => Math.floor(x + (255 - x) * 0.375));
+        // this.#CountryBackColors[country] = dbnColorScheme.RGB2HTML(...rgb);
       }
     }
     return this.#CountryBackColors;
@@ -60,6 +63,20 @@ class dbnColorScheme {
     if (color.length > 7) ret.push(color.substring(7, 9));
     ret = ret.map(x => parseInt(x, 16));
     return ret;
+  }
+
+  /**
+   * 
+   * @param {string|number[]} color1 
+   * @param {string|number[]} color2 
+   * @param {number} amountOf1 
+   * @returns 
+   */
+  static MixColors(color1, color2, amountOf1, returnString = true) {
+    var c1 = Array.isArray(color1) ? color1 : this.HTML2RGB(color1);
+    var c2 = Array.isArray(color2) ? color2 : this.HTML2RGB(color2);
+    var ret = c1.map((x, i) => Math.floor(amountOf1 * x + (1 - amountOf1) * c2[i]));
+    return returnString ? this.RGB2HTML(...ret) : ret;
   }
 
   MakeMagicLink() {
@@ -112,17 +129,29 @@ class dbnColorScheme_Proposed extends dbnColorScheme {
     this.NeutralColor = dbnColorScheme.RGB2HTML(255, 250, 222);
 
     this.CountryColors["Austria"] = dbnColorScheme.RGB2HTML(175, 10, 10);
-    this.CountryColors["England"] = dbnColorScheme.RGB2HTML(228, 47, 208);
+
+
+    // this.CountryColors["England"] = "#164C9E";//dark blue
+    this.CountryColors["England"] = "#4F15A7"; //dark purple
+    // this.CountryColors["England"] = dbnColorScheme.RGB2HTML(228, 47, 208);//Pink
+
     this.CountryColors["France"] = dbnColorScheme.RGB2HTML(146, 230, 255);
     //this.CountryColors["France"] = dbnColorScheme.RGB2HTML(0, 140, 255);
     this.CountryColors["Germany"] = dbnColorScheme.RGB2HTML(100, 100, 100);
     this.CountryColors["Italy"] = dbnColorScheme.RGB2HTML(10, 175, 10);
-    this.CountryColors["Russia"] = dbnColorScheme.RGB2HTML(102, 22, 158);
+
+    // this.CountryColors["Russia"] = dbnColorScheme.RGB2HTML(102, 22, 158);//Purple
+    this.CountryColors["Russia"] = dbnColorScheme.RGB2HTML(228, 47, 208);//Pink
+    //this.CountryColors["Russia"] = dbnColorScheme.RGB2HTML(187, 0, 187); //Pink (original DBN)
+
     this.CountryColors["Turkey"] = dbnColorScheme.RGB2HTML(240, 210, 0);
 
     this.WaterColor = dbnColorScheme.RGB2HTML(0, 140, 255);//blueish
     //this.WaterColor = dbnColorScheme.RGB2HTML(155, 255, 255);//green-blue -- yech
 
+
+    this.CountryColors["France"] = dbnColorScheme.RGB2HTML(0, 140, 255);//blueish
+    this.WaterColor = dbnColorScheme.MixColors([68, 160, 196], [255, 255, 255], 0.6);
   }
 }
 //#endregion

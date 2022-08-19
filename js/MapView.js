@@ -1210,8 +1210,8 @@ class dbnScoreboard extends dbnBaseTable {
             if (this.GamePhase && this.GamePhase.Status == GamePhaseStatusEnum.GameEnded && this.Game && this.Game.ResultSummary && country in this.Game.ResultSummary) {
                 var rl = this.Game.ResultSummary[country];
                 centercount = rl.CenterCount; score = rl.Score;
-            } else if (this.GamePhase && this.GamePhase.CenterCounts && country in this.GamePhase.CenterCounts) {
-                centercount = this.GamePhase.CenterCounts[country];
+            } else if (this.GamePhase && this.GamePhase.CenterCounts) {
+                centercount = country in this.GamePhase.CenterCounts ? this.GamePhase.CenterCounts[country] : 0;
             }
             centercount = "(" + centercount + ")";
             if (centercount.length == 3) centercount = "&nbsp;" + centercount + "&nbsp;";
