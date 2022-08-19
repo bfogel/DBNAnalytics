@@ -47,8 +47,16 @@
     white-space: nowrap;
 }
 
+.dbnScoreboard td:nth-child(2) {
+    white-space:nowrap;
+}
 .dbnScoreboard td:nth-child(3) {
-    width: 100px;
+    min-width: 40px;
+    text-align: center;
+}
+.dbnScoreboard td:nth-child(4) {
+    min-width: 40px;
+    text-align: right;
 }
 
 .bftable {
@@ -60,7 +68,7 @@
     border: solid 8px #AAAAAA;
     width: fit-content;
     display: inline-block;
-    overflow-x: auto;
+    /* overflow-x: auto; */
 }
 
 .bftableTitleRow {
