@@ -9,7 +9,6 @@
 
 
 function MakePage() {
-    console.log(myHub.ColorScheme.MakeMagicLink());
 
     var urlparams = new URLSearchParams(window.location.search);
     if (!urlparams.has("GameID")) {
