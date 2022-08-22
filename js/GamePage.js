@@ -31,6 +31,8 @@ function MakePage() {
     reqs.Send();
     var game = reqGame.ResponseToObject();
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
+    console.log(reqGame.ResponseContent);
+    console.log(game);
 
     div.innerHTML = "";
 
