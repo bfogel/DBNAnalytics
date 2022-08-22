@@ -472,7 +472,7 @@ class dbnMapView extends dbnSVG {
 
         var urlparams = new URLSearchParams(window.location.search);
 
-        var mapid = 1;
+        var mapid = 2;
 
         if (urlparams.has("Map")) mapid = parseInt(urlparams.get("Map"));
         console.log(mapid);
