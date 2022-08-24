@@ -19,6 +19,7 @@ class dbnColorScheme {
 
   /**@type{Object.<string,string>} */
   #CountryBackColors;
+  ResetCountryBackColors() { this.#CountryBackColors = null; }
   get CountryBackColors() {
     if (!this.#CountryBackColors) {
       this.#CountryBackColors = {};

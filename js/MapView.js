@@ -1,12 +1,12 @@
 "use strict";
 
 /*Note: Add CoastLines to MapData
+        - Add Coastlines to MapData and make sure the calculation doesn't still happen
+        - remove WaterColor and UseBackgroundMap
 ]       - Add scoring to phases
         - Add game info in header
         - Improve overall layout
         - Add player names on the map?  
-        - Add Coastlines to MapData and make sure the calculation doesn't still happen
-        - remove WaterColor and UseBackgroundMap
         - Add center chart
 */
 
@@ -40,30 +40,12 @@ function ProcessMapData(gamedata) {
 
     var game = new gmGame(gamedata);
 
-    var divBoard = dbnHere().addDiv();
-    divBoard.style.border = "10px solid black";
-    divBoard.style.borderRadius = "10px";
+    var board = new dbnFullBoard(dbnHere());
 
-    var divRow = divBoard.addDiv();
-    divRow.style.display = "table-row";
-
-    let divsb = divRow.addDiv();
-    divsb.style.display = "table-cell";
-    divsb.style.verticalAlign = "top";
-    var sb = new dbnScoreboard(divsb);
-
-    let divmv = divRow.addDiv();
-    divmv.style.display = "table-cell";
-    divmv.style.width = "100%";
-    var mv = new dbnMapView(divmv);
-
-    mv.Game = game;
+    board.Game = game;
     //mv.GamePhase = game.GamePhases[game.GamePhases.length - 1];
     var phase = game.GamePhases[0];
-    mv.GamePhase = phase;
-
-    sb.BindToMapView(mv);
-    console.log(JSON.stringify(mv.MapData.CoastLines));
+    board.GamePhase = phase;
 
 }
 
@@ -458,6 +440,135 @@ class dbnMapData {
 
 //#endregion
 
+//#region dbnFullBoard
+
+class dbnFullBoard extends dbnDiv {
+    constructor(parent) {
+        super(parent);
+
+        this.style.border = "10px solid black";
+        this.style.borderRadius = "10px";
+        this.style.overflowX = "auto";
+
+        var divRow = this.addDiv();
+        divRow.style.display = "table-row";
+
+        let divsb = divRow.addDiv();
+        divsb.style.display = "table-cell";
+        divsb.style.verticalAlign = "top";
+        divsb.add(this.#Scoreboard);
+
+        divsb.add(this.#MapOptionController);
+        this.#MapOptionController.MapView = this.#MapView;
+        this.#MapOptionController.Scoreboard = this.#Scoreboard;
+
+        let divmv = divRow.addDiv();
+        divmv.style.display = "table-cell";
+        divmv.style.width = "100%";
+        divmv.style.minWidth = "300px";
+
+        divmv.add(this.#MapView);
+        this.#Scoreboard.BindToMapView(this.#MapView);
+
+    }
+
+    #MapView = new dbnMapView();
+    #MapOptionController = new dbnMapOptionController();
+    #Scoreboard = new dbnScoreboard();
+
+    get Game() { return this.#MapView.Game; }
+    set Game(value) { this.#MapView.Game = value; }
+
+    get GamePhase() { return this.#MapView.GamePhase; }
+    set GamePhase(value) { this.#MapView.GamePhase = value; }
+
+}
+
+class dbnMapOptionController extends dbnDiv {
+    constructor(parent) {
+        super(parent);
+        this.style.margin = "10px";
+
+        this.addText("Options:");
+
+        var selects = [];
+        var options = [];
+
+        options.push(this.addWithCaption("Label Pos: ", this.LabelPosition));
+        this.LabelPosition.AddOption("Off-center", "Off-center");
+        this.LabelPosition.AddOption("Central", "Central");
+        selects.push(this.LabelPosition);
+
+        options.push(this.addWithCaption("Unit style: ", this.UnitStyle));
+        this.UnitStyle.AddOption("Triangle", "Triangle");
+        this.UnitStyle.AddOption("Diamond", "Diamond");
+        selects.push(this.UnitStyle);
+
+        options.push(this.addWithCaption("Colors: ", this.ColorPalette));
+        this.ColorPalette.AddOption("Current", "Current");
+        this.ColorPalette.AddOption("Russia: DC267F", "Opt1");
+        this.ColorPalette.AddOption("Russia: CC79A7", "Opt2");
+        selects.push(this.ColorPalette);
+
+        options.push(this.addWithCaption("Impassables: ", this.Impassables));
+        this.Impassables.AddOption("Striped", "Striped");
+        this.Impassables.AddOption("Black", "Black");
+        selects.push(this.Impassables);
+
+        options.forEach(x => x.style.margin = "3px");
+        selects.forEach(x => { x.onchange = this.#UpdateMap.bind(this); x.style.width = "fit-content"; });
+    }
+
+    /**@type{dbnMapView} */  MapView;
+    /**@type{dbnScoreboard} */  Scoreboard;
+
+    LabelPosition = new dbnSelect();
+    UnitStyle = new dbnSelect();
+    ColorPalette = new dbnSelect();
+    Impassables = new dbnSelect();
+
+    #UpdateMap() {
+        switch (this.LabelPosition.SelectedValue) {
+            case "Central": this.MapView.MapData = new dbnMapData(myMapDataRawNEW); break;
+            case "Off-center": this.MapView.MapData = new dbnMapData(myMapDataRawNEW2); break;
+            default: throw "invalid map";
+        }
+
+        switch (this.UnitStyle.SelectedValue) {
+            case "Triangle": this.MapView.UseFleetStyleTriangle(); break;
+            case "Diamond": this.MapView.UseFleetStyleDiamond(); break;
+            default: throw "Unrecognized UnitStyle";
+        };
+
+        switch (this.ColorPalette.SelectedValue) {
+            case "Current": myHub.ColorScheme = new dbnColorScheme_Proposed(); break;
+            case "Opt1": {
+                console.log(dbnColorScheme.HTML2RGB("#DC267F"));
+                myHub.ColorScheme.CountryColors[CountryEnum.Russia] = dbnColorScheme.RGB2HTML(220, 38, 127);
+                myHub.ColorScheme.ResetCountryBackColors();
+                break;
+            }
+            case "Opt2": {
+                myHub.ColorScheme.CountryColors[CountryEnum.Russia] = "#CC79A7";
+                myHub.ColorScheme.ResetCountryBackColors();
+                break;
+            }
+            default: throw "Unrecognized ColorPalette";
+        };
+
+        switch (this.Impassables.SelectedValue) {
+            case "Striped": this.MapView.StripedImpassables = true; break;
+            case "Black": this.MapView.StripedImpassables = false; break;
+            default: throw "Unrecognized Impassables";
+        };
+
+        this.MapView.Redraw();
+        this.Scoreboard.Redraw();
+    }
+}
+
+//#endregion
+
 //#region MapView
 
 class dbnMapView extends dbnSVG {
@@ -468,20 +579,7 @@ class dbnMapView extends dbnSVG {
         super.style = "background-color: white; user-select: none;";
         //this.SetSize(800, 600);
 
-        this.#AddSVGDefinitions();
-
-        var urlparams = new URLSearchParams(window.location.search);
-
-        var mapid = 2;
-
-        if (urlparams.has("Map")) mapid = parseInt(urlparams.get("Map"));
-        console.log(mapid);
-
-        switch (mapid) {
-            case 1: this.MapData = new dbnMapData(myMapDataRawNEW); break;
-            case 2: this.MapData = new dbnMapData(myMapDataRawNEW2); break;
-            default: throw "invalid map";
-        }
+        this.MapData = new dbnMapData(myMapDataRawNEW2)
     }
 
     //#region Events
@@ -496,6 +594,7 @@ class dbnMapView extends dbnSVG {
     #RetreatFillColor = "white";
     #RetreatStrokeColor = "orange";
     #SupportEndCap = "supportEndCap";
+    #BackgroundFill = "backgroundFill";
 
     #AddSVGDefinitions() {
         [true, false].forEach(succeeded => {
@@ -511,6 +610,19 @@ class dbnMapView extends dbnSVG {
             line2.strokeDashArray = "1,1";
             this.AddDef(marker);
         });
+
+        var pattern = new dbnSVGPattern();
+        pattern.id = this.#BackgroundFill;
+        pattern.domelement.setAttribute("patternUnits", "userSpaceOnUse");
+        pattern.domelement.setAttribute("width", "4");
+        pattern.domelement.setAttribute("height", "4");
+        var patternpath = new dbnSVGPath(pattern);
+        patternpath.d = "M-1,1 l2,-2  M0, 4 l4, -4  M3, 5 l2, -2";
+        patternpath.stroke = "black";
+        patternpath.strokeWidth = 1.5;
+        // patternpath.strokeDashArray = "1,1";
+        this.AddDef(pattern);
+
     }
 
     //#endregion
@@ -635,20 +747,20 @@ class dbnMapView extends dbnSVG {
 
     //#region Draw
 
+    Redraw() { this.#Draw(); }
+
+    StripedImpassables = true;
+
     #Draw() {
         if (!this.MapData) return;
 
-        this.innerHTML = "";
-
-        // if (_MapScale == 0) return;
-        // gr.Scale(_MapScale, _MapScale);
-        // gr.AntiAlias = true;
-
-        //if (!this.GamePhase) return;
+        this.Clear();
+        this.#AddSVGDefinitions();
 
         //Background
         var nsize = this.MapData.NativeSize;
-        this.AddRectangle(0, 0, nsize[0], nsize[1], null, null, "black");
+        var fill = this.StripedImpassables ? "url(#" + this.#BackgroundFill + ")" : "black";
+        this.AddRectangle(0, 0, nsize[0], nsize[1], null, null, fill);
 
         // FillTerritories(gr);
         this.#DrawProvinces();
@@ -672,7 +784,6 @@ class dbnMapView extends dbnSVG {
             this.#DrawGameLabels();
             if (this.ShowNavigationButtons) this.#AddNavigationButtons();
         }
-
     }
 
     //#endregion
@@ -794,8 +905,16 @@ class dbnMapView extends dbnSVG {
         });
     }
 
-    // #FleetPoints = [[-this.UnitSize / 2, -this.UnitSize / 3], [this.UnitSize / 2, -this.UnitSize / 3], [0, this.UnitSize / 2]];
-    #FleetPoints = [[-this.UnitSize / 1.6, 0], [0, -this.UnitSize / 1.5], [this.UnitSize / 1.6, 0], [0, this.UnitSize / 1.5]];
+    /**@type{number[][]} */
+    #FleetPoints;
+
+    /**
+     * @param {dbnPoint[]} points 
+     * @returns 
+     */
+    #ConvertUnitPath(points) { return points.map(x => x.MultiplyBy(this.UnitSize).ToArray()); }
+    UseFleetStyleDiamond() { this.#FleetPoints = this.#ConvertUnitPath([new dbnPoint(-1 / 1.6, 0), new dbnPoint(0, -1 / 1.5), new dbnPoint(1 / 1.6, 0), new dbnPoint(0, 1 / 1.5)]); }
+    UseFleetStyleTriangle() { this.#FleetPoints = this.#ConvertUnitPath([new dbnPoint(-0.6, -0.289), new dbnPoint(0.6, -0.289), new dbnPoint(0, 0.577)]); }
 
     /**
      * 
@@ -803,6 +922,8 @@ class dbnMapView extends dbnSVG {
      * @param {gmUnitWithLocation} uwl 
      */
     #DrawUnit(country, uwl) {
+
+        if (!this.#FleetPoints) this.UseFleetStyleTriangle();
 
         var color = myHub.ColorScheme.CountryColors[country];
         var innercolor = color;//+ "cc";
@@ -1217,6 +1338,8 @@ class dbnScoreboard extends dbnBaseTable {
     get GamePhase() { return this.#GamePhase; }
     set GamePhase(value) { this.#GamePhase = value; this.#UpdateDisplay(); }
 
+    Redraw() { this.#UpdateDisplay(); }
+
     #UpdateDisplay() {
         this.ClearBody();
 
@@ -1266,3 +1389,4 @@ class dbnScoreboard extends dbnBaseTable {
 }
 
 //#endregion
+

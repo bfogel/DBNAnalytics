@@ -49,8 +49,14 @@ class dbnElement {
     set innerHTML(value) { this.domelement.innerHTML = value; }
 
     addRange(elements) { elements.forEach(x => this.add(x)); }
-    appendChild(element) { this.domelement.appendChild(element instanceof dbnElement ? element.domelement : element); }
     createAndAppendElement(tagname) { var ret = new dbnElement(document.createElement(tagname)); this.appendChild(ret); return ret; }
+    appendChild(element) {
+        if (element instanceof dbnElement) { this.domelement.appendChild(element.domelement); return; }
+        if (element instanceof dbnSVGElement) { this.domelement.appendChild(element.domelement); return; }
+        if (element instanceof Node) { this.domelement.appendChild(element); return; }
+        console.log("CAN'T ADD", element);
+        throw "Can't append element";
+    }
 
     addText(text) { var ret = new dbnText(text, this); return ret; }
 
@@ -64,6 +70,17 @@ class dbnElement {
         } else {
             this.appendChild(textOrElement);
         }
+    }
+    /**
+     * @param {string} caption 
+     * @param {string|dbnElement|HTMLElement} textOrElement 
+     */
+    addWithCaption(caption, textOrElement) {
+        var con = this.addDiv();
+        con.style.whiteSpace = "nowrap";
+        con.addText(caption);
+        con.add(textOrElement);
+        return con;
     }
 
     addDiv() { var ret = new dbnDiv(this); return ret; }
@@ -555,12 +572,6 @@ class dbnSelect extends dbnElement {
         super(document.createElement("select"), parent);
     }
 
-    get SelectedPlayer() {
-        var i = this.domelement.value;
-        if (i == null) return null;
-        return myHub.Players.find(x => x.PlayerID == i);
-    }
-
     AddOption(text, value) {
         var option = document.createElement("option");
         option.text = text;
@@ -720,7 +731,7 @@ class dbnBaseTable extends dbnElement {
     /**@type{applyStyleCallback[]} */
     #ColumnStyles = [];
     get ColumnStyles() { return this.#ColumnStyles; }
-    
+
     /**
      * @param {number} colindex
      * @param {applyStyleCallback} func 
@@ -1313,6 +1324,8 @@ class dbnPoint {
 
     /**@type{number} */
     Y;
+
+    ToArray() { return [this.X, this.Y]; }
 
     /**
      * 
@@ -2153,6 +2166,11 @@ class dbnSVG extends dbnSVGElement {
         super("svg", parent);
     }
 
+    Clear() {
+        this.domelement.innerHTML = "";
+        this.#defs = null;
+    }
+
     /**@type{dbnSVGElement} */
     #defs;
 
@@ -2170,6 +2188,12 @@ class dbnSVG extends dbnSVGElement {
         this.domelement.setAttribute("height", height);
     }
 
+}
+
+class dbnSVGPattern extends dbnSVGElement {
+    constructor(parent = null) {
+        super("pattern", parent);
+    }
 }
 
 class dbnSVGMarker extends dbnSVGElement {

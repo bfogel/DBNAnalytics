@@ -30,8 +30,8 @@ function MakePage() {
     reqs.Send();
     var game = reqGame.ResponseToObject();
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
-    console.log(reqGame.ResponseContent);
-    console.log(game);
+    // console.log(reqGame.ResponseContent);
+    // console.log(game);
 
     div.innerHTML = "";
 
@@ -39,30 +39,32 @@ function MakePage() {
     var card = div.addTitleCard(document.title);
     //    card.addText("A compendium of all competitions covered on DBN");
 
-    var divBoard = card.addDiv();
-    divBoard.style.border = "10px solid black";
-    divBoard.style.borderRadius = "10px";
-    divBoard.style.overflowX = "auto";
+    var board = new dbnFullBoard(card);
 
-    var divRow = divBoard.addDiv();
-    divRow.style.display = "table-row";
+    // var divBoard = card.addDiv();
+    // divBoard.style.border = "10px solid black";
+    // divBoard.style.borderRadius = "10px";
+    // divBoard.style.overflowX = "auto";
 
-    let divsb = divRow.addDiv();
-    divsb.style.display = "table-cell";
-    divsb.style.verticalAlign = "top";
-    var sb = new dbnScoreboard(divsb);
+    // var divRow = divBoard.addDiv();
+    // divRow.style.display = "table-row";
 
-    let divmv = divRow.addDiv();
-    divmv.style.display = "table-cell";
-    divmv.style.width = "100%";
-    divmv.style.minWidth = "300px";
+    // let divsb = divRow.addDiv();
+    // divsb.style.display = "table-cell";
+    // divsb.style.verticalAlign = "top";
+    // var sb = new dbnScoreboard(divsb);
 
-    var mv = new dbnMapView(divmv);
-    sb.BindToMapView(mv);
+    // let divmv = divRow.addDiv();
+    // divmv.style.display = "table-cell";
+    // divmv.style.width = "100%";
+    // divmv.style.minWidth = "300px";
 
-    mv.Game = game;
+    // var mv = new dbnMapView(divmv);
+    // sb.BindToMapView(mv);
+
+    board.Game = game;
     var phase = game.GamePhases[0];
-    mv.GamePhase = phase;
+    board.GamePhase = phase;
 
 }
 MakePage();
