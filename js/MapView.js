@@ -492,6 +492,7 @@ class dbnMapOptionController extends dbnDiv {
         this.addText("Options:");
 
         var selects = [];
+        var inputs = [];
         var options = [];
 
         options.push(this.addWithCaption("Label Pos: ", this.LabelPosition));
@@ -504,19 +505,48 @@ class dbnMapOptionController extends dbnDiv {
         this.UnitStyle.AddOption("Diamond", "Diamond");
         selects.push(this.UnitStyle);
 
-        options.push(this.addWithCaption("Colors: ", this.ColorPalette));
-        this.ColorPalette.AddOption("Current", "Current");
-        this.ColorPalette.AddOption("Russia: DC267F", "Opt1");
-        this.ColorPalette.AddOption("Russia: CC79A7", "Opt2");
-        selects.push(this.ColorPalette);
+        // options.push(this.addWithCaption("Colors: ", this.ColorPalette));
+        // this.ColorPalette.AddOption("Current", "Current");
+        // this.ColorPalette.AddOption("Russia: DC267F", "Opt1");
+        // this.ColorPalette.AddOption("Russia: CC79A7", "Opt2");
+        // selects.push(this.ColorPalette);
 
         options.push(this.addWithCaption("Impassables: ", this.Impassables));
         this.Impassables.AddOption("Striped", "Striped");
         this.Impassables.AddOption("Black", "Black");
         selects.push(this.Impassables);
 
+        this.Impassables.AddOption("Striped", "Striped");
+        this.Impassables.AddOption("Black", "Black");
+        selects.push(this.Impassables);
+
+        options.push(this.addWithCaption("Canal width: ", this.CanalWidth));
+        this.CanalWidth.value = 3;
+        inputs.push(this.CanalWidth);
+
+        var vals = Object.values(CountryEnum);
+        vals.push("Neutral", "Water");
+        vals.forEach(country => {
+            var inp = new dbnInput();
+            options.push(this.addWithCaption(country + ": ", inp));
+            inputs.push(inp);
+            this.ColorInputs[country] = inp;
+            switch (country) {
+                case "Water":
+                    inp.value = myHub.ColorScheme.WaterColor.substring(1);
+                    break;
+                case "Neutral":
+                    inp.value = myHub.ColorScheme.NeutralColor.substring(1);
+                    break;
+                default:
+                    inp.value = myHub.ColorScheme.CountryColors[country].substring(1);
+                    break;
+            }
+        });
+
         options.forEach(x => x.style.margin = "3px");
         selects.forEach(x => { x.onchange = this.#UpdateMap.bind(this); x.style.width = "fit-content"; });
+        inputs.forEach(x => { x.oninput = this.#UpdateMap.bind(this); x.style.width = "fit-content"; });
     }
 
     /**@type{dbnMapView} */  MapView;
@@ -526,6 +556,10 @@ class dbnMapOptionController extends dbnDiv {
     UnitStyle = new dbnSelect();
     ColorPalette = new dbnSelect();
     Impassables = new dbnSelect();
+    CanalWidth = new dbnInput();
+
+    /**@type{Object.<string,dbnInput>} */
+    ColorInputs = {};
 
     #UpdateMap() {
         switch (this.LabelPosition.SelectedValue) {
@@ -540,27 +574,47 @@ class dbnMapOptionController extends dbnDiv {
             default: throw "Unrecognized UnitStyle";
         };
 
-        switch (this.ColorPalette.SelectedValue) {
-            case "Current": myHub.ColorScheme = new dbnColorScheme_Proposed(); break;
-            case "Opt1": {
-                console.log(dbnColorScheme.HTML2RGB("#DC267F"));
-                myHub.ColorScheme.CountryColors[CountryEnum.Russia] = dbnColorScheme.RGB2HTML(220, 38, 127);
-                myHub.ColorScheme.ResetCountryBackColors();
-                break;
-            }
-            case "Opt2": {
-                myHub.ColorScheme.CountryColors[CountryEnum.Russia] = "#CC79A7";
-                myHub.ColorScheme.ResetCountryBackColors();
-                break;
-            }
-            default: throw "Unrecognized ColorPalette";
-        };
+        // switch (this.ColorPalette.SelectedValue) {
+        //     case "Current": myHub.ColorScheme = new dbnColorScheme_Proposed(); break;
+        //     case "Opt1": {
+        //         console.log(dbnColorScheme.HTML2RGB("#DC267F"));
+        //         myHub.ColorScheme.CountryColors[CountryEnum.Russia] = dbnColorScheme.RGB2HTML(220, 38, 127);
+        //         myHub.ColorScheme.ResetCountryBackColors();
+        //         break;
+        //     }
+        //     case "Opt2": {
+        //         myHub.ColorScheme.CountryColors[CountryEnum.Russia] = "#CC79A7";
+        //         myHub.ColorScheme.ResetCountryBackColors();
+        //         break;
+        //     }
+        //     default: throw "Unrecognized ColorPalette";
+        // };
 
         switch (this.Impassables.SelectedValue) {
             case "Striped": this.MapView.StripedImpassables = true; break;
             case "Black": this.MapView.StripedImpassables = false; break;
             default: throw "Unrecognized Impassables";
         };
+
+        var cw = parseInt(this.CanalWidth.value);
+        if (cw) this.MapView.CanalWidth = cw;
+
+        Object.entries(this.ColorInputs).forEach(x => {
+            if (x[1].value.length == 6) {
+                switch (x[0]) {
+                    case "Water":
+                        myHub.ColorScheme.WaterColor = "#" + x[1].value;
+                        break;
+                    case "Neutral":
+                        myHub.ColorScheme.NeutralColor = "#" + x[1].value;
+                        break;
+                    default:
+                        myHub.ColorScheme.CountryColors[x[0]] = "#" + x[1].value;
+                        break;
+                }
+            }
+        });
+        myHub.ColorScheme.ResetCountryBackColors();
 
         this.MapView.Redraw();
         this.Scoreboard.Redraw();
@@ -649,6 +703,9 @@ class dbnMapView extends dbnSVG {
     ShowNavigationButtons = true;
     ViewingMode = GameViewingModeEnum.EverythingWithoutReveal;
     UnitSize = 15;
+
+    StripedImpassables = true;
+    CanalWidth = 3;
 
     //#region Navigation
 
@@ -748,8 +805,6 @@ class dbnMapView extends dbnSVG {
     //#region Draw
 
     Redraw() { this.#Draw(); }
-
-    StripedImpassables = true;
 
     #Draw() {
         if (!this.MapData) return;
@@ -854,11 +909,11 @@ class dbnMapView extends dbnSVG {
                     return ptf.AddTo(ptc);
                 });
                 var segCanal = new dbnLineSegment(pps[0], pps[1]);
-                var line1 = this.AddLineFromSegment(segCanal, "black", 5);
+                var line1 = this.AddLineFromSegment(segCanal, "black", this.CanalWidth + 2);
                 line1.strokeDashArray = "1,1";
                 line1.SetPointerEventsNone();
 
-                var line2 = this.AddLineFromSegment(segCanal, colors.WaterColor, 3);
+                var line2 = this.AddLineFromSegment(segCanal, colors.WaterColor, this.CanalWidth);
                 line2.SetPointerEventsNone();
             }
         });
