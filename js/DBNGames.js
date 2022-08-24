@@ -80,10 +80,13 @@ class dbnColorScheme {
     return returnString ? this.RGB2HTML(...ret) : ret;
   }
 
-  ConsoleLogMagicLink() {
+  MakeMagicLink() {
     var ret = "https://davidmathlogic.com/colorblind/#";
     [...Object.values(this.CountryColors), this.NeutralColor, this.WaterColor].forEach((x, i) => ret += (i >= 1 ? "-" : "") + "%23" + x.substring(1));
-    console.log(ret);
+    return ret;
+  }
+  ConsoleLogMagicLink() {
+    console.log(this.MakeMagicLink());
   }
   ConsoleLogRGBValues() {
     var ret = [...Object.values(this.CountryColors), this.NeutralColor, this.WaterColor].map(x => dbnColorScheme.HTML2RGB(x));

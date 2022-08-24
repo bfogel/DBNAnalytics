@@ -547,6 +547,10 @@ class dbnMapOptionController extends dbnDiv {
         options.forEach(x => x.style.margin = "3px");
         selects.forEach(x => { x.onchange = this.#UpdateMap.bind(this); x.style.width = "fit-content"; });
         inputs.forEach(x => { x.oninput = this.#UpdateMap.bind(this); x.style.width = "fit-content"; });
+
+        var link = this.addLink();
+        link.href = myHub.ColorScheme.MakeMagicLink();
+
     }
 
     /**@type{dbnMapView} */  MapView;
