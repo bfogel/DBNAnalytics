@@ -461,6 +461,7 @@ class dbnFullBoard extends dbnDiv {
         divsb.add(this.#MapOptionController);
         this.#MapOptionController.MapView = this.#MapView;
         this.#MapOptionController.Scoreboard = this.#Scoreboard;
+        this.#MapOptionController.UpdateLabels();
 
         let divmv = divRow.addDiv();
         divmv.style.display = "table-cell";
@@ -528,25 +529,31 @@ class dbnMapOptionController extends dbnDiv {
         vals.push("Neutral", "Water");
         vals.forEach(country => {
             var inp = new dbnInput();
-            options.push(this.addWithCaption(country + ": ", inp));
+            var opt = this.addWithCaption(country + ": ", inp);
+            options.push(opt);
             inputs.push(inp);
             this.ColorInputs[country] = inp;
+
+            var lbl = opt.addSpan();
+            this.ColorLabels[country] = lbl;
+            lbl.innerHTML = country;
+
             switch (country) {
                 case "Water":
-                    inp.value = myHub.ColorScheme.WaterColor.substring(1);
+                    inp.value = myHub.ColorScheme.WaterColor.ToRGBString().substring(1);
                     break;
                 case "Neutral":
-                    inp.value = myHub.ColorScheme.NeutralColor.substring(1);
+                    inp.value = myHub.ColorScheme.NeutralColor.ToRGBString().substring(1);
                     break;
                 default:
-                    inp.value = myHub.ColorScheme.CountryColors[country].substring(1);
+                    inp.value = myHub.ColorScheme.CountryColors[country].ToRGBString().substring(1);
                     break;
             }
         });
 
         options.forEach(x => x.style.margin = "3px");
-        selects.forEach(x => { x.onchange = this.#UpdateMap.bind(this); x.style.width = "fit-content"; });
-        inputs.forEach(x => { x.oninput = this.#UpdateMap.bind(this); x.style.width = "fit-content"; });
+        selects.forEach(x => { x.onchange = this.UpdateMap.bind(this); x.style.width = "fit-content"; });
+        inputs.forEach(x => { x.oninput = this.UpdateMap.bind(this); x.style.width = "60px"; });
 
         var link = this.addLink();
         link.href = myHub.ColorScheme.MakeMagicLink();
@@ -564,8 +571,10 @@ class dbnMapOptionController extends dbnDiv {
 
     /**@type{Object.<string,dbnInput>} */
     ColorInputs = {};
+    /**@type{Object.<string,dbnSpan>} */
+    ColorLabels = {};
 
-    #UpdateMap() {
+    UpdateMap() {
         switch (this.LabelPosition.SelectedValue) {
             case "Central": this.MapView.MapData = new dbnMapData(myMapDataRawNEW); break;
             case "Off-center": this.MapView.MapData = new dbnMapData(myMapDataRawNEW2); break;
@@ -605,15 +614,16 @@ class dbnMapOptionController extends dbnDiv {
 
         Object.entries(this.ColorInputs).forEach(x => {
             if (x[1].value.length == 6) {
+                var color = dbnColor.FromRGBString("#" + x[1].value);
                 switch (x[0]) {
                     case "Water":
-                        myHub.ColorScheme.WaterColor = "#" + x[1].value;
+                        myHub.ColorScheme.WaterColor = color;
                         break;
                     case "Neutral":
-                        myHub.ColorScheme.NeutralColor = "#" + x[1].value;
+                        myHub.ColorScheme.NeutralColor = color;
                         break;
                     default:
-                        myHub.ColorScheme.CountryColors[x[0]] = "#" + x[1].value;
+                        myHub.ColorScheme.CountryColors[x[0]] = color;
                         break;
                 }
             }
@@ -622,6 +632,16 @@ class dbnMapOptionController extends dbnDiv {
 
         this.MapView.Redraw();
         this.Scoreboard.Redraw();
+        this.UpdateLabels();
+    }
+
+    UpdateLabels() {
+        Object.entries(this.ColorInputs).forEach(x => {
+            if (x[1].value.length == 6) {
+                var color = dbnColor.FromRGBString("#" + x[1].value);
+                this.ColorLabels[x[0]].innerHTML = "HSV: " + JSON.stringify(color.ToHSVArray(true)) + " " + JSON.stringify(color.MixWith(dbnColor.White, 0.375).ToHSVArray(true));
+            }
+        });
     }
 }
 
@@ -872,10 +892,10 @@ class dbnMapView extends dbnSVG {
         Object.values(this.MapData.ProvinceData).forEach(x => {
             var fill;
             if (x.ProvinceType == ProvinceTypeEnum.Water) {
-                fill = colors.WaterColor;
+                fill = colors.WaterColor.ToRGBString();
             } else {
                 var owner = owners ? owners[x.Province] : null;
-                fill = owner ? colors.CountryBackColors[owner] : colors.NeutralColor;
+                fill = owner ? colors.CountryBackColors[owner].ToRGBString() : colors.NeutralColor.ToRGBString();
             }
 
             var provincesvg = this.AddPath(x.BorderPath, "black", "2", fill);
@@ -889,7 +909,7 @@ class dbnMapView extends dbnSVG {
                     var thisdiv = orddiv.addDiv();
                     thisdiv.style.padding = "2px 4px";
                     thisdiv.addText(oar.ToString());
-                    thisdiv.style.backgroundColor = myHub.ColorScheme.CountryBackColors[country];
+                    thisdiv.style.backgroundColor = myHub.ColorScheme.CountryBackColors[country].ToRGBString();
                     thisdiv.style.fontWeight = "bold";
                     thisdiv.style.color = "black";
                 });
@@ -917,7 +937,7 @@ class dbnMapView extends dbnSVG {
                 line1.strokeDashArray = "1,1";
                 line1.SetPointerEventsNone();
 
-                var line2 = this.AddLineFromSegment(segCanal, colors.WaterColor, this.CanalWidth);
+                var line2 = this.AddLineFromSegment(segCanal, colors.WaterColor.ToRGBString(), this.CanalWidth);
                 line2.SetPointerEventsNone();
             }
         });
@@ -984,7 +1004,7 @@ class dbnMapView extends dbnSVG {
 
         if (!this.#FleetPoints) this.UseFleetStyleTriangle();
 
-        var color = myHub.ColorScheme.CountryColors[country];
+        var color = myHub.ColorScheme.CountryColors[country].ToRGBString();
         var innercolor = color;//+ "cc";
 
         var provdata = this.MapData.ProvinceData[uwl.Location.Province];
@@ -1160,7 +1180,7 @@ class dbnMapView extends dbnSVG {
         var line = this.#GetMoveSegment(oar.Province, order.ToLocation);
 
         var strokecolor = isretreat ? this.#RetreatStrokeColor : (oar.Result.Succeeded ? "black" : "red");
-        var fillcolor = isretreat ? this.#RetreatFillColor : myHub.ColorScheme.CountryColors[country];
+        var fillcolor = isretreat ? this.#RetreatFillColor : myHub.ColorScheme.CountryColors[country].ToRGBString();
 
         // var arrowhead = this.#ArrowheadLabel + (isretreat ? "Retreat" : country + oar.Result.Succeeded);
         // this.AddLineFromSegment(line, strokecolor, 5, arrowhead);
@@ -1362,7 +1382,7 @@ class dbnMapView extends dbnSVG {
                 var circle = this.AddCircle(pt.X, pt.Y, 15, "black", 2, "white");
                 circle.SetPointerEventsNone();
 
-                var txt = this.AddText(text, pt.X, pt.Y, myHub.ColorScheme.CountryColors[country], "font-size: 20px; font-weight:bold;");
+                var txt = this.AddText(text, pt.X, pt.Y, myHub.ColorScheme.CountryColors[country].ToRGBString(), "font-size: 20px; font-weight:bold;");
                 txt.SetVerticalAlignMiddle();
                 txt.SetHorizontalAlignMiddle();
                 txt.SetPointerEventsNone();
@@ -1423,7 +1443,7 @@ class dbnScoreboard extends dbnBaseTable {
             lines.push(line);
 
             var row = this.GetBodyRow(i);
-            row.style.backgroundColor = myHub.ColorScheme.CountryBackColors[country];
+            row.style.backgroundColor = myHub.ColorScheme.CountryBackColors[country].ToRGBString();
         });
         this.LoadContent(lines);
     }

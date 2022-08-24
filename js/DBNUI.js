@@ -1031,7 +1031,7 @@ class dbnTable extends dbnElement {
             }
 
             if (rr.Country != null) {
-                row.style.backgroundColor = myHub.ColorScheme.CountryBackColors[rr.Country];
+                row.style.backgroundColor = myHub.ColorScheme.CountryBackColors[rr.Country].ToRGBString();
                 // row.className += " bf" + rr.Country + "Back";
             }
 
@@ -1304,6 +1304,91 @@ class dbnDrilldownPage {
 
 //#region Drawing classes
 
+class dbnColor {
+
+    /**@type{number} */ R;
+    /**@type{number} */ G;
+    /**@type{number} */ B;
+    /**@type{number} */ A;
+
+    static get White() { return dbnColor.FromRGB(255, 255, 255); }
+
+    /**
+     * @param {number} r 
+     * @param {number} g 
+     * @param {number} b 
+     */
+    static FromRGB(r, g, b) { var ret = new dbnColor(); ret.R = r; ret.G = g; ret.B = b; return ret; }
+
+    /**
+     * @param {string} value 
+     */
+    static FromRGBString(color) {
+        var ret = new dbnColor();
+        if (color[0] != "#") throw "Color is not a hex value";
+        if (color.length < 7) throw "Color is not long enough";
+        ret.R = parseInt(color.substring(1, 3), 16);
+        ret.G = parseInt(color.substring(3, 5), 16);
+        ret.B = parseInt(color.substring(5, 7), 16);
+        if (color.length > 7) ret.A = parseInt(color.substring(7, 9), 16);
+        return ret;
+    }
+
+    ToRGBString() {
+        var decColor = 0x1000000 + this.B + 0x100 * this.G + 0x10000 * this.R;
+        var ret = '#' + decColor.toString(16).substring(1);
+        if (this.A) ret += this.A.toString(16).padStart(2, "0");
+        return ret;
+    }
+
+    ToRGBArray() { return [this.R, this.G, this.B]; }
+
+    /**
+     * 
+     * @param {dbnColor} color 
+     * @param {number} amount
+     * @returns 
+     */
+    MixWith(color, amount) {
+        var ret = new dbnColor();
+        var mix = (a, b) => { return Math.floor((1 - amount) * a + amount * b); };
+
+        ret.R = mix(this.R, color.R);
+        ret.G = mix(this.G, color.G);
+        ret.B = mix(this.B, color.B);
+        if (this.A && color.A) ret.A = mix(this.A, color.A);
+        return ret;
+    }
+
+    ToHSVArray(asInt = false) {
+        var rp = this.R / 255;
+        var gp = this.G / 255;
+        var bp = this.B / 255;
+        var cmax = Math.max(rp, gp, bp);
+        var cmin = Math.min(rp, gp, bp);
+        var delta = cmax - cmin;
+
+        var h = 0;
+        if (delta != 0) {
+            if (cmax == rp) {
+                h = 60 * (((gp - bp) / delta) % 6);
+                if (h < 0) h += 360;
+            } else if (cmax == gp) {
+                h = 60 * (((bp - rp) / delta) + 2);
+            } else {
+                h = 60 * (((rp - gp) / delta) + 4);
+            }
+        }
+
+        var s = (cmax == 0) ? 0 : delta / cmax;
+
+        var ret = [h, 100 * s, 100 * cmax];
+        if (asInt) ret = ret.map(x => Math.round(x));
+        return ret; x
+    }
+
+}
+
 class dbnPoint {
     /**
      * 
@@ -1319,6 +1404,7 @@ class dbnPoint {
         if (!Array.isArray(value) || value.length != 2) throw "value must be an array of length 2";
         return new dbnPoint(value[0], value[1]);
     }
+
     /**@type{number} */
     X;
 

@@ -9,87 +9,39 @@
 
 class dbnColorScheme {
 
-  /**@type{string} */
+  /**@type{dbnColor} */
   WaterColor;
-  /**@type{string} */
+  /**@type{dbnColor} */
   NeutralColor;
 
-  /**@type{Object.<string,string>} */
+  /**@type{Object.<string,dbnColor>} */
   CountryColors = {};
 
-  /**@type{Object.<string,string>} */
+  /**@type{Object.<string,dbnColor>} */
   #CountryBackColors;
-  ResetCountryBackColors() { this.#CountryBackColors = null; }
+  ResetCountryBackColors() { this.#CountryBackColors = undefined; }
   get CountryBackColors() {
     if (!this.#CountryBackColors) {
       this.#CountryBackColors = {};
       for (const country in this.CountryColors) {
         const color = this.CountryColors[country];
-
-        this.#CountryBackColors[country] = dbnColorScheme.MixColors(color, [255, 255, 255], 0.625);
-
-        // var rgb = dbnColorScheme.HTML2RGB(color);
-        // rgb = rgb.map(x => Math.floor(x + (255 - x) * 0.375));
-        // this.#CountryBackColors[country] = dbnColorScheme.RGB2HTML(...rgb);
+        this.#CountryBackColors[country] = color.MixWith(dbnColor.White, 0.375);
       }
     }
     return this.#CountryBackColors;
   }
 
-  /**
-   * 
-   * @param {number} red 
-   * @param {number} green 
-   * @param {number} blue 
-   * @param {number|null} alpha 
-   */
-  static RGB2HTML(red, green, blue, alpha = null) {
-    var decColor = 0x1000000 + blue + 0x100 * green + 0x10000 * red;
-    var ret = '#' + decColor.toString(16).substring(1);
-    if (alpha) ret += alpha.toString(16).padStart(2, "0");
-    return ret;
-  }
-
-  /**
-   * 
-   * @param {string} color 
-   */
-  static HTML2RGB(color) {
-    /**@type{number[]}*/ var ret = [];
-    if (color[0] != "#") throw "Color is not a hex value";
-    if (color.length < 7) throw "Color is not long enough";
-    ret.push(color.substring(1, 3));
-    ret.push(color.substring(3, 5));
-    ret.push(color.substring(5, 7));
-    if (color.length > 7) ret.push(color.substring(7, 9));
-    ret = ret.map(x => parseInt(x, 16));
-    return ret;
-  }
-
-  /**
-   * 
-   * @param {string|number[]} color1 
-   * @param {string|number[]} color2 
-   * @param {number} amountOf1 
-   * @returns 
-   */
-  static MixColors(color1, color2, amountOf1, returnString = true) {
-    var c1 = Array.isArray(color1) ? color1 : this.HTML2RGB(color1);
-    var c2 = Array.isArray(color2) ? color2 : this.HTML2RGB(color2);
-    var ret = c1.map((x, i) => Math.floor(amountOf1 * x + (1 - amountOf1) * c2[i]));
-    return returnString ? this.RGB2HTML(...ret) : ret;
-  }
-
   MakeMagicLink() {
     var ret = "https://davidmathlogic.com/colorblind/#";
-    [...Object.values(this.CountryColors), this.NeutralColor, this.WaterColor].forEach((x, i) => ret += (i >= 1 ? "-" : "") + "%23" + x.substring(1));
+    var cols = [...Object.values(this.CountryColors), this.NeutralColor, this.WaterColor];
+    cols.forEach((x, i) => { ret += (i >= 1 ? "-" : "") + "%23" + x.ToRGBString().substring(1); });
     return ret;
   }
   ConsoleLogMagicLink() {
     console.log(this.MakeMagicLink());
   }
   ConsoleLogRGBValues() {
-    var ret = [...Object.values(this.CountryColors), this.NeutralColor, this.WaterColor].map(x => dbnColorScheme.HTML2RGB(x));
+    var ret = [...Object.values(this.CountryColors), this.NeutralColor, this.WaterColor].map(x => x.ToRGBArray());
     ret.forEach(x => console.log(JSON.stringify(x)));
     console.log(JSON.stringify(ret));
   }
@@ -101,15 +53,15 @@ class dbnColorScheme_OriginalWebsite extends dbnColorScheme {
 
     // this.NeutralColor = "tan";
     this.NeutralColor = "#D2B48C";
-    this.CountryColors["Austria"] = dbnColorScheme.RGB2HTML(230, 90, 118);
-    this.CountryColors["England"] = dbnColorScheme.RGB2HTML(102, 102, 255);
-    this.CountryColors["France"] = dbnColorScheme.RGB2HTML(128, 223, 255);
-    this.CountryColors["Germany"] = dbnColorScheme.RGB2HTML(128, 128, 128);
-    this.CountryColors["Italy"] = dbnColorScheme.RGB2HTML(117, 210, 117);
-    this.CountryColors["Russia"] = dbnColorScheme.RGB2HTML(210, 210, 210);
-    this.CountryColors["Turkey"] = dbnColorScheme.RGB2HTML(255, 231, 102);
+    this.CountryColors["Austria"] = dbnColor.FromRGB(230, 90, 118);
+    this.CountryColors["England"] = dbnColor.FromRGB(102, 102, 255);
+    this.CountryColors["France"] = dbnColor.FromRGB(128, 223, 255);
+    this.CountryColors["Germany"] = dbnColor.FromRGB(128, 128, 128);
+    this.CountryColors["Italy"] = dbnColor.FromRGB(117, 210, 117);
+    this.CountryColors["Russia"] = dbnColor.FromRGB(210, 210, 210);
+    this.CountryColors["Turkey"] = dbnColor.FromRGB(255, 231, 102);
     // this.CountryColors["Turkey"] = this.#RGB2HTML(187, 187, 0);
-    this.WaterColor = dbnColorScheme.RGB2HTML(230, 230, 255);
+    this.WaterColor = dbnColor.FromRGB(230, 230, 255);
   }
 }
 
@@ -117,15 +69,15 @@ class dbnColorScheme_OriginalOnAir extends dbnColorScheme {
   constructor() {
     super();
     this.NeutralColor = "#D2B48C";
-    this.CountryColors["Austria"] = dbnColorScheme.RGB2HTML(204, 0, 0);
-    this.CountryColors["England"] = dbnColorScheme.RGB2HTML(30, 30, 225);
-    this.CountryColors["France"] = dbnColorScheme.RGB2HTML(153, 153, 255);
-    this.CountryColors["Germany"] = dbnColorScheme.RGB2HTML(75, 75, 75);
-    this.CountryColors["Italy"] = dbnColorScheme.RGB2HTML(0, 170, 0);
-    this.CountryColors["Russia"] = dbnColorScheme.RGB2HTML(187, 0, 187);
-    this.CountryColors["Turkey"] = dbnColorScheme.RGB2HTML(240, 210, 0);
+    this.CountryColors["Austria"] = dbnColor.FromRGB(204, 0, 0);
+    this.CountryColors["England"] = dbnColor.FromRGB(30, 30, 225);
+    this.CountryColors["France"] = dbnColor.FromRGB(153, 153, 255);
+    this.CountryColors["Germany"] = dbnColor.FromRGB(75, 75, 75);
+    this.CountryColors["Italy"] = dbnColor.FromRGB(0, 170, 0);
+    this.CountryColors["Russia"] = dbnColor.FromRGB(187, 0, 187);
+    this.CountryColors["Turkey"] = dbnColor.FromRGB(240, 210, 0);
     // this.CountryColors["Turkey"] = this.#RGB2HTML(187, 187, 0);
-    this.WaterColor = dbnColorScheme.RGB2HTML(146, 230, 255);
+    this.WaterColor = dbnColor.FromRGB(146, 230, 255);
   }
 }
 
@@ -133,33 +85,33 @@ class dbnColorScheme_Proposed extends dbnColorScheme {
   constructor() {
     super();
 
-    // this.NeutralColor = dbnColorScheme.RGB2HTML(234, 222, 168);
-    this.NeutralColor = dbnColorScheme.RGB2HTML(255, 250, 222);
+    // this.NeutralColor = dbnColor.FromRGB(234, 222, 168);
+    this.NeutralColor = dbnColor.FromRGB(255, 250, 222);
 
-    this.CountryColors["Austria"] = dbnColorScheme.RGB2HTML(175, 10, 10);
+    this.CountryColors["Austria"] = dbnColor.FromRGB(175, 10, 10);
 
 
     // this.CountryColors["England"] = "#164C9E";//dark blue
-    this.CountryColors["England"] = "#4F15A7"; //dark purple
-    // this.CountryColors["England"] = dbnColorScheme.RGB2HTML(228, 47, 208);//Pink
+    this.CountryColors["England"] = dbnColor.FromRGBString("#4F15A7"); //dark purple
+    // this.CountryColors["England"] = dbnColor.FromRGB(228, 47, 208);//Pink
 
-    this.CountryColors["France"] = dbnColorScheme.RGB2HTML(146, 230, 255);
-    //this.CountryColors["France"] = dbnColorScheme.RGB2HTML(0, 140, 255);
-    this.CountryColors["Germany"] = dbnColorScheme.RGB2HTML(100, 100, 100);
-    this.CountryColors["Italy"] = dbnColorScheme.RGB2HTML(10, 175, 10);
+    this.CountryColors["France"] = dbnColor.FromRGB(146, 230, 255);
+    //this.CountryColors["France"] = dbnColor.FromRGB(0, 140, 255);
+    this.CountryColors["Germany"] = dbnColor.FromRGB(100, 100, 100);
+    this.CountryColors["Italy"] = dbnColor.FromRGB(10, 175, 10);
 
-    // this.CountryColors["Russia"] = dbnColorScheme.RGB2HTML(102, 22, 158);//Purple
-    this.CountryColors["Russia"] = dbnColorScheme.RGB2HTML(228, 47, 208);//Pink
-    //this.CountryColors["Russia"] = dbnColorScheme.RGB2HTML(187, 0, 187); //Pink (original DBN)
+    // this.CountryColors["Russia"] = dbnColor.FromRGB(102, 22, 158);//Purple
+    this.CountryColors["Russia"] = dbnColor.FromRGB(228, 47, 208);//Pink
+    //this.CountryColors["Russia"] = dbnColor.FromRGB(187, 0, 187); //Pink (original DBN)
 
-    this.CountryColors["Turkey"] = dbnColorScheme.RGB2HTML(240, 210, 0);
+    this.CountryColors["Turkey"] = dbnColor.FromRGB(240, 210, 0);
 
-    this.WaterColor = dbnColorScheme.RGB2HTML(0, 140, 255);//blueish
-    //this.WaterColor = dbnColorScheme.RGB2HTML(155, 255, 255);//green-blue -- yech
+    this.WaterColor = dbnColor.FromRGB(0, 140, 255);//blueish
+    //this.WaterColor = dbnColor.FromRGB(155, 255, 255);//green-blue -- yech
 
 
-    this.CountryColors["France"] = dbnColorScheme.RGB2HTML(0, 140, 255);//bright blue
-    this.WaterColor = dbnColorScheme.MixColors([68, 160, 196], [255, 255, 255], 0.6);
+    this.CountryColors["France"] = dbnColor.FromRGB(0, 140, 255);//bright blue
+    this.WaterColor = dbnColor.FromRGB(68, 160, 196).MixWith(dbnColor.White, 0.4);
     //this.WaterColor = dbnColorScheme.MixColors("#006994", [255, 255, 255], 1);
   }
 }
