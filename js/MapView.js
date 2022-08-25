@@ -655,7 +655,9 @@ class dbnMapOptionController extends dbnDiv {
         Object.entries(this.ColorInputs).forEach(x => {
             if (x[1].value.length == 6) {
                 var color = dbnColor.FromRGBString("#" + x[1].value);
-                this.ColorLabels[x[0]].innerHTML = "HSV: " + JSON.stringify(color.ToHSVArray(true)) + " " + JSON.stringify(color.MixWith(dbnColor.White, 0.375).ToHSVArray(true));
+                var s = "HSV: " + JSON.stringify(color.ToHSVArray(true));
+                if (Object.values(CountryEnum).includes(x[0])) s += " " + JSON.stringify(myHub.ColorScheme.CountryBackColors[x[0]].ToHSVArray(true));
+                this.ColorLabels[x[0]].innerHTML = s;
             }
         });
         this.ColorLink.href = myHub.ColorScheme.MakeMagicLink();
