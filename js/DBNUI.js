@@ -158,17 +158,20 @@ class dbnLink extends dbnElement {
     get openInNewWindow() { return this.domelement.target == "_blank"; }
     set openInNewWindow(value) { this.domelement.target = value ? "_blank" : "_self"; }
 
+    AddExternalIcon() {
+        var icon = new dbnElement('i');
+        icon.className = "fa fa-external-link";
+        icon.domelement.setAttribute("aria-hidden", "true");
+
+        this.addText(" ");
+        this.appendChild(icon);
+    }
+
     checkForExternal() {
         var isexternal = this.href.substring(0, 4).toLowerCase() == "http" && !this.href.toLowerCase().includes("diplobn.com");
-
         if (isexternal) {
-            var icon = new dbnElement('i');
-            icon.className = "fa fa-external-link";
-            icon.domelement.setAttribute("aria-hidden", "true");
-
+            this.AddExternalIcon();
             this.openInNewWindow = true;
-            this.addText(" ");
-            this.appendChild(icon);
         }
     }
 }

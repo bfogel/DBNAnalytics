@@ -461,7 +461,6 @@ class dbnFullBoard extends dbnDiv {
         divsb.add(this.#MapOptionController);
         this.#MapOptionController.MapView = this.#MapView;
         this.#MapOptionController.Scoreboard = this.#Scoreboard;
-        this.#MapOptionController.UpdateLabels();
 
         let divmv = divRow.addDiv();
         divmv.style.display = "table-cell";
@@ -490,7 +489,7 @@ class dbnMapOptionController extends dbnDiv {
         super(parent);
         this.style.margin = "10px";
 
-        this.addText("Options:");
+        //this.addText("Options:");
 
         var selects = [];
         var inputs = [];
@@ -525,6 +524,21 @@ class dbnMapOptionController extends dbnDiv {
         this.CanalWidth.value = 3;
         inputs.push(this.CanalWidth);
 
+        options.push(this.addWithCaption("Back color whitening %: ", this.WhiteningAmount));
+        this.WhiteningAmount.value = 100 * myHub.ColorScheme.BackColorWhitening;
+        inputs.push(this.WhiteningAmount);
+
+        this.addLineBreak();
+
+        this.ColorLink = this.addLink();
+        this.ColorLink.addText("Open in palette editor");
+        this.ColorLink.AddExternalIcon();
+        this.ColorLink.openInNewWindow = true;
+
+        this.LoadColorsButton = this.addButton("Load from palette editor", this.LoadFromPaletteEditor.bind(this));
+        this.addButton("Current", this.LoadCurrent.bind(this));
+        this.addButton("Bryan's", this.LoadBryans.bind(this));
+
         var vals = Object.values(CountryEnum);
         vals.push("Neutral", "Water");
         vals.forEach(country => {
@@ -537,26 +551,13 @@ class dbnMapOptionController extends dbnDiv {
             var lbl = opt.addSpan();
             this.ColorLabels[country] = lbl;
             lbl.innerHTML = country;
-
-            switch (country) {
-                case "Water":
-                    inp.value = myHub.ColorScheme.WaterColor.ToRGBString().substring(1);
-                    break;
-                case "Neutral":
-                    inp.value = myHub.ColorScheme.NeutralColor.ToRGBString().substring(1);
-                    break;
-                default:
-                    inp.value = myHub.ColorScheme.CountryColors[country].ToRGBString().substring(1);
-                    break;
-            }
         });
+        this.LoadColorValuesFromHub();
+        this.UpdateLabels();
 
         options.forEach(x => x.style.margin = "3px");
         selects.forEach(x => { x.onchange = this.UpdateMap.bind(this); x.style.width = "fit-content"; });
         inputs.forEach(x => { x.oninput = this.UpdateMap.bind(this); x.style.width = "60px"; });
-
-        var link = this.addLink();
-        link.href = myHub.ColorScheme.MakeMagicLink();
 
     }
 
@@ -568,11 +569,15 @@ class dbnMapOptionController extends dbnDiv {
     ColorPalette = new dbnSelect();
     Impassables = new dbnSelect();
     CanalWidth = new dbnInput();
+    WhiteningAmount = new dbnInput();
 
     /**@type{Object.<string,dbnInput>} */
     ColorInputs = {};
     /**@type{Object.<string,dbnSpan>} */
     ColorLabels = {};
+
+    /**@type{dbnLink} */  ColorLink;
+    /**@type{dbnButton} */  LoadColorsButton;
 
     UpdateMap() {
         switch (this.LabelPosition.SelectedValue) {
@@ -612,6 +617,10 @@ class dbnMapOptionController extends dbnDiv {
         var cw = parseInt(this.CanalWidth.value);
         if (cw) this.MapView.CanalWidth = cw;
 
+        var whitening = parseFloat(this.WhiteningAmount.value);
+        if (whitening) myHub.ColorScheme.BackColorWhitening = whitening / 100;
+        console.log(whitening);
+
         Object.entries(this.ColorInputs).forEach(x => {
             if (x[1].value.length == 6) {
                 var color = dbnColor.FromRGBString("#" + x[1].value);
@@ -635,6 +644,13 @@ class dbnMapOptionController extends dbnDiv {
         this.UpdateLabels();
     }
 
+    LoadColorValuesFromHub() {
+        var cs = myHub.ColorScheme;
+        Object.values(CountryEnum).forEach(x => this.ColorInputs[x].value = cs.CountryColors[x].ToRGBString().substring(1));
+        this.ColorInputs["Water"].value = cs.WaterColor.ToRGBString().substring(1);
+        this.ColorInputs["Neutral"].value = cs.NeutralColor.ToRGBString().substring(1);
+    }
+
     UpdateLabels() {
         Object.entries(this.ColorInputs).forEach(x => {
             if (x[1].value.length == 6) {
@@ -642,6 +658,37 @@ class dbnMapOptionController extends dbnDiv {
                 this.ColorLabels[x[0]].innerHTML = "HSV: " + JSON.stringify(color.ToHSVArray(true)) + " " + JSON.stringify(color.MixWith(dbnColor.White, 0.375).ToHSVArray(true));
             }
         });
+        this.ColorLink.href = myHub.ColorScheme.MakeMagicLink();
+    }
+
+    LoadCustom() {
+        var s = prompt("The palette editor updates the url as you change the colors.  Paste that url here.");
+        if (s) this.LoadFromPaletteEditor(s);
+    }
+    LoadBryans() { this.LoadFromPaletteEditor("https://davidmathlogic.com/colorblind/#%23af0a0a-%23332288-%23008cff-%23646464-%23117733-%23aa4499-%23f0d200-%23fffade-%238ec6db"); }
+    LoadCurrent() { this.LoadFromPaletteEditor("https://davidmathlogic.com/colorblind/#%23af0a0a-%234f15a7-%23008cff-%23646464-%230aaf0a-%23e42fd0-%23f0d200-%23fffade-%238ec6db"); }
+
+    LoadFromPaletteEditor(url) {
+        //
+        var ss = url.split("%23");
+        var countries = Object.values(CountryEnum);
+
+        ss.filter(x => x.length == 6 || x.length == 7).forEach((x, i) => {
+            var cc = x;
+            if (cc.length == 7) cc = cc.substring(0, 6);
+            var color = dbnColor.FromRGBString("#" + cc);
+            switch (i) {
+                case 7: myHub.ColorScheme.NeutralColor = color; break;
+                case 8: myHub.ColorScheme.WaterColor = color; break;
+                default: myHub.ColorScheme.CountryColors[countries[i]] = color; break;
+            }
+        });
+
+        myHub.ColorScheme.ResetCountryBackColors();
+        this.MapView.Redraw();
+        this.Scoreboard.Redraw();
+        this.LoadColorValuesFromHub();
+        this.UpdateLabels();
     }
 }
 

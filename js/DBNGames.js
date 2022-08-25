@@ -17,6 +17,8 @@ class dbnColorScheme {
   /**@type{Object.<string,dbnColor>} */
   CountryColors = {};
 
+  BackColorWhitening = 0.375;
+
   /**@type{Object.<string,dbnColor>} */
   #CountryBackColors;
   ResetCountryBackColors() { this.#CountryBackColors = undefined; }
@@ -25,7 +27,7 @@ class dbnColorScheme {
       this.#CountryBackColors = {};
       for (const country in this.CountryColors) {
         const color = this.CountryColors[country];
-        this.#CountryBackColors[country] = color.MixWith(dbnColor.White, 0.375);
+        this.#CountryBackColors[country] = color.MixWith(dbnColor.White, this.BackColorWhitening);
       }
     }
     return this.#CountryBackColors;
