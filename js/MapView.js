@@ -530,14 +530,14 @@ class dbnMapOptionController extends dbnDiv {
 
         this.addLineBreak();
 
-        this.ColorLink = this.addLink();
-        this.ColorLink.addText("Open in palette editor");
-        this.ColorLink.AddExternalIcon();
-        this.ColorLink.openInNewWindow = true;
-
-        this.LoadColorsButton = this.addButton("Load from palette editor", this.LoadFromPaletteEditor.bind(this));
         this.addButton("Current", this.LoadCurrent.bind(this));
         this.addButton("Bryan's", this.LoadBryans.bind(this));
+        this.LoadColorsButton = this.addButton("Load from palette editor", this.LoadCustom.bind(this));
+
+        this.ColorLink = this.addLink();
+        this.ColorLink.addText("Open these in palette editor");
+        this.ColorLink.AddExternalIcon();
+        this.ColorLink.openInNewWindow = true;
 
         var vals = Object.values(CountryEnum);
         vals.push("Neutral", "Water");
@@ -669,7 +669,6 @@ class dbnMapOptionController extends dbnDiv {
     LoadCurrent() { this.LoadFromPaletteEditor("https://davidmathlogic.com/colorblind/#%23af0a0a-%234f15a7-%23008cff-%23646464-%230aaf0a-%23e42fd0-%23f0d200-%23fffade-%238ec6db"); }
 
     LoadFromPaletteEditor(url) {
-        //
         var ss = url.split("%23");
         var countries = Object.values(CountryEnum);
 
