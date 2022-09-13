@@ -102,7 +102,7 @@ function MakePage() {
     div.innerHTML = "";
 
     // var groupinfo = reqGroupInfo.ResponseToObjects()[0];
-    var card = div.addTitleCard(myGroupInfo.Label);
+    var card = div.addTitleCard(myGroupInfo.Label + (draft ? " (DRAFT)" : ""));
     document.title = myGroupInfo.Label;
     var alllink = card.addLink();
     alllink.href = myHub.MakeCompetitionRootURL("DBN");
