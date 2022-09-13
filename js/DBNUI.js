@@ -1338,7 +1338,7 @@ class dbnColor {
     }
 
     ToRGBString() {
-        var decColor = 0x1000000 + this.B + 0x100 * this.G + 0x10000 * this.R;
+        var decColor = 0x1000000 + Math.round(this.B) + 0x100 * Math.round(this.G) + 0x10000 * Math.round(this.R);
         var ret = '#' + decColor.toString(16).substring(1);
         if (this.A) ret += this.A.toString(16).padStart(2, "0");
         return ret;
@@ -1388,6 +1388,41 @@ class dbnColor {
         var ret = [h, 100 * s, 100 * cmax];
         if (asInt) ret = ret.map(x => Math.round(x));
         return ret; x
+    }
+
+    /**
+     * @param {number} h 
+     * @param {number} s 
+     * @param {number} v 
+     */
+    static FromHSV(h, s, v) {
+        var c = (v / 100) * (s / 100);
+        var x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+        var m = (v / 100) - c;
+
+        //console.log(c, x, m);
+
+        var rgbp;
+
+        if (0 <= h && h < 60) {
+            rgbp = [c, x, 0];
+        } else if (60 <= h && h < 120) {
+            rgbp = [x, c, 0];
+        } else if (120 <= h && h < 180) {
+            rgbp = [0, c, x];
+        } else if (180 <= h && h < 240) {
+            rgbp = [0, x, c];
+        } else if (240 <= h && h < 300) {
+            rgbp = [x, 0, c];
+        } else if (300 <= h && h < 360) {
+            rgbp = [c, 0, x];
+        } else {
+            throw "invalid value of h (" + h + ")";
+        }
+
+        rgbp = rgbp.map(x => (x + m) * 255);
+
+        return dbnColor.FromRGB(...rgbp);
     }
 
 }

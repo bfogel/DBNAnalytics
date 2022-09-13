@@ -65,13 +65,15 @@ class GroupInfo {
 function MakePage() {
     var urlparams = new URLSearchParams(window.location.search);
 
-    var groupid = 0; var grouptype = "";
+    let groupid = 0; let grouptype = ""; let draft = false;
 
     if (urlparams.has("GroupID")) groupid = Number.parseInt(urlparams.get("GroupID"));
     if ("groupid" in myHub.Parameters) groupid = myHub.Parameters["groupid"];
 
     if (urlparams.has("GroupType")) grouptype = urlparams.get("GroupType");
     if ("grouptype" in myHub.Parameters) grouptype = myHub.Parameters["grouptype"];
+
+    if (urlparams.has("Draft")) draft = urlparams.get("Draft") == "true";
 
     switch (grouptype) {
         case "CS": grouptype = CompetitionGroupType.CompetitionSeries; break;
@@ -83,9 +85,9 @@ function MakePage() {
     myGroupInfo = new GroupInfo(grouptype, groupid);
 
     var reqs = myHub.MakeRequestList();
-    var reqStandings = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "Standings");
-    var reqCompetitions = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "CompetitionList");
-    var reqStatistics = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "Statistics");
+    var reqStandings = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "Standings" + (draft ? "D" : ""));
+    var reqCompetitions = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "CompetitionList" + (draft ? "D" : ""));
+    var reqStatistics = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "Statistics" + (draft ? "D" : ""));
 
     if (myGroupInfo.InfoRequest) reqs.addRequest(myGroupInfo.InfoRequest);
     reqs.addRequest([reqStandings, reqCompetitions, reqStatistics]);

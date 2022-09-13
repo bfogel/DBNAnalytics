@@ -521,7 +521,6 @@ class dbnMapOptionController extends dbnDiv {
         selects.push(this.Impassables);
 
         options.push(this.addWithCaption("Canal width: ", this.CanalWidth));
-        this.CanalWidth.value = 3;
         inputs.push(this.CanalWidth);
 
         options.push(this.addWithCaption("Back color whitening %: ", this.WhiteningAmount));
@@ -561,7 +560,10 @@ class dbnMapOptionController extends dbnDiv {
 
     }
 
-    /**@type{dbnMapView} */  MapView;
+    /**@type{dbnMapView} */  #MapView;
+    get MapView() { return this.#MapView; }
+    set MapView(value) { this.#MapView = value; this.UpdateLabels(); }
+
     /**@type{dbnScoreboard} */  Scoreboard;
 
     LabelPosition = new dbnSelect();
@@ -615,11 +617,13 @@ class dbnMapOptionController extends dbnDiv {
         };
 
         var cw = parseInt(this.CanalWidth.value);
-        if (cw) this.MapView.CanalWidth = cw;
+        if (cw) {
+            this.MapView.CanalWidth = cw;
+            this.MapView.MapData.ProvinceData[ProvinceEnum.Den].Canal = [0 + cw / 40, 11 - cw / 40];
+        }
 
         var whitening = parseFloat(this.WhiteningAmount.value);
         if (whitening) myHub.ColorScheme.BackColorWhitening = whitening / 100;
-        console.log(whitening);
 
         Object.entries(this.ColorInputs).forEach(x => {
             if (x[1].value.length == 6) {
@@ -661,6 +665,7 @@ class dbnMapOptionController extends dbnDiv {
             }
         });
         this.ColorLink.href = myHub.ColorScheme.MakeMagicLink();
+        if (this.MapView) this.CanalWidth.value = this.MapView.CanalWidth;
     }
 
     LoadCustom() {
@@ -777,7 +782,7 @@ class dbnMapView extends dbnSVG {
     UnitSize = 15;
 
     StripedImpassables = true;
-    CanalWidth = 3;
+    CanalWidth = 5;
 
     //#region Navigation
 
@@ -982,7 +987,7 @@ class dbnMapView extends dbnSVG {
                 });
                 var segCanal = new dbnLineSegment(pps[0], pps[1]);
                 var line1 = this.AddLineFromSegment(segCanal, "black", this.CanalWidth + 2);
-                line1.strokeDashArray = "1,1";
+                line1.strokeDashArray = "2,1";
                 line1.SetPointerEventsNone();
 
                 var line2 = this.AddLineFromSegment(segCanal, colors.WaterColor.ToRGBString(), this.CanalWidth);
@@ -1206,11 +1211,8 @@ class dbnMapView extends dbnSVG {
      */
     #ShortenMovement(line) {
         var shorten = this.UnitSize * 0.6;
-        //if (line.Length < 4 * shorten) shorten = 0.5 * (line.Length - 2 * shorten);
         if (line.Length < 3 * this.#MoveArrowEndCapWidth) shorten = 0;
-        //shorten = 0;
-
-        // if (shorten > 0) return line.WithNewLength(-shorten, -shorten);
+        console.log("shorten: ", this.#MoveArrowEndCapWidth);
         if (shorten > 0) return line.WithNewLength(0, -shorten);
         return line;
     }

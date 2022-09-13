@@ -28,6 +28,9 @@ class dbnColorScheme {
       for (const country in this.CountryColors) {
         const color = this.CountryColors[country];
         this.#CountryBackColors[country] = color.MixWith(dbnColor.White, this.BackColorWhitening);
+        // let hsv = color.ToHSVArray();
+        // hsv[1] *= (1 - this.BackColorWhitening);
+        // this.#CountryBackColors[country] = dbnColor.FromHSV(...hsv);
       }
     }
     return this.#CountryBackColors;
