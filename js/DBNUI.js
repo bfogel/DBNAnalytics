@@ -339,6 +339,12 @@ class dbnInput extends dbnElement {
 
     get placeholder() { return this.domelement.placeholder; }
     set placeholder(value) { this.domelement.placeholder = value; }
+
+    get type() { return this.domelement.type; }
+    set type(value) { this.domelement.type = value; }
+
+    get step() { return this.domelement.step; }
+    set step(value) { this.domelement.step = value; }
 }
 
 class dbnDropdownWithDataList extends dbnDiv {
@@ -1475,6 +1481,7 @@ class dbnPoint {
      */
     AddTo(point) { return this.WithOffset(point.X, point.Y) };
 }
+
 class dbnSize {
     /**
      * 
@@ -1628,6 +1635,67 @@ class dbnLineSegment {
     //     return new uiLineSegmentF(FromPoint.WithOffset(dx, dy), ToPoint.WithOffset(dx, dy));
     // }
 
+}
+
+class dbnPointSet {
+    /**
+     * 
+     * @param {float} firstx 
+     * @param {float} firsty 
+     */
+    constructor(firstx, firsty) {
+        this.Add(new dbnPoint(firstx, firsty));
+    }
+
+    /**@type{dbnPoint[]} */
+    Points = [];
+
+    get First() { return this.Points[0]; }
+    get Last() { return this.Points[this.Points.length - 1]; }
+
+    Add(point) { this.Points.push(point); }
+
+    /**
+     * 
+     * @param {float} offsetx 
+     * @param {float} offsety 
+     */
+    AddFromLast(offsetx, offsety) { this.Add(this.Points[this.Points.length - 1].WithOffset(offsetx, offsety)); }
+
+    /**
+     * 
+     * @param {dbnPoint[]} points 
+     */
+    AddRange(points) { points.forEach(x => this.Add(x)) };
+
+    /**
+     * 
+     * @param {dbnPoint} offset 
+     */
+    Translate(offset) { this.Translate(offset.X, offset.Y); }
+    /**
+     * 
+     * @param {float} dx 
+     * @param {float} dy 
+     */
+    Translate(dx, dy) {
+        var newpoints = this.Points.map(pt => pt.WithOffset(dx, dy));
+        newpoints.forEach((x, i) => this.Points[i] = x);
+    }
+
+    /**
+     * 
+     * @param {float} angleInRadians 
+     */
+    Rotate(angleInRadians) {
+        if (angleInRadians == 0) return;
+
+        var cos = Math.cos(angleInRadians);
+        var sin = Math.sin(angleInRadians);
+
+        var newpoints = this.Points.map(pt => new dbnPoint(cos * pt.X - sin * pt.Y, sin * pt.X + cos * pt.Y));
+        newpoints.forEach((x, i) => this.Points[i] = x);
+    }
 }
 
 //#endregion
@@ -2104,15 +2172,23 @@ class dbnSVGPathBuilder {
 
     /**
      * 
-     * @param {number} dx 
+     * @param {dbnPoint|number} dx 
      * @param {number} dy 
      */
     Translate(dx, dy) {
+        var dxx = dx;
+        var dyy = dy;
+
+        if (dx instanceof dbnPoint) {
+            dxx = dx.X;
+            dyy = dx.Y;
+        }
+
         this.Elements.forEach(x => {
             switch (x.Marker) {
                 case "M":
                 case "L":
-                    x.Numbers[0] += dx; x.Numbers[1] += dy;
+                    x.Numbers[0] += dxx; x.Numbers[1] += dyy;
                     break;
 
                 case "Z":

@@ -47,6 +47,8 @@ function ProcessMapData(gamedata) {
     var phase = game.GamePhases[0];
     board.GamePhase = phase;
 
+    board.opt
+
 }
 
 //#region Change data for testing
@@ -495,15 +497,15 @@ class dbnMapOptionController extends dbnDiv {
         var inputs = [];
         var options = [];
 
-        options.push(this.addWithCaption("Label Pos: ", this.LabelPosition));
-        this.LabelPosition.AddOption("Off-center", "Off-center");
-        this.LabelPosition.AddOption("Central", "Central");
-        selects.push(this.LabelPosition);
-
-        options.push(this.addWithCaption("Unit style: ", this.UnitStyle));
+        //options.push(this.addWithCaption("Unit style: ", this.UnitStyle));
         this.UnitStyle.AddOption("Triangle", "Triangle");
         this.UnitStyle.AddOption("Diamond", "Diamond");
-        selects.push(this.UnitStyle);
+        //selects.push(this.UnitStyle);
+
+        options.push(this.addWithCaption("Move Colors: ", this.ColoredMoves));
+        this.ColoredMoves.AddOption("By Country", "Country");
+        this.ColoredMoves.AddOption("Black/Red", "Regular");
+        selects.push(this.ColoredMoves);
 
         // options.push(this.addWithCaption("Colors: ", this.ColorPalette));
         // this.ColorPalette.AddOption("Current", "Current");
@@ -511,14 +513,22 @@ class dbnMapOptionController extends dbnDiv {
         // this.ColorPalette.AddOption("Russia: CC79A7", "Opt2");
         // selects.push(this.ColorPalette);
 
-        options.push(this.addWithCaption("Impassables: ", this.Impassables));
+        //options.push(this.addWithCaption("Impassables: ", this.Impassables));
         this.Impassables.AddOption("Striped", "Striped");
         this.Impassables.AddOption("Black", "Black");
         selects.push(this.Impassables);
 
-        this.Impassables.AddOption("Striped", "Striped");
-        this.Impassables.AddOption("Black", "Black");
-        selects.push(this.Impassables);
+        options.push(this.addWithCaption("Province line width: ", this.ProvinceLineWidth));
+        this.ProvinceLineWidth.type = "number"; this.ProvinceLineWidth.step = 0.1;
+        inputs.push(this.ProvinceLineWidth);
+        options.push(this.addWithCaption("Coast line width: ", this.CoastLineWidth));
+        this.CoastLineWidth.type = "number"; this.CoastLineWidth.step = 0.1;
+        inputs.push(this.CoastLineWidth);
+
+        options.push(this.addWithCaption("Label Pos: ", this.LabelPosition));
+        this.LabelPosition.AddOption("Off-center", "Off-center");
+        this.LabelPosition.AddOption("Central", "Central");
+        selects.push(this.LabelPosition);
 
         options.push(this.addWithCaption("Canal width: ", this.CanalWidth));
         inputs.push(this.CanalWidth);
@@ -567,11 +577,17 @@ class dbnMapOptionController extends dbnDiv {
     /**@type{dbnScoreboard} */  Scoreboard;
 
     LabelPosition = new dbnSelect();
-    UnitStyle = new dbnSelect();
+    ColoredMoves = new dbnSelect();
     ColorPalette = new dbnSelect();
-    Impassables = new dbnSelect();
+    ProvinceLineWidth = new dbnInput();
+    CoastLineWidth = new dbnInput();
     CanalWidth = new dbnInput();
     WhiteningAmount = new dbnInput();
+
+    //old------
+    UnitStyle = new dbnSelect();
+    Impassables = new dbnSelect();
+    //------
 
     /**@type{Object.<string,dbnInput>} */
     ColorInputs = {};
@@ -589,9 +605,15 @@ class dbnMapOptionController extends dbnDiv {
         }
 
         switch (this.UnitStyle.SelectedValue) {
-            case "Triangle": this.MapView.UseFleetStyleTriangle(); break;
-            case "Diamond": this.MapView.UseFleetStyleDiamond(); break;
+            case "Triangle": this.MapView.MapStyle.UseFleetStyleTriangle(); break;
+            case "Diamond": this.MapView.MapStyle.UseFleetStyleDiamond(); break;
             default: throw "Unrecognized UnitStyle";
+        };
+
+        switch (this.ColoredMoves.SelectedValue) {
+            case "Regular": this.MapView.MapStyle.ColorMovesByCountry = false; break;
+            case "Country": this.MapView.MapStyle.ColorMovesByCountry = true; break;
+            default: throw "Unrecognized ColoredMoves";
         };
 
         // switch (this.ColorPalette.SelectedValue) {
@@ -617,10 +639,12 @@ class dbnMapOptionController extends dbnDiv {
         };
 
         var cw = parseInt(this.CanalWidth.value);
-        if (cw) {
-            this.MapView.CanalWidth = cw;
-            this.MapView.MapData.ProvinceData[ProvinceEnum.Den].Canal = [0 + cw / 40, 11 - cw / 40];
-        }
+        if (cw) this.MapView.CanalWidth = cw;
+        var plw = parseFloat(this.ProvinceLineWidth.value);
+        if (plw) this.MapView.MapStyle.ProvinceLineWidth = plw;
+        var clw = parseFloat(this.CoastLineWidth.value);
+        if (clw) this.MapView.MapStyle.CoastLineWidth = clw;
+        console.log("clw", clw);
 
         var whitening = parseFloat(this.WhiteningAmount.value);
         if (whitening) myHub.ColorScheme.BackColorWhitening = whitening / 100;
@@ -645,7 +669,7 @@ class dbnMapOptionController extends dbnDiv {
 
         this.MapView.Redraw();
         this.Scoreboard.Redraw();
-        this.UpdateLabels();
+        //this.UpdateLabels();
     }
 
     LoadColorValuesFromHub() {
@@ -666,6 +690,8 @@ class dbnMapOptionController extends dbnDiv {
         });
         this.ColorLink.href = myHub.ColorScheme.MakeMagicLink();
         if (this.MapView) this.CanalWidth.value = this.MapView.CanalWidth;
+        if (this.MapView) this.ProvinceLineWidth.value = this.MapView.MapStyle.ProvinceLineWidth;
+        if (this.MapView) this.CoastLineWidth.value = this.MapView.MapStyle.CoastLineWidth;
     }
 
     LoadCustom() {
@@ -710,7 +736,11 @@ class dbnMapView extends dbnSVG {
         super.style = "background-color: white; user-select: none;";
         //this.SetSize(800, 600);
 
+        this.MapStyle = new dbnMapStyle_DBN_2022_2();
+        this.MapStyle.SVG = this;
+
         this.MapData = new dbnMapData(myMapDataRawNEW2)
+        this.CanalWidth = this.CanalWidth;
     }
 
     //#region Events
@@ -722,25 +752,10 @@ class dbnMapView extends dbnSVG {
 
     //#region SVG Definitions
 
-    #RetreatFillColor = "white";
-    #RetreatStrokeColor = "orange";
-    #SupportEndCap = "supportEndCap";
     #BackgroundFill = "backgroundFill";
 
     #AddSVGDefinitions() {
-        [true, false].forEach(succeeded => {
-            var strokecolor = succeeded ? "black" : "red";
-
-            //Support hold
-            var marker = new dbnSVGMarker();
-            marker.id = this.#SupportEndCap + succeeded;
-            marker.MarkerWidth = 6; marker.MarkerHeight = 6;
-            marker.RefX = 3; marker.RefY = 3;
-            marker.AddPath("M 6 0 L3 3 L6 6", strokecolor, 1, "none");
-            var line2 = marker.AddPath("M 6 0 L3 3 L6 6", "white", 0.25, "none");
-            line2.strokeDashArray = "1,1";
-            this.AddDef(marker);
-        });
+        this.MapStyle.AddDefinitions();
 
         var pattern = new dbnSVGPattern();
         pattern.id = this.#BackgroundFill;
@@ -767,6 +782,9 @@ class dbnMapView extends dbnSVG {
         this.domelement.setAttribute("viewBox", "0 0 " + size[0] + " " + size[1]);
     }
 
+    /**@type{dbnMapStyle} */
+    MapStyle;
+
     /**@type{gmGame} */
     #Game;
     get Game() { return this.#Game; }
@@ -782,7 +800,13 @@ class dbnMapView extends dbnSVG {
     UnitSize = 15;
 
     StripedImpassables = true;
-    CanalWidth = 5;
+
+    #CanalWidth = 5;
+    get CanalWidth() { return this.#CanalWidth; }
+    set CanalWidth(value) {
+        this.#CanalWidth = value;
+        this.MapData.ProvinceData[ProvinceEnum.Den].Canal = [0 + value / 15, 11 - value / 15];
+    }
 
     //#region Navigation
 
@@ -902,7 +926,15 @@ class dbnMapView extends dbnSVG {
             this.#DrawSupplyCenters();
 
             if (this.ViewingMode != GameViewingModeEnum.ProvincesAndUnitsOnly) {
-                if (this.GamePhase.Orders) this.#DrawOrders(["m", "c", "sh", "sm"]);
+                this.#CalculateMoveSupportCounts();
+
+                if (this.GamePhase.Orders) {
+                    this.#DrawOrders(["sh"]);
+                    if (this.MapStyle.MovesBeforeMoveSupports) this.#DrawOrders(["m"]);
+                    this.#DrawOrders(["sm"]);
+                    if (!this.MapStyle.MovesBeforeMoveSupports) this.#DrawOrders(["m"]);
+                    this.#DrawOrders(["c"]);
+                }
                 if (this.GamePhase.RetreatOrders) this.#DrawOrders(["m"], true);
             }
             if (this.GamePhase.Units) this.#DrawUnits();
@@ -951,7 +983,7 @@ class dbnMapView extends dbnSVG {
                 fill = owner ? colors.CountryBackColors[owner].ToRGBString() : colors.NeutralColor.ToRGBString();
             }
 
-            var provincesvg = this.AddPath(x.BorderPath, "black", "2", fill);
+            var provincesvg = this.AddPath(x.BorderPath, this.MapStyle.ProvinceLineColor, this.MapStyle.ProvinceLineWidth, fill);
             this.#ProvinceSVGs[x.Province] = provincesvg;
 
             //Show orders on tooltip
@@ -986,7 +1018,7 @@ class dbnMapView extends dbnSVG {
                     return ptf.AddTo(ptc);
                 });
                 var segCanal = new dbnLineSegment(pps[0], pps[1]);
-                var line1 = this.AddLineFromSegment(segCanal, "black", this.CanalWidth + 2);
+                var line1 = this.AddLineFromSegment(segCanal, this.MapStyle.ProvinceLineColor, this.CanalWidth + 2);
                 line1.strokeDashArray = "2,1";
                 line1.SetPointerEventsNone();
 
@@ -1000,7 +1032,7 @@ class dbnMapView extends dbnSVG {
 
         //CoastLines
         if (this.MapData.CoastLines) {
-            this.MapData.CoastLines.forEach((x, i) => this.AddPath(dbnProvinceData.PathArrayToString(x, false), "black", 4, "none"));
+            this.MapData.CoastLines.forEach((x, i) => this.AddPath(dbnProvinceData.PathArrayToString(x, false), this.MapStyle.CoastLineColor, this.MapStyle.CoastLineWidth, "none"));
         }
     }
 
@@ -1037,61 +1069,18 @@ class dbnMapView extends dbnSVG {
         });
     }
 
-    /**@type{number[][]} */
-    #FleetPoints;
-
-    /**
-     * @param {dbnPoint[]} points 
-     * @returns 
-     */
-    #ConvertUnitPath(points) { return points.map(x => x.MultiplyBy(this.UnitSize).ToArray()); }
-    UseFleetStyleDiamond() { this.#FleetPoints = this.#ConvertUnitPath([new dbnPoint(-1 / 1.6, 0), new dbnPoint(0, -1 / 1.5), new dbnPoint(1 / 1.6, 0), new dbnPoint(0, 1 / 1.5)]); }
-    UseFleetStyleTriangle() { this.#FleetPoints = this.#ConvertUnitPath([new dbnPoint(-0.6, -0.289), new dbnPoint(0.6, -0.289), new dbnPoint(0, 0.577)]); }
-
     /**
      * 
      * @param {string} country 
      * @param {gmUnitWithLocation} uwl 
      */
     #DrawUnit(country, uwl) {
-
-        if (!this.#FleetPoints) this.UseFleetStyleTriangle();
-
-        var color = myHub.ColorScheme.CountryColors[country].ToRGBString();
-        var innercolor = color;//+ "cc";
-
         var provdata = this.MapData.ProvinceData[uwl.Location.Province];
 
         if (provdata) {
             var loc = provdata.UnitLocations[uwl.Key];
             if (loc) {
-                /**@type{dbnSVGElement} */ var unit;
-                /**@type{dbnSVGElement} */ var back;
-                switch (uwl.UnitType) {
-                    case "A":
-                        var rad = this.UnitSize / 2;
-                        unit = this.AddCircle(loc[0], loc[1], rad, color, 4, innercolor);
-                        back = this.AddCircle(loc[0], loc[1], rad, "black", 2, "none");
-                        break;
-
-                    case "F":
-                        // this.AddPolygon(loc[0], loc[1], fleet, color, 4, innercolor);
-                        // this.AddPolygon(loc[0], loc[1], fleet, "black", 2, "none");
-
-                        unit = this.AddPolygon(loc[0], loc[1], this.#FleetPoints, color, 4, innercolor);
-                        back = this.AddPolygon(loc[0], loc[1], this.#FleetPoints, "black", 2, "none");
-
-                        // this.AddRectangle(loc[0] - this.UnitSize, loc[1], 2 * this.UnitSize, this.UnitSize, color, 4, color + "cc");
-                        // this.AddRectangle(loc[0] - this.UnitSize, loc[1], 2 * this.UnitSize, this.UnitSize, "black", 2, "none");
-                        // this.AddRectangle(loc[0] - this.UnitSize / 2, loc[1] - this.UnitSize, this.UnitSize, 2 * this.UnitSize, color, 4, color + "cc");
-                        // this.AddRectangle(loc[0] - this.UnitSize / 2, loc[1] - this.UnitSize, this.UnitSize, 2 * this.UnitSize, "black", 2, "none");
-                        break;
-                    default: console.log("UNKNOWN UnitType: " + uwl.UnitType); break;
-                }
-                if (unit) {
-                    unit.SetPointerEventsNone();
-                    back.SetPointerEventsNone();
-                }
+                this.MapStyle.DrawUnit(uwl.UnitType, dbnPoint.FromNumberArray(loc), country);
             } else {
                 console.log("LOCATION NOT FOUND: " + uwl.Key);
             }
@@ -1103,6 +1092,24 @@ class dbnMapView extends dbnSVG {
     //#endregion
 
     //#region Draw Orders
+
+    /**@type{Object.<string,string[]>} */
+    #MoveSupportCountries = {};
+
+    #CalculateMoveSupportCounts() {
+        this.#MoveSupportCountries = {};
+        Object.entries(this.GamePhase.Orders).forEach(x =>
+            x[1].filter(x => x.Order.Type == "sm" && x.Result.Succeeded).forEach(oar => {
+                var country = x[0];
+                if (!(oar.Order instanceof gmOrderSupportMove)) return;
+
+                //NOTE: This logic does not require coasts to be specified
+                var key = oar.Order.FromLocation.Province + oar.Order.ToLocation.Province;
+
+                if (!(key in this.#MoveSupportCountries)) this.#MoveSupportCountries[key] = [];
+                this.#MoveSupportCountries[key].push(country);
+            }));
+    }
 
     #DrawOrders(ordertypeOrTypes, retreats = false) {
         if (Array.isArray(ordertypeOrTypes)) {
@@ -1196,25 +1203,8 @@ class dbnMapView extends dbnSVG {
 
         var moveline = new dbnLineSegment(pdFrom.GetLocationForUnit(uwlFrom), pdTo.GetLocationForUnit(uwlTo));
 
-        moveline = this.#ShortenMovement(moveline);
+        //moveline = this.#ShortenMovement(moveline);
         return moveline;
-    }
-
-    #MoveLineWidth = 4;
-    #MoveArrowsize = 2;
-    #MoveArrowEndCapWidth = dbnSVGArrowPath.GetDefaultEndCapDimension(this.#MoveLineWidth, this.#MoveArrowsize);
-
-    /**
-     * 
-     * @param {dbnLineSegment} line 
-     * @returns 
-     */
-    #ShortenMovement(line) {
-        var shorten = this.UnitSize * 0.6;
-        if (line.Length < 3 * this.#MoveArrowEndCapWidth) shorten = 0;
-        console.log("shorten: ", this.#MoveArrowEndCapWidth);
-        if (shorten > 0) return line.WithNewLength(0, -shorten);
-        return line;
     }
 
     /**
@@ -1228,23 +1218,11 @@ class dbnMapView extends dbnSVG {
         if (!(order instanceof gmOrderMove)) throw "Not a valid move order";
 
         var line = this.#GetMoveSegment(oar.Province, order.ToLocation);
+        var movepower = 1;
+        var key = oar.Province + order.ToLocation.Province;
+        if (key in this.#MoveSupportCountries) movepower += this.#MoveSupportCountries[key].length;
 
-        var strokecolor = isretreat ? this.#RetreatStrokeColor : (oar.Result.Succeeded ? "black" : "red");
-        var fillcolor = isretreat ? this.#RetreatFillColor : myHub.ColorScheme.CountryColors[country].ToRGBString();
-
-        // var arrowhead = this.#ArrowheadLabel + (isretreat ? "Retreat" : country + oar.Result.Succeeded);
-        // this.AddLineFromSegment(line, strokecolor, 5, arrowhead);
-        // this.AddLineFromSegment(line, fillcolor, 1.5);
-
-        var arrow = new dbnSVGArrowPath(this);
-        arrow.LineSegment = line;
-        arrow.LineWidth = this.#MoveLineWidth;
-        arrow.ArrowSize = this.#MoveArrowsize;
-        arrow.stroke = strokecolor;
-        arrow.strokeWidth = 2.25;
-        arrow.fill = fillcolor;
-
-        arrow.SetPointerEventsNone();
+        this.MapStyle.DrawMove(country, line, oar.Result.Succeeded, isretreat, movepower);
     }
 
     /**
@@ -1261,31 +1239,15 @@ class dbnMapView extends dbnSVG {
         var ptThis = dbnPoint.FromNumberArray(pdThis.GetLocationForUnit(uwlThis));
 
         var moveline = this.#GetMoveSegment(order.FromLocation.Province, order.ToLocation);
-        var ptDest = moveline.GetInterimPoint(0.75);
-        ptDest = moveline.WithNewLength(0, -this.#MoveArrowEndCapWidth).ToPoint;
 
-        var color = oar.Result.Succeeded ? "black" : "red";
-
-        var d = ptThis.ToPath("M") + moveline.FromPoint.ToPath("Q") + ptDest.ToPath("");
-        var path = this.AddPath(d, color, 3, "none");
-        path.SetPointerEventsNone();
-        path = this.AddPath(d, "white", 1, "none");
-        path.strokeDashArray = "5,5";
-        path.SetPointerEventsNone();
+        this.MapStyle.DrawSupportMove(country, ptThis, moveline, oar.Result.Succeeded);
     }
 
     #DrawOrderSupportMoveCounts() {
         var supports = {};
         return;
 
-        Object.entries(this.GamePhase.Orders).forEach(x =>
-            x[1].filter(x => x.Order.Type == "sm").forEach(oar => {
-                var country = x[0];
-                if (!(oar.Order instanceof gmOrderSupportMove)) return;
-                var key = JSON.stringify(oar.Order.ToJSON());
-                if (!(key in supports)) supports[key] = [];
-                supports[key].push(country);
-            }));
+
 
         Object.entries(supports).forEach(x => {
             var order = gmOrderSupportMove.FromJSON(JSON.parse(x[0]));
@@ -1312,19 +1274,7 @@ class dbnMapView extends dbnSVG {
         var ptThis = dbnPoint.FromNumberArray(pdThis.GetLocationForUnit(uwlThis));
 
         var moveline = this.#GetMoveSegment(order.FromLocation.Province, order.ToLocation);
-        var ptDest = moveline.MiddlePoint;
-
-        var color = oar.Result.Succeeded ? "blue" : "red";
-
-        var d = ptThis.ToPath("M") + moveline.FromPoint.ToPath("Q") + ptDest.ToPath("");
-        var path = this.AddPath(d, color, 3, "none");
-        path.SetPointerEventsNone();
-        path = this.AddPath(d, "white", 1, "none");
-        path.strokeDashArray = "10,5";
-        path.SetPointerEventsNone();
-
-        var circle = this.AddCircle(ptDest.X, ptDest.Y, 5, "none", 0, "blue");
-        circle.SetPointerEventsNone();
+        this.MapStyle.DrawConvoy(country, ptThis, moveline, oar.Result.Succeeded);
     }
 
     /**
@@ -1342,19 +1292,10 @@ class dbnMapView extends dbnSVG {
         var pdHold = this.MapData.ProvinceData[order.HoldLocation.Province];
         var uwlHold = this.GamePhase.GetUnitWithLocation(pdHold.Province) ?? pdHold.GetDefaultUnitWithLocation();
 
-        var line = new dbnLineSegment(pdThis.GetLocationForUnit(uwlThis), pdHold.GetLocationForUnit(uwlHold));
+        var ptThis = dbnPoint.FromNumberArray(pdThis.GetLocationForUnit(uwlThis));
+        var ptHold = dbnPoint.FromNumberArray(pdHold.GetLocationForUnit(uwlHold));
 
-        line = line.WithNewLength(0, -1.1 * this.UnitSize);
-
-        var color = oar.Result.Succeeded ? "black" : "red";
-
-        var svgline = this.AddLineFromSegment(line, color, 3);
-        svgline.markerEnd = this.#SupportEndCap + oar.Result.Succeeded;
-        svgline.SetPointerEventsNone();
-
-        svgline = this.AddLineFromSegment(line, "white", 1);
-        svgline.strokeDashArray = "2,2";
-        svgline.SetPointerEventsNone();
+        this.MapStyle.DrawSupportHold(country, ptThis, ptHold, oar.Result.Succeeded);
     }
 
     /**
@@ -1371,20 +1312,7 @@ class dbnMapView extends dbnSVG {
         var location = pdThis.GetLocationForUnit(uwlThis);
         var pt = dbnPoint.FromNumberArray(location);
 
-        var f = this.UnitSize / 1.5;
-        var l1 = new dbnLineSegment(pt.WithOffset(f, f), pt.WithOffset(-f, -f));
-        var l2 = new dbnLineSegment(pt.WithOffset(f, -f), pt.WithOffset(-f, f));
-
-        /**@type{dbnSVGLine[]} */
-        var lines = [];
-        var thickness = 4;
-        lines.push(this.AddLineFromSegment(l1, "black", thickness));
-        lines.push(this.AddLineFromSegment(l2, "black", thickness));
-
-        lines.push(this.AddLineFromSegment(l1.WithNewLength(-1, -1), "red", thickness / 2));
-        lines.push(this.AddLineFromSegment(l2.WithNewLength(-1, -1), "red", thickness / 2));
-
-        lines.forEach(x => x.SetPointerEventsNone());
+        this.MapStyle.DrawDisband(country, pt, oar.Result.Succeeded);
     }
 
     /**
@@ -1403,14 +1331,7 @@ class dbnMapView extends dbnSVG {
         var location = pdThis.GetLocationForUnit(order.UnitWithLocation);
         var pt = dbnPoint.FromNumberArray(location);
 
-        var f = this.UnitSize * 0.9;
-
-        var circ1 = this.AddCircle(pt.X, pt.Y, f, "black", 4, "none");
-        circ1.SetPointerEventsNone();
-
-        var circ2 = this.AddCircle(pt.X, pt.Y, f, "white", 1.5, "none");
-        circ2.strokeDashArray = "2,3";
-        circ2.SetPointerEventsNone();
+        this.MapStyle.DrawBuild(country, order.UnitWithLocation.UnitType, pt, oar.Result.Succeeded);
     }
 
     //#endregion
@@ -1444,6 +1365,692 @@ class dbnMapView extends dbnSVG {
 
     //#endregion
 
+}
+
+//#endregion
+
+//#region MapStyle
+
+class dbnMapStyle {
+
+    UnitSize = 15;
+    ProvinceLineWidth = 1;
+    CoastLineWidth = 2.2;
+    // ProvinceLineColor = "#333333";
+    // CoastLineColor = "#333333";
+    ProvinceLineColor = "black";
+    CoastLineColor = "black";
+
+    ColorMovesByCountry = false;
+
+    /**@type{dbnSVG} */
+    SVG;
+
+    MovesBeforeMoveSupports = true;
+
+    AddDefinitions() { throw "NI"; }
+
+    /**
+     * @param {string} unittype 
+     * @param {dbnPoint} location 
+     * @param {string} country 
+     */
+    DrawUnit(unittype, location, country) { throw "NI"; }
+
+    /**
+     * @param {string} country 
+     * @param {string} unittype 
+     * @param {dbnPoint} pt 
+     * @param {boolean} succeeded 
+     */
+    DrawBuild(country, unittype, pt, succeeded) { throw "NI"; }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} pt 
+     * @param {boolean} succeeded 
+     */
+    DrawDisband(country, pt, succeeded) { throw "NI"; }
+
+    /**
+     * @param {string} country 
+     * @param {dbnLineSegment} moveSegment 
+     * @param {boolean} succeeded 
+     * @param {boolean} pIsRetreat 
+     */
+    DrawMove(country, moveSegment, succeeded, pIsRetreat) { throw "NI"; }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptFrom 
+     * @param {dbnPoint} ptTo
+     * @param {boolean} succeeded 
+     */
+    DrawSupportHold(country, ptFrom, ptTo, succeeded) { throw "NI"; }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptSupportFrom 
+     * @param {dbnLineSegment} moveSegment 
+     * @param {boolean} succeeded 
+     */
+    DrawSupportMove(country, ptSupportFrom, moveSegment, succeeded) { throw "NI"; }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptConvoyFrom 
+     * @param {dbnLineSegment} moveSegment 
+     * @param {boolean} succeeded 
+     */
+    DrawConvoy(country, ptConvoyFrom, moveSegment, succeeded) { throw "NI"; }
+
+    //#region Fleet points (probably doesn't belong here)
+
+    /**@type{number[][]} */
+    FleetPoints;
+
+    /**
+     * @param {dbnPoint[]} points 
+     * @returns 
+     */
+    #ConvertUnitPath(points) { return points.map(x => x.MultiplyBy(this.UnitSize).ToArray()); }
+    UseFleetStyleDiamond() { this.FleetPoints = this.#ConvertUnitPath([new dbnPoint(-1 / 1.6, 0), new dbnPoint(0, -1 / 1.5), new dbnPoint(1 / 1.6, 0), new dbnPoint(0, 1 / 1.5)]); }
+    UseFleetStyleTriangle() { this.FleetPoints = this.#ConvertUnitPath([new dbnPoint(-0.6, -0.289), new dbnPoint(0.6, -0.289), new dbnPoint(0, 0.577)]); }
+
+    //#endregion
+}
+
+//#endregion
+
+//#region dbnMapStyle_DBN_2022_1
+
+class dbnMapStyle_DBN_2022_1 extends dbnMapStyle {
+
+    //#region Definitions
+
+    #SupportEndCap = "supportEndCap";
+
+    AddDefinitions() {
+        [true, false].forEach(succeeded => {
+            var strokecolor = succeeded ? "black" : "red";
+
+            //Support hold
+            var marker = new dbnSVGMarker();
+            marker.id = this.#SupportEndCap + succeeded;
+            marker.MarkerWidth = 6; marker.MarkerHeight = 6;
+            marker.RefX = 3; marker.RefY = 3;
+            marker.AddPath("M 6 0 L3 3 L6 6", strokecolor, 1, "none");
+            var line2 = marker.AddPath("M 6 0 L3 3 L6 6", "white", 0.25, "none");
+            line2.strokeDashArray = "1,1";
+            this.SVG.AddDef(marker);
+        });
+    }
+
+    //#endregion
+
+    //#region Units and adjustments
+
+    /**
+    * @param {string} unittype 
+    * @param {dbnPoint} location 
+    * @param {string} country 
+    */
+    DrawUnit(unittype, location, country) {
+
+        if (!this.FleetPoints) this.UseFleetStyleTriangle();
+
+        var color = myHub.ColorScheme.CountryColors[country].ToRGBString();
+        var innercolor = color;//+ "cc";
+
+        /**@type{dbnSVGElement} */ var unit;
+        /**@type{dbnSVGElement} */ var back;
+        switch (unittype) {
+            case "A":
+                var rad = this.UnitSize / 2;
+                unit = this.SVG.AddCircle(location.X, location.Y, rad, color, 4, innercolor);
+                back = this.SVG.AddCircle(location.X, location.Y, rad, "black", 2, "none");
+                break;
+
+            case "F":
+                unit = this.SVG.AddPolygon(location.X, location.Y, this.FleetPoints, color, 4, innercolor);
+                back = this.SVG.AddPolygon(location.X, location.Y, this.FleetPoints, "black", 2, "none");
+                break;
+
+            default: console.log("UNKNOWN UnitType: " + uwl.UnitType); break;
+        }
+        if (unit) {
+            unit.SetPointerEventsNone();
+            back.SetPointerEventsNone();
+        }
+    }
+
+    /**
+     * @param {string} country 
+     * @param {string} unittype 
+     * @param {dbnPoint} pt 
+     * @param {boolean} succeeded 
+     */
+    DrawBuild(country, unittype, pt, succeeded) {
+        var f = this.UnitSize * 0.9;
+
+        var color = succeeded ? "black" : "red";
+
+        var circ1 = this.SVG.AddCircle(pt.X, pt.Y, f, color, 4, "none");
+        circ1.SetPointerEventsNone();
+
+        var circ2 = this.SVG.AddCircle(pt.X, pt.Y, f, "white", 1.5, "none");
+        circ2.strokeDashArray = "2,3";
+        circ2.SetPointerEventsNone();
+    }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} pt 
+     * @param {boolean} succeeded 
+     */
+    DrawDisband(country, pt, succeeded) {
+        var f = this.UnitSize / 1.5;
+        var l1 = new dbnLineSegment(pt.WithOffset(f, f), pt.WithOffset(-f, -f));
+        var l2 = new dbnLineSegment(pt.WithOffset(f, -f), pt.WithOffset(-f, f));
+
+        /**@type{dbnSVGLine[]} */
+        var lines = [];
+        var thickness = 4;
+        lines.push(this.SVG.AddLineFromSegment(l1, "black", thickness));
+        lines.push(this.SVG.AddLineFromSegment(l2, "black", thickness));
+
+        lines.push(this.SVG.AddLineFromSegment(l1.WithNewLength(-1, -1), "red", thickness / 2));
+        lines.push(this.SVG.AddLineFromSegment(l2.WithNewLength(-1, -1), "red", thickness / 2));
+
+        lines.forEach(x => x.SetPointerEventsNone());
+    }
+
+    //#endregion
+
+    //#region Move lines
+
+    #MoveLineWidth = 4;
+    #MoveArrowsize = 2;
+    #MoveArrowEndCapWidth = dbnSVGArrowPath.GetDefaultEndCapDimension(this.#MoveLineWidth, this.#MoveArrowsize);
+    #RetreatFillColor = "white";
+    #RetreatStrokeColor = "orange";
+
+    /**
+     * 
+     * @param {dbnLineSegment} line 
+     * @returns 
+     */
+    #ShortenMovement(line) {
+        var shorten = this.UnitSize * 0.6;
+        if (line.Length < 3 * this.#MoveArrowEndCapWidth) shorten = 0;
+        if (shorten > 0) return line.WithNewLength(0, -shorten);
+        return line;
+    }
+
+    /**
+     * @param {string} country 
+     * @param {dbnLineSegment} moveSegment 
+     * @param {boolean} succeeded 
+     * @param {boolean} pIsRetreat 
+     */
+    DrawMove(country, moveSegment, succeeded, pIsRetreat) {
+
+        var strokecolor = pIsRetreat ? this.#RetreatStrokeColor : (succeeded ? "black" : "red");
+        var fillcolor = pIsRetreat ? this.#RetreatFillColor : myHub.ColorScheme.CountryColors[country].ToRGBString();
+
+        // var arrowhead = this.#ArrowheadLabel + (isretreat ? "Retreat" : country + oar.Result.Succeeded);
+        // this.AddLineFromSegment(line, strokecolor, 5, arrowhead);
+        // this.AddLineFromSegment(line, fillcolor, 1.5);
+
+        var arrow = new dbnSVGArrowPath(this.SVG);
+        arrow.LineSegment = this.#ShortenMovement(moveSegment);
+        arrow.LineWidth = this.#MoveLineWidth;
+        arrow.ArrowSize = this.#MoveArrowsize;
+        arrow.stroke = strokecolor;
+        arrow.strokeWidth = 2.25;
+        arrow.fill = fillcolor;
+
+        arrow.SetPointerEventsNone();
+
+    }
+
+    //#endregion
+
+    //#region Supports and Convoy
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptFrom 
+     * @param {dbnPoint} ptTo
+     * @param {boolean} succeeded 
+     */
+    DrawSupportHold(country, ptFrom, ptTo, succeeded) {
+        var line = new dbnLineSegment(ptFrom, ptTo);
+
+        line = line.WithNewLength(0, -1.1 * this.UnitSize);
+
+        var color = succeeded ? "black" : "red";
+
+        var svgline = this.SVG.AddLineFromSegment(line, color, 3);
+        svgline.markerEnd = this.#SupportEndCap + succeeded;
+        svgline.SetPointerEventsNone();
+
+        svgline = this.SVG.AddLineFromSegment(line, "white", 1);
+        svgline.strokeDashArray = "2,2";
+        svgline.SetPointerEventsNone();
+
+    }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptSupportFrom 
+     * @param {dbnLineSegment} moveSegment 
+     * @param {boolean} succeeded 
+     */
+    DrawSupportMove(country, ptSupportFrom, moveSegment, succeeded) {
+        var moveline = this.#ShortenMovement(moveSegment);
+        var ptDest = moveline.WithNewLength(0, -this.#MoveArrowEndCapWidth).ToPoint;
+
+        var color = succeeded ? "black" : "red";
+
+        var d = ptSupportFrom.ToPath("M") + moveline.FromPoint.ToPath("Q") + ptDest.ToPath("");
+        var path = this.SVG.AddPath(d, color, 3, "none");
+        path.SetPointerEventsNone();
+        path = this.SVG.AddPath(d, "white", 1, "none");
+        path.strokeDashArray = "5,5";
+        path.SetPointerEventsNone();
+    }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptConvoyFrom 
+     * @param {dbnLineSegment} moveSegment 
+     * @param {boolean} succeeded 
+     */
+    DrawConvoy(country, ptConvoyFrom, moveSegment, succeeded) {
+        var moveline = this.#ShortenMovement(moveSegment);
+
+        var ptDest = moveline.MiddlePoint;
+
+        var color = succeeded ? "blue" : "red";
+
+        var d = ptConvoyFrom.ToPath("M") + moveline.FromPoint.ToPath("Q") + ptDest.ToPath("");
+        var path = this.SVG.AddPath(d, color, 3, "none");
+        path.SetPointerEventsNone();
+        path = this.SVG.AddPath(d, "white", 1, "none");
+        path.strokeDashArray = "10,5";
+        path.SetPointerEventsNone();
+
+        var circle = this.SVG.AddCircle(ptDest.X, ptDest.Y, 5, "none", 0, "blue");
+        circle.SetPointerEventsNone();
+    }
+
+    //#endregion
+}
+
+//#endregion
+
+//#region dbnMapStyle_DBN_2022_2
+
+//Striped movelines
+
+class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
+
+    constructor() {
+        super();
+        this.MovesBeforeMoveSupports = false;
+        this.ColorMovesByCountry = true;
+    }
+
+    //#region Definitions
+
+    #SupportEndCap = "supportEndCap";
+
+    AddDefinitions() {
+        [true, false].forEach(succeeded => {
+            var strokecolor = succeeded ? "black" : "red";
+
+            //Support hold
+            var marker = new dbnSVGMarker();
+            marker.id = this.#SupportEndCap + succeeded;
+            marker.MarkerWidth = 6; marker.MarkerHeight = 6;
+            marker.RefX = 3; marker.RefY = 3;
+            marker.AddPath("M 6 0 L3 3 L6 6", strokecolor, 1, "none");
+            var line2 = marker.AddPath("M 6 0 L3 3 L6 6", "white", 0.25, "none");
+            line2.strokeDashArray = "1,1";
+            this.SVG.AddDef(marker);
+        });
+    }
+
+    //#endregion
+
+    //#region Units and adjustments
+
+    /**
+    * @param {string} unittype 
+    * @param {dbnPoint} location 
+    * @param {string} country 
+    */
+    DrawUnit(unittype, location, country) {
+
+        if (!this.FleetPoints) this.UseFleetStyleTriangle();
+
+        var color = myHub.ColorScheme.CountryColors[country].ToRGBString();
+        var innercolor = color;//+ "cc";
+
+        /**@type{dbnSVGElement} */ var unit;
+        /**@type{dbnSVGElement} */ var back;
+        switch (unittype) {
+            case "A":
+                var rad = this.UnitSize / 2;
+                unit = this.SVG.AddCircle(location.X, location.Y, rad, color, 4, innercolor);
+                back = this.SVG.AddCircle(location.X, location.Y, rad, "black", 2, "none");
+                break;
+
+            case "F":
+                unit = this.SVG.AddPolygon(location.X, location.Y, this.FleetPoints, color, 4, innercolor);
+                back = this.SVG.AddPolygon(location.X, location.Y, this.FleetPoints, "black", 2, "none");
+                break;
+
+            default: console.log("UNKNOWN UnitType: " + uwl.UnitType); break;
+        }
+        if (unit) {
+            unit.SetPointerEventsNone();
+            back.SetPointerEventsNone();
+        }
+    }
+
+    /**
+     * @param {string} country 
+     * @param {string} unittype 
+     * @param {dbnPoint} pt 
+     * @param {boolean} succeeded 
+     */
+    DrawBuild(country, unittype, pt, succeeded) {
+        var f = this.UnitSize * 0.9;
+
+        var color = succeeded ? "black" : "red";
+
+        var circ1 = this.SVG.AddCircle(pt.X, pt.Y, f, color, 4, "none");
+        circ1.SetPointerEventsNone();
+
+        var circ2 = this.SVG.AddCircle(pt.X, pt.Y, f, "white", 1.5, "none");
+        circ2.strokeDashArray = "2,3";
+        circ2.SetPointerEventsNone();
+    }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} pt 
+     * @param {boolean} succeeded 
+     */
+    DrawDisband(country, pt, succeeded) {
+        var f = this.UnitSize / 1.5;
+        var l1 = new dbnLineSegment(pt.WithOffset(f, f), pt.WithOffset(-f, -f));
+        var l2 = new dbnLineSegment(pt.WithOffset(f, -f), pt.WithOffset(-f, f));
+
+        /**@type{dbnSVGLine[]} */
+        var lines = [];
+        var thickness = 4;
+        lines.push(this.SVG.AddLineFromSegment(l1, "black", thickness));
+        lines.push(this.SVG.AddLineFromSegment(l2, "black", thickness));
+
+        lines.push(this.SVG.AddLineFromSegment(l1.WithNewLength(-1, -1), "red", thickness / 2));
+        lines.push(this.SVG.AddLineFromSegment(l2.WithNewLength(-1, -1), "red", thickness / 2));
+
+        lines.forEach(x => x.SetPointerEventsNone());
+    }
+
+    //#endregion
+
+    //#region Move lines
+
+    #MoveLineWidth = 3;
+    #MoveArrowsize = 2;
+    #MoveArrowEndCapWidth = dbnSVGArrowPath.GetDefaultEndCapDimension(this.#MoveLineWidth, this.#MoveArrowsize);
+    #RetreatFillColor = "white";
+    #RetreatStrokeColor = "orange";
+
+    /**
+     * 
+     * @param {dbnLineSegment} line 
+     * @returns 
+     */
+    #ShortenMovement(line) {
+        var shorten = this.UnitSize * 0.6;
+        if (line.Length < 3 * this.#MoveArrowEndCapWidth) shorten = 0;
+        if (shorten > 0) return line.WithNewLength(0, -shorten);
+        return line;
+    }
+
+    /**
+     * @param {string} country 
+     * @param {dbnLineSegment} moveSegment 
+     * @param {boolean} succeeded 
+     * @param {boolean} pIsRetreat 
+     * @param {int} movepower 
+     */
+    DrawMove(country, moveSegment, succeeded, pIsRetreat, movepower) {
+
+        var strokecolor = pIsRetreat ? this.#RetreatStrokeColor : (succeeded ? "black" : "red");
+        var fillcolor = strokecolor;
+        if (this.ColorMovesByCountry) {
+            fillcolor = pIsRetreat ? this.#RetreatFillColor : myHub.ColorScheme.CountryColors[country].ToRGBString();
+        } else {
+            // strokecolor = "black";
+        }
+
+        var aa = (color, sw) => {
+            var arrow = new dbnSVGArrowPath(this.SVG);
+            arrow.LineSegment = this.#ShortenMovement(moveSegment);
+            arrow.LineWidth = this.#MoveLineWidth;
+            arrow.ArrowSize = this.#MoveArrowsize;
+            arrow.stroke = color;
+            arrow.strokeWidth = sw;
+            arrow.fill = fillcolor;
+            arrow.SetPointerEventsNone();
+        };
+
+        var strokes = [];
+        var sw = movepower == 1 ? 2 : 0;
+        strokes.push([sw, strokecolor]);
+
+        for (let i = 1; i < movepower; i++) {
+            sw += 5;
+            strokes.push([sw - 3, "white"]);
+            strokes.push([sw, strokecolor]);
+        }
+
+        strokes.reverse().forEach(x => aa(x[1], x[0]));
+        // for (let i = movepower; i > 0; i--) {
+        //     if (i != movepower) aa("white", 5 * i - 2 - (i == movepower ? 1 : 0));
+        //     aa(strokecolor, 5 * i - 4);
+        // }
+    }
+
+    //#endregion
+
+    //#region Support holds
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptFrom 
+     * @param {dbnPoint} ptTo
+     * @param {boolean} succeeded 
+     */
+    DrawSupportHold1(country, ptFrom, ptTo, succeeded) { // Y-bar using stroked path
+        var line = new dbnLineSegment(ptFrom, ptTo);
+
+        line = line.WithNewLength(0, -1.1 * this.UnitSize);
+
+        var color = succeeded ? "black" : "red";
+
+        var svgline = this.SVG.AddLineFromSegment(line, color, 3);
+        svgline.markerEnd = this.#SupportEndCap + succeeded;
+        svgline.SetPointerEventsNone();
+
+        svgline = this.SVG.AddLineFromSegment(line, "white", 1);
+        svgline.strokeDashArray = "2,2";
+        svgline.SetPointerEventsNone();
+
+    }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptFrom 
+     * @param {dbnPoint} ptTo
+     * @param {boolean} succeeded 
+     */
+    DrawSupportHold2(country, ptFrom, ptTo, succeeded) { // Y-bar using polygon
+
+        var color = succeeded ? "black" : "red";
+        var line = new dbnLineSegment(ptFrom, ptTo);
+        line = line.WithNewLength(0, -1.25 * this.UnitSize);
+
+        var mainlength = line.Length;
+
+        let linewidth = 4;
+        let endlinelength = 12;
+        let endangle = 1.1 * Math.PI / 2;
+
+        var points = new dbnPointSet(mainlength, linewidth / 2);
+        points.AddFromLast(-mainlength, 0);
+        points.AddFromLast(0, -linewidth);
+        points.AddFromLast(mainlength, 0);
+
+        var endpoints = new dbnPointSet(0, -linewidth);
+        endpoints.AddFromLast(endlinelength, 0);
+        endpoints.AddFromLast(0, linewidth);
+        endpoints.AddFromLast(-endlinelength, 0);
+        endpoints.Rotate(-endangle);
+        endpoints.AddFromLast(endlinelength, 0);
+        endpoints.AddFromLast(0, linewidth);
+        endpoints.AddFromLast(-endlinelength, 0);
+        endpoints.Rotate(endangle / 2);
+
+        endpoints.Translate(points.Last.X - endpoints.First.X, points.Last.Y - endpoints.First.Y);
+
+        points.AddRange(endpoints.Points.slice(1));
+        points.Points[points.Points.length - 1] = points.First;
+
+        var path = new dbnSVGPathBuilder();
+        points.Points.forEach((x, i) => path.Add((i == 0 ? "M" : "L"), x.ToArray()));
+
+        path.Rotate(line.AngleToHorizontalInRadians);
+        path.Translate(ptFrom);
+
+        this.SVG.AddPath(path.ToD(), color, 2, "white");
+    }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptFrom 
+     * @param {dbnPoint} ptTo
+     * @param {boolean} succeeded 
+     */
+    DrawSupportHold(country, ptFrom, ptTo, succeeded) { // circled held unit
+        var line = new dbnLineSegment(ptFrom, ptTo);
+
+        var circsize = this.UnitSize / 1.1;
+        line = line.WithNewLength(0, -circsize);
+
+        var color = succeeded ? "black" : "red";
+
+        var circle = this.SVG.AddCircle(ptTo.X, ptTo.Y, circsize, color, 2, "none");
+        circle.strokeDashArray = "5,1";
+        circle.SetPointerEventsNone();
+        // circle = this.SVG.AddCircle(ptTo.X, ptTo.Y, circsize, "white", 2, "none");
+        // circle.strokeDashArray = "2,2";
+        // circle.SetPointerEventsNone();
+
+        var svgline = this.SVG.AddLineFromSegment(line, color, 4);
+        svgline.SetPointerEventsNone();
+        svgline = this.SVG.AddLineFromSegment(line, "white", 2);
+        svgline.strokeDashArray = "2,2";
+        svgline.SetPointerEventsNone();
+
+    }
+
+    //#endregion
+
+    //#region Support move and convoy
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptSupportFrom 
+     * @param {dbnLineSegment} moveSegment 
+     * @param {boolean} succeeded 
+     */
+    DrawSupportMove(country, ptSupportFrom, moveSegment, succeeded) {
+        var moveline = this.#ShortenMovement(moveSegment);
+
+        // var ptMiddle = moveline.FromPoint;
+        // var ptDest = moveline.WithNewLength(0, -this.#MoveArrowEndCapWidth / 2).ToPoint;
+        var ptMiddle = moveline.FromPoint;
+        var ptDest = moveline.WithNewLength(0, -0 * this.#MoveArrowEndCapWidth / 2).ToPoint;
+
+        var color = succeeded ? "black" : "red";
+
+        var d = ptSupportFrom.ToPath("M") + ptMiddle.ToPath("Q") + ptDest.ToPath("");
+        // var d = ptSupportFrom.ToPath("M") + ptDest.ToPath("");
+        var path = this.SVG.AddPath(d, color, 5, "none");
+        path.SetPointerEventsNone();
+
+        path = this.SVG.AddPath(d, "white", 1.5, "none");
+        path.strokeDashArray = "5,5";
+        path.SetPointerEventsNone();
+    }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptConvoyFrom 
+     * @param {dbnLineSegment} moveSegment 
+     * @param {boolean} succeeded 
+     */
+    DrawConvoy1(country, ptConvoyFrom, moveSegment, succeeded) { //Blue/white dashed with carrying circle
+        var moveline = this.#ShortenMovement(moveSegment);
+
+        var ptDest = moveline.MiddlePoint;
+
+        var color = succeeded ? "blue" : "red";
+
+        var d = ptConvoyFrom.ToPath("M") + moveline.FromPoint.ToPath("Q") + ptDest.ToPath("");
+        var path = this.SVG.AddPath(d, color, 5, "none");
+        path.SetPointerEventsNone();
+        path = this.SVG.AddPath(d, "white", 1.5, "none");
+        path.strokeDashArray = "5,5";
+        path.SetPointerEventsNone();
+
+        var circle = this.SVG.AddCircle(ptDest.X, ptDest.Y, 7, "black", 2, "blue");
+        circle.SetPointerEventsNone();
+    }
+
+    /**
+     * @param {string} country 
+     * @param {dbnPoint} ptConvoyFrom 
+     * @param {dbnLineSegment} moveSegment 
+     * @param {boolean} succeeded 
+     */
+    DrawConvoy(country, ptConvoyFrom, moveSegment, succeeded) {
+        var moveline = this.#ShortenMovement(moveSegment);
+
+        var ptDest = moveline.MiddlePoint;
+
+        var color = succeeded ? "black" : "red";
+        var innercolor = myHub.ColorScheme.WaterColor.ToRGBString();
+
+        var d = ptConvoyFrom.ToPath("M") + moveline.FromPoint.ToPath("Q") + ptDest.ToPath("");
+        var path = this.SVG.AddPath(d, color, 5, "none");
+        //path.strokeDashArray = "5,5";
+        path.SetPointerEventsNone();
+        path = this.SVG.AddPath(d, innercolor, 2, "none");
+        path.SetPointerEventsNone();
+
+        var circle = this.SVG.AddCircle(ptDest.X, ptDest.Y, 7, "black", 2, innercolor);
+        circle.SetPointerEventsNone();
+    }
+
+    //#endregion
 }
 
 //#endregion
