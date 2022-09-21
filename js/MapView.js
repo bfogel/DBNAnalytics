@@ -44,7 +44,7 @@ function ProcessMapData(gamedata) {
 
     board.Game = game;
     //mv.GamePhase = game.GamePhases[game.GamePhases.length - 1];
-    var phase = game.GamePhases[0];
+    var phase = game.GamePhases[1];
     board.GamePhase = phase;
 
     board.opt
@@ -1715,7 +1715,7 @@ class dbnMapStyle_DBN_2022_1 extends dbnMapStyle {
 
 //#region dbnMapStyle_DBN_2022_2
 
-//Striped movelines
+//******Striped movelines
 
 class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
 
@@ -2062,13 +2062,22 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
      */
     DrawSupportMove(country, ptSupportFrom, moveSegment, succeeded) {
         var moveline = this.#ShortenMovement(moveSegment);
+        var movelinelength = moveline.Length;
 
-        // var ptMiddle = moveline.FromPoint;
         var ptMiddle = moveline.FromPoint;
-        let ptShifted = moveline.WithParallelShift(30 * Math.sign(moveline.ParallelDistanceFrom(ptSupportFrom))).FromPoint;
-        //  this.SVG.AddCircle(ptShifted.X, ptShifted.Y, 5, "black", 1, myHub.ColorScheme.CountryColors[country].ToRGBString());
+        var fromInLineSpace = moveline.CoordinatesInLineSpace(ptSupportFrom);
 
-        let ptDest = moveline.WithNewLength(0, -1 * this.#MoveArrowEndCapWidth).ToPoint;
+        let ptShifted = ptMiddle;
+        if (fromInLineSpace.Y > movelinelength) {
+            //Supporter is in front of the move destination
+            ptShifted = moveline.WithParallelShift(30 * Math.sign(fromInLineSpace.X)).FromPoint;
+        } else if (fromInLineSpace.Y >= 0) {
+            ptShifted = moveline.WithParallelShift(15 * Math.sign(fromInLineSpace.X)).FromPoint;
+        }
+
+        //this.SVG.AddCircle(ptShifted.X, ptShifted.Y, 5, "black", 1, myHub.ColorScheme.CountryColors[country].ToRGBString());
+
+        let ptDest = moveline.WithNewLength(0, -0.5 * this.#MoveArrowEndCapWidth).ToPoint;
         // let ptDest2 = moveline.WithNewLength(0, -0.5 * this.#MoveArrowEndCapWidth).ToPoint;
 
         var color = succeeded ? "black" : "red";

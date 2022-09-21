@@ -1459,11 +1459,14 @@ class dbnPoint {
 
     /**
      * 
-     * @param {number} dx 
+     * @param {number|dbnPoint} dx 
      * @param {number} dy 
      * @returns 
      */
-    WithOffset(dx, dy) { return new dbnPoint(this.X + dx, this.Y + dy); }
+    WithOffset(dx, dy) {
+        if (dx instanceof dbnPoint) return this.WithOffset(dx.X, dx.Y);
+        return new dbnPoint(this.X + dx, this.Y + dy);
+    }
 
     ToPath(command) { return command + " " + this.X + " " + this.Y + " "; }
 
@@ -1649,6 +1652,18 @@ class dbnLineSegment {
         let lineAC = new dbnLineSegment(this.FromPoint, point);
         let angleCAB = lineAC.AngleToHorizontalInRadians - this.AngleToHorizontalInRadians;
         return -lineAC.Length * Math.sin(angleCAB);
+    }
+
+    /**
+     * Coordinates of the point in the system where the origin is at FromPoint and the y-axis is in the direction of the ToPoint
+     * @param {dbnPoint} point 
+     * @returns 
+     */
+    CoordinatesInLineSpace(point) {
+        let lineAC = new dbnLineSegment(this.FromPoint, point);
+        let angleCAB = lineAC.AngleToHorizontalInRadians - this.AngleToHorizontalInRadians;
+        let length = lineAC.Length;
+        return new dbnPoint(-length * Math.sin(angleCAB), length * Math.cos(angleCAB));
     }
 
 }
