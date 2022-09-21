@@ -44,7 +44,7 @@ function ProcessMapData(gamedata) {
 
     board.Game = game;
     //mv.GamePhase = game.GamePhases[game.GamePhases.length - 1];
-    var phase = game.GamePhases[0];
+    var phase = game.GamePhases[10];
     board.GamePhase = phase;
 
     board.opt
@@ -507,6 +507,10 @@ class dbnMapOptionController extends dbnDiv {
         this.ColoredMoves.AddOption("Black/Red", "Regular");
         selects.push(this.ColoredMoves);
 
+        options.push(this.addWithCaption("Move line base width: ", this.MoveLineBaseWidth));
+        this.MoveLineBaseWidth.type = "number"; this.MoveLineBaseWidth.step = 0.1;
+        inputs.push(this.MoveLineBaseWidth);
+
         // options.push(this.addWithCaption("Colors: ", this.ColorPalette));
         // this.ColorPalette.AddOption("Current", "Current");
         // this.ColorPalette.AddOption("Russia: DC267F", "Opt1");
@@ -524,6 +528,9 @@ class dbnMapOptionController extends dbnDiv {
         options.push(this.addWithCaption("Coast line width: ", this.CoastLineWidth));
         this.CoastLineWidth.type = "number"; this.CoastLineWidth.step = 0.1;
         inputs.push(this.CoastLineWidth);
+        options.push(this.addWithCaption("Convoy marker size: ", this.ConvoyMarkerSize));
+        this.ConvoyMarkerSize.type = "number"; this.ConvoyMarkerSize.step = 1;
+        inputs.push(this.ConvoyMarkerSize);
 
         options.push(this.addWithCaption("Label Pos: ", this.LabelPosition));
         this.LabelPosition.AddOption("Off-center", "Off-center");
@@ -578,9 +585,13 @@ class dbnMapOptionController extends dbnDiv {
 
     LabelPosition = new dbnSelect();
     ColoredMoves = new dbnSelect();
+    MoveLineBaseWidth = new dbnInput();
     ColorPalette = new dbnSelect();
+
     ProvinceLineWidth = new dbnInput();
     CoastLineWidth = new dbnInput();
+    ConvoyMarkerSize = new dbnInput();
+
     CanalWidth = new dbnInput();
     WhiteningAmount = new dbnInput();
 
@@ -638,13 +649,17 @@ class dbnMapOptionController extends dbnDiv {
             default: throw "Unrecognized Impassables";
         };
 
-        var cw = parseInt(this.CanalWidth.value);
-        if (cw) this.MapView.CanalWidth = cw;
+        var mlbw = parseFloat(this.MoveLineBaseWidth.value);
+        if (!Number.isNaN(mlbw)) this.MapView.MapStyle.MoveLineBaseWidth = mlbw;
+
+        var cw = parseFloat(this.CanalWidth.value);
+        if (!Number.isNaN(cw)) this.MapView.CanalWidth = cw;
         var plw = parseFloat(this.ProvinceLineWidth.value);
-        if (plw) this.MapView.MapStyle.ProvinceLineWidth = plw;
+        if (!Number.isNaN(plw)) this.MapView.MapStyle.ProvinceLineWidth = plw;
         var clw = parseFloat(this.CoastLineWidth.value);
-        if (clw) this.MapView.MapStyle.CoastLineWidth = clw;
-        console.log("clw", clw);
+        if (!Number.isNaN(clw)) this.MapView.MapStyle.CoastLineWidth = clw;
+        var cms = parseFloat(this.ConvoyMarkerSize.value);
+        if (!Number.isNaN(cms)) this.MapView.MapStyle.ConvoyMarkerSize = cms;
 
         var whitening = parseFloat(this.WhiteningAmount.value);
         if (whitening) myHub.ColorScheme.BackColorWhitening = whitening / 100;
@@ -689,9 +704,13 @@ class dbnMapOptionController extends dbnDiv {
             }
         });
         this.ColorLink.href = myHub.ColorScheme.MakeMagicLink();
-        if (this.MapView) this.CanalWidth.value = this.MapView.CanalWidth;
-        if (this.MapView) this.ProvinceLineWidth.value = this.MapView.MapStyle.ProvinceLineWidth;
-        if (this.MapView) this.CoastLineWidth.value = this.MapView.MapStyle.CoastLineWidth;
+        if (this.MapView) {
+            this.CanalWidth.value = this.MapView.CanalWidth;
+            this.ProvinceLineWidth.value = this.MapView.MapStyle.ProvinceLineWidth;
+            this.CoastLineWidth.value = this.MapView.MapStyle.CoastLineWidth;
+            this.ConvoyMarkerSize.value = this.MapView.MapStyle.ConvoyMarkerSize;
+            this.MoveLineBaseWidth.value = this.MapView.MapStyle.MoveLineBaseWidth;
+        }
     }
 
     LoadCustom() {
@@ -1098,6 +1117,7 @@ class dbnMapView extends dbnSVG {
 
     #CalculateMoveSupportCounts() {
         this.#MoveSupportCountries = {};
+        if (!this.GamePhase.Orders) return;
         Object.entries(this.GamePhase.Orders).forEach(x =>
             x[1].filter(x => x.Order.Type == "sm" && x.Result.Succeeded).forEach(oar => {
                 var country = x[0];
@@ -1374,6 +1394,7 @@ class dbnMapView extends dbnSVG {
 class dbnMapStyle {
 
     UnitSize = 15;
+
     ProvinceLineWidth = 1;
     CoastLineWidth = 2.2;
     // ProvinceLineColor = "#333333";
@@ -1381,7 +1402,9 @@ class dbnMapStyle {
     ProvinceLineColor = "black";
     CoastLineColor = "black";
 
+    //MoveLineBaseWidth = 3;
     ColorMovesByCountry = false;
+    ConvoyMarkerSize = 5;
 
     /**@type{dbnSVG} */
     SVG;
@@ -1700,6 +1723,9 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
         super();
         this.MovesBeforeMoveSupports = false;
         this.ColorMovesByCountry = true;
+        this.ProvinceLineWidth = 0.6;
+        this.CoastLineWidth = 1.2;
+        this.MoveLineBaseWidth = 2;
     }
 
     //#region Definitions
@@ -1805,9 +1831,16 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
 
     //#region Move lines
 
-    #MoveLineWidth = 3;
+    #MoveLineBaseWidth = 3;
+    get MoveLineBaseWidth() { return this.#MoveLineBaseWidth; }
+    set MoveLineBaseWidth(value) {
+        this.#MoveLineBaseWidth = value;
+        this.#MoveArrowsize = 2 / Math.sqrt(value / 3);
+        this.#MoveArrowEndCapWidth = dbnSVGArrowPath.GetDefaultEndCapDimension(this.MoveLineBaseWidth, this.#MoveArrowsize);
+    }
+
     #MoveArrowsize = 2;
-    #MoveArrowEndCapWidth = dbnSVGArrowPath.GetDefaultEndCapDimension(this.#MoveLineWidth, this.#MoveArrowsize);
+    #MoveArrowEndCapWidth = 2;
     #RetreatFillColor = "white";
     #RetreatStrokeColor = "orange";
 
@@ -1830,7 +1863,7 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
      * @param {boolean} pIsRetreat 
      * @param {int} movepower 
      */
-    DrawMove(country, moveSegment, succeeded, pIsRetreat, movepower) {
+    DrawMove1(country, moveSegment, succeeded, pIsRetreat, movepower) {
 
         var strokecolor = pIsRetreat ? this.#RetreatStrokeColor : (succeeded ? "black" : "red");
         var fillcolor = strokecolor;
@@ -1843,7 +1876,7 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
         var aa = (color, sw) => {
             var arrow = new dbnSVGArrowPath(this.SVG);
             arrow.LineSegment = this.#ShortenMovement(moveSegment);
-            arrow.LineWidth = this.#MoveLineWidth;
+            arrow.LineWidth = this.MoveLineBaseWidth;
             arrow.ArrowSize = this.#MoveArrowsize;
             arrow.stroke = color;
             arrow.strokeWidth = sw;
@@ -1867,6 +1900,53 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
         //     aa(strokecolor, 5 * i - 4);
         // }
     }
+
+    /**
+  * @param {string} country 
+  * @param {dbnLineSegment} moveSegment 
+  * @param {boolean} succeeded 
+  * @param {boolean} pIsRetreat 
+  * @param {int} movepower 
+  */
+    DrawMove(country, moveSegment, succeeded, pIsRetreat, movepower) {
+
+        var strokecolor = pIsRetreat ? this.#RetreatStrokeColor : (succeeded ? "black" : "red");
+        var fillcolor = strokecolor;
+        if (this.ColorMovesByCountry) {
+            fillcolor = pIsRetreat ? this.#RetreatFillColor : myHub.ColorScheme.CountryColors[country].ToRGBString();
+        } else {
+            // strokecolor = "black";
+        }
+
+        var aa = (color, sw, fcolor) => {
+            var arrow = new dbnSVGArrowPath(this.SVG);
+            arrow.LineSegment = this.#ShortenMovement(moveSegment);
+            arrow.LineWidth = this.MoveLineBaseWidth;
+            arrow.ArrowSize = this.#MoveArrowsize;
+            arrow.stroke = color;
+            arrow.strokeWidth = sw;
+            arrow.fill = fcolor;
+            arrow.SetPointerEventsNone();
+        };
+
+        var strokes = [[0, "none", fillcolor]]; //fill
+
+        for (let i = 2; i <= movepower; i++) {
+            if (i > 2) strokes.push([0.5, strokecolor, "none"]); //separator between support lines
+            strokes.push([1, "white", "none"]); //white support line
+        }
+
+        strokes.push([1.5, strokecolor, "none"]); //outer line
+
+        var sw = 0;
+        strokes = strokes.map(x => { let y = x; sw += 2 * x[0]; y[0] = sw; return y; });
+        if (strokes.length > 2) console.log(fillcolor, strokes);
+
+        strokes.reverse().forEach(x => {
+            aa(x[1], x[0], x[2]);
+        });
+    }
+
 
     //#endregion
 
@@ -2046,8 +2126,10 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
         path = this.SVG.AddPath(d, innercolor, 2, "none");
         path.SetPointerEventsNone();
 
-        var circle = this.SVG.AddCircle(ptDest.X, ptDest.Y, 7, "black", 2, innercolor);
-        circle.SetPointerEventsNone();
+        if (this.ConvoyMarkerSize > 0) {
+            var circle = this.SVG.AddCircle(ptDest.X, ptDest.Y, this.ConvoyMarkerSize, "black", 2, innercolor);
+            circle.SetPointerEventsNone();
+        }
     }
 
     //#endregion
