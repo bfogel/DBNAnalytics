@@ -1625,15 +1625,31 @@ class dbnLineSegment {
         return new dbnLineSegment(this.FromPoint.WithOffset(-dx * pAddFrom, -dy * pAddFrom), this.ToPoint.WithOffset(dx * pAddTo, dy * pAddTo));
     }
 
-    // public uiLineSegmentF WithParallelShift(float pAmount) {
-    //     if (FromPoint.X == ToPoint.X) return new uiLineSegmentF(FromPoint.WithOffset(pAmount, 0), ToPoint.WithOffset(pAmount, 0));
+    /**
+     * Positive amount is to the right
+     * @param {number} amount 
+     * @returns 
+     */
+    WithParallelShift(amount) {
+        if (this.FromPoint.X == this.ToPoint.X) return new dbnLineSegment(this.FromPoint.WithOffset(amount, 0), this.ToPoint.WithOffset(amount, 0));
 
-    //     var l = Length;
-    //         int dx = Convert.ToInt32(pAmount * (ToPoint.Y - FromPoint.Y) / l);
-    //         int dy = Convert.ToInt32(-pAmount * (ToPoint.X - FromPoint.X) / l);
+        let l = this.Length;
+        let dx = amount * (this.ToPoint.Y - this.FromPoint.Y) / l;
+        let dy = -amount * (this.ToPoint.X - this.FromPoint.X) / l;
 
-    //     return new uiLineSegmentF(FromPoint.WithOffset(dx, dy), ToPoint.WithOffset(dx, dy));
-    // }
+        return new dbnLineSegment(this.FromPoint.WithOffset(dx, dy), this.ToPoint.WithOffset(dx, dy));
+    }
+
+    /**
+     * Positive distance is on the right, negative is on the left
+     * @param {dbnPoint} point 
+     * @returns 
+     */
+    ParallelDistanceFrom(point) {
+        let lineAC = new dbnLineSegment(this.FromPoint, point);
+        let angleCAB = lineAC.AngleToHorizontalInRadians - this.AngleToHorizontalInRadians;
+        return -lineAC.Length * Math.sin(angleCAB);
+    }
 
 }
 

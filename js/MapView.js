@@ -2064,14 +2064,19 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
         var moveline = this.#ShortenMovement(moveSegment);
 
         // var ptMiddle = moveline.FromPoint;
-        // var ptDest = moveline.WithNewLength(0, -this.#MoveArrowEndCapWidth / 2).ToPoint;
         var ptMiddle = moveline.FromPoint;
-        var ptDest = moveline.WithNewLength(0, -0 * this.#MoveArrowEndCapWidth / 2).ToPoint;
+        let ptShifted = moveline.WithParallelShift(30 * Math.sign(moveline.ParallelDistanceFrom(ptSupportFrom))).FromPoint;
+        //  this.SVG.AddCircle(ptShifted.X, ptShifted.Y, 5, "black", 1, myHub.ColorScheme.CountryColors[country].ToRGBString());
+
+        let ptDest = moveline.WithNewLength(0, -1 * this.#MoveArrowEndCapWidth).ToPoint;
+        // let ptDest2 = moveline.WithNewLength(0, -0.5 * this.#MoveArrowEndCapWidth).ToPoint;
 
         var color = succeeded ? "black" : "red";
 
-        var d = ptSupportFrom.ToPath("M") + ptMiddle.ToPath("Q") + ptDest.ToPath("");
-        // var d = ptSupportFrom.ToPath("M") + ptDest.ToPath("");
+        // var d = ptSupportFrom.ToPath("M") + ptMiddle.ToPath("Q") + ptDest.ToPath("");
+        var d = ptSupportFrom.ToPath("M") + ptShifted.ToPath("Q") + ptDest.ToPath("");
+        //var d = ptSupportFrom.ToPath("M") + ptShifted.ToPath("C") + ptMiddle.ToPath("") + ptDest.ToPath("");
+
         var path = this.SVG.AddPath(d, color, 5, "none");
         path.SetPointerEventsNone();
 
