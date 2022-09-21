@@ -44,7 +44,7 @@ function ProcessMapData(gamedata) {
 
     board.Game = game;
     //mv.GamePhase = game.GamePhases[game.GamePhases.length - 1];
-    var phase = game.GamePhases[10];
+    var phase = game.GamePhases[0];
     board.GamePhase = phase;
 
     board.opt
@@ -1929,14 +1929,13 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
             arrow.SetPointerEventsNone();
         };
 
-        var strokes = [[0, "none", fillcolor]]; //fill
+        var strokes = [[0, strokecolor, fillcolor]]; //fill
 
         for (let i = 2; i <= movepower; i++) {
             if (i > 2) strokes.push([0.5, strokecolor, "none"]); //separator between support lines
-            strokes.push([1, "white", "none"]); //white support line
+            strokes.push([1.25, "white", "none"]); //white support line
         }
-
-        strokes.push([1.5, strokecolor, "none"]); //outer line
+        strokes.push([2, strokecolor, "none"]); //outer line
 
         var sw = 0;
         strokes = strokes.map(x => { let y = x; sw += 2 * x[0]; y[0] = sw; return y; });
