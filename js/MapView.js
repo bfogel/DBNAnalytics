@@ -2084,7 +2084,8 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
 
         // var d = ptSupportFrom.ToPath("M") + ptMiddle.ToPath("Q") + ptDest.ToPath("");
         var d = ptSupportFrom.ToPath("M") + ptShifted.ToPath("Q") + ptDest.ToPath("");
-        //var d = ptSupportFrom.ToPath("M") + ptShifted.ToPath("C") + ptMiddle.ToPath("") + ptDest.ToPath("");
+        //var d = ptSupportFrom.ToPath("M") + ptShifted.ToPath("Q") + ptDest.ToPath("") + moveline.ToPoint.ToPath("L");
+        //var d = ptSupportFrom.ToPath("M") + ptShifted.ToPath("C") + moveline.MiddlePoint.ToPath("") + ptDest.ToPath("");
 
         var path = this.SVG.AddPath(d, color, 5, "none");
         path.SetPointerEventsNone();
