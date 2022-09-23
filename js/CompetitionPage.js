@@ -10,7 +10,7 @@
 
 /** @type{int|null} */
 var myCompetitionID = null;
-var myDraft = false;
+var myDraft = true;
 
 //myHub.Parameters["CompetitionID"] = 4069;
 
@@ -100,7 +100,9 @@ function MakeGameList(games) {
         var div = ret.addDiv();
         div.style = "display:inline-block; white-space: nowrap;";
 
-        var table = div.addTable();
+        var tablediv = div.addDiv();
+        tablediv.style.display = "inline-block";
+        var table = tablediv.addTable();
 
         table.Title = x.Label;
         if (x.URL) {
@@ -120,6 +122,9 @@ function MakeGameList(games) {
         table.Data = data;
         table.CountryRows = Object.keys(x.ResultLines);
         table.Generate();
+
+        tablediv.addLineBreak();
+        tablediv.addText("Finished: " + (1900 + x.GameYearsCompleted) + "  (click map to view orders)");
 
         //Unfalse this to show final map state
         if (myDraft) {

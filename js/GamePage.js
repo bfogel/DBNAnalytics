@@ -30,6 +30,7 @@ function MakePage() {
     reqs.Send();
     var game = reqGame.ResponseToObject();
     if (!reqs.Success) { reqs.ReportToConsole(); return; }
+    game.ScorePhases();
     // console.log(reqGame.ResponseContent);
     // console.log(game);
 

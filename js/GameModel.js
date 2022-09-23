@@ -181,6 +181,21 @@ class gmGame {
 
     /**@type{gmGamePhase[]]} */
     GamePhases;
+
+    // ------------------  Not in published schema
+
+    ScorePhases() {
+        this.GamePhases.forEach(gp => {
+            var sb = new dbnGameScoreboard(this.ScoringSystem);
+            Object.values(CountryEnum).forEach(country => {
+                var cc = gp.CenterCounts[country] ?? 0;
+                sb.RegisterCountry(country, cc, cc != 0, null);
+            });
+            sb.CalculateScores();
+            gp.Scoreboard = sb;
+        });
+    }
+
 }
 
 //#endregion
@@ -290,6 +305,11 @@ class gmGamePhase {
         }
         return ret;
     }
+
+    // ------------------  Not in published schema
+
+    /**@type{dbnGameScoreboard} */
+    Scoreboard;
 }
 
 //#endregion
@@ -595,3 +615,256 @@ class gmOrderDisband extends gmOrder {
 }
 
 //#endregion
+
+//#region GameScoreboard
+
+//#region Lines
+
+class dbnScoreboardResultLine {
+    constructor(country) { this.Country = country; }
+    /**@type{string} */  Country;
+    /**@type{dbnScoreboardResultLineKernel} */  Kernel;
+    /**@type{dbnScoreboardResultLineScoring} */  Scoring;
+}
+
+class dbnScoreboardResultLineKernel {
+    /**@type{number} */ CenterCount;
+
+    /**@type{number|null} */ YearOfElimination;
+
+    /**@type{bool} */ InDraw;
+    /**@type{bool} */ UnexcusedResignation;
+    /**@type{number} */ ManualScoreAdjustment;
+
+    /**@type{bool} */  ScoreCounts;
+    /**@type{number|null} */ TiebreakerRank;
+
+    /**@type{number|null} */ LookbackRankScore;
+
+    toString() {
+        return CenterCount + ", " + (InDraw ? "InDraw" : "OutDraw") + (YearOfElimination ? ", [elim: " + YearOfElimination + "]" : "");
+    }
+}
+
+class dbnScoreboardResultLineScoring {
+    /**@type{number} */  Score;
+    /**@type{number} */  Topshare;
+
+    /**@type{number} */  Rank;
+    /**@type{number} */  RankScore;
+    /**@type{number} */  RankWithOE;
+    /**@type{number} */  RankScoreWithOE;
+}
+
+//#endregion
+
+class dbnGameScoreboard {
+
+    //#region Engine
+
+    /**
+     * 
+     * @param {string} scoringsystem ScoringSystemEnum
+     */
+    constructor(scoringsystem) {
+        this.ScoringSystem = scoringsystem;
+        Object.values(CountryEnum).forEach(x => this.ResultLines[x] = new dbnScoreboardResultLine(x));
+    }
+
+    /**@type{string} */ ScoringSystem;
+    /**@type{Object.<string,dbnScoreboardResultLine} */ ResultLines = {};
+    get ResultLineValues() { return Object.values(this.ResultLines); }
+
+    //#region Aggregates
+
+    get DrawSize() { let ret = 0; this.ResultLineValues.forEach(x => ret += x.Kernel.InDraw); return ret; }
+    get TopperCenterCount() { let ret = 0; this.ResultLineValues.forEach(x => ret = Math.max(ret, x.Kernel.CenterCount)); return ret; }
+    get Toppers() { let tc = this.TopperCenterCount; return this.ResultLineValues.filter(x => x.Kernel.CenterCount == tc); }
+
+    //#endregion
+
+    /**
+     * 
+     * @param {string} country 
+     * @param {number} centercount 
+     * @param {boolean} indraw 
+     * @param {int|undefined} yearOfElimination 
+     */
+    RegisterCountry(country, centercount, indraw, yearOfElimination) {
+        let kern = new dbnScoreboardResultLineKernel();
+        kern.CenterCount = centercount;
+        kern.InDraw = indraw;
+        kern.YearOfElimination = yearOfElimination;
+        this.ResultLines[country].Kernel = kern;
+    }
+
+    CalculateScores() {
+        //CheckForAllResults();
+
+        //if (ScoringSystem.DrawsIncludeAllSurvivors()) EnforceDIAS();
+        Object.entries(this.ResultLines).forEach(([country, rl], i) => rl.Scoring = new dbnScoreboardResultLineScoring());
+
+        this.#CalculateRanks();
+
+        switch (this.ScoringSystem) {
+            // case ScoringSystemEnum.Tribute: ScoreTribute(); break;
+            case ScoringSystemEnum.OpenTribute: this.#ScoreOpenTribute(true); break;
+            case ScoringSystemEnum.OpenTributeFrac: this.#ScoreOpenTribute(false); break;
+
+            // case ScoringSystemEnum.CDiplo: ScoreCDiplo(); break;
+            // case ScoringSystemEnum.CDiploRoundDown: ScoreCDiploRoundDown(); break;
+            // case ScoringSystemEnum.CDiploNamur: ScoreCDiploNamur(); break;
+            // case ScoringSystemEnum.EDC2021: ScoreEDC2021(); break;
+            // case ScoringSystemEnum.PoppyCon2021: ScorePoppyCon2021(); break;
+
+            // case ScoringSystemEnum.Bangkok: ScoreBangkok(); break;
+            // case ScoringSystemEnum.Bangkok100: ScoreBangkok(); Normalize100(); break;
+            // case ScoringSystemEnum.SumOfSquares: ScoreSumOfSquares(); break;
+            // case ScoringSystemEnum.ManorCon: ScoreManorCon(75, true); break;
+            // case ScoringSystemEnum.ManorConOriginal: ScoreManorCon(100, true); break;
+            // case ScoringSystemEnum.ManorConV2: ScoreManorCon(100, false); break;
+
+
+            // case ScoringSystemEnum.Carnage: ScoreCarnage(); break;
+            // case ScoringSystemEnum.Carnage100: ScoreCarnage(); Normalize100(); break;
+            // case ScoringSystemEnum.Carnage21: ScoreCarnage(21034); break;
+            // case ScoringSystemEnum.CenterCountCarnage: ScoreCarnageCenterCount(); break;
+            // case ScoringSystemEnum.SimpleRank: ScoreSimpleRank(); break;
+            // case ScoringSystemEnum.SimpleRankWithOE: ScoreSimpleRankWithOE(); break;
+            // case ScoringSystemEnum.Maxonian: ScoreMaxonian(); break;
+
+            // case ScoringSystemEnum.DrawSize: ScoreDrawSize(); break;
+            //case ScoringSystemEnum.Dixie: this.#ScoreOpenTribute(true); break;
+
+            // case ScoringSystemEnum.WorldClassic: ScoreWorldClassic(); break;
+            // case ScoringSystemEnum.Whipping: ScoreWhipping(); break;
+            // case ScoringSystemEnum.Detour09: ScoreDetour09(); break;
+
+            // case ScoringSystemEnum.MindTheGap: ScoreMindTheGap(); break;
+            // case ScoringSystemEnum.OpenMindTheGap: ScoreOpenMindTheGap(); break;
+
+            // case ScoringSystemEnum.Unscored: break;
+            // case ScoringSystemEnum.Manual: break;
+            default: console.log("GameScoreboard: Scoring system not recognized (" + this.ScoringSystem + ")");
+        }
+
+        // Lines.Values.Where(x => x.Kernel.ManualScoreAdjustment.HasValue).ForEach(x => x.Scoring.Score += x.Kernel.ManualScoreAdjustment.Value);
+
+        // foreach(var rl in Lines.Values)
+        // {
+        //     rl.Scoring.Score *= Multiplier;
+        //     if (rl.Kernel.UnexcusedResignation) rl.Scoring.Score = 0;
+        // }
+    }
+
+    #CalculateRanks() {
+        var ics = this.ResultLineValues.map((x, i) => [x, x.Kernel.CenterCount]);
+        ics.sort((a, b) => b[1] - a[1]);
+
+        var iPlace = 1;
+        var placegroups = [[1, []]];
+        var iLastCC = ics[0][1];
+        ics.forEach(x => {
+            if (x[1] == iLastCC) {
+                placegroups[placegroups.length - 1][1].push(x[0]);
+            } else {
+                iPlace += placegroups[placegroups.length - 1][1].length;
+                placegroups.push([iPlace, [x[0]]]);
+                iLastCC = x[1];
+            }
+        });
+
+        placegroups.forEach(x => {
+            x[1].forEach(y => {
+          /** @type{dbnScoreboardResultLine} */ var z = y;
+                z.Scoring.Rank = x[0];
+                z.Scoring.RankScore = x[0] + (x[1].length - 1) / 2;
+                z.Scoring.Topshare = (x[0] == 1 ? 1 / x[1].length : 0);
+            });
+        });
+    }
+
+    // function GetRankGroupsWithOE() {
+    //     var ics = mCenterCounts.map((x, i) => [i, x + (x == 0 ? mElims[i] / 2000 : 0)]);
+    //     ics.sort((a, b) => b[1] - a[1]);
+
+    //     var iPlace = 1;
+    //     var ret = [[1, []]];
+    //     var iLastCC = ics[0][1];
+    //     ics.forEach(x => {
+    //         if (x[1] == iLastCC) {
+    //             ret[ret.length - 1][1].push(x[0]);
+    //         } else {
+    //             iPlace += ret[ret.length - 1][1].length;
+    //             ret.push([iPlace, [x[0]]]);
+    //             iLastCC = x[1];
+    //         }
+    //     });
+    //     return ret;
+    // }
+
+    //#endregion
+
+    //#region Systems
+
+    /**
+     * 
+     * @param {boolean} noFractions 
+     */
+    #ScoreOpenTribute(nofractions) {
+        var iTopCenterCount = this.TopperCenterCount;
+        var toppers = this.Toppers;
+        var iDrawSize = this.DrawSize;
+
+        if (iDrawSize == 1) {
+            this.ResultLineValues.forEach(rl => rl.Scoring.Score = rl.Kernel.InDraw ? 340 : 0);
+        } else {
+            var tribute = 0.0;
+
+            this.ResultLineValues.forEach(rl => {
+                var x = rl.Kernel.CenterCount;
+                var score = 34 + 3 * x + (x == 0 ? -17 : 0);
+                score -= iTopCenterCount - x;
+                tribute += iTopCenterCount - x;
+                if (x == 0) score = 0;
+                rl.Scoring.Score = score;
+            });
+
+            tribute /= (toppers.length * toppers.length);
+            if (nofractions) tribute = Math.floor(tribute);
+            toppers.forEach(rl => rl.Scoring.Score += tribute);
+        }
+    }
+
+    // #ScoreDixie()
+    //     {
+    //         this.ResultLineValues.forEach(rl=> rl.Scoring.Score = 4 * rl.Kernel.CenterCount);
+
+    //         var bonuspts = [ 0, 10, 20, 34, 50, 70, 270 ];
+
+    //         var rankgroups = new SortedDictionary<int, List<CountryEnum>>();
+
+    //         foreach (var rl in Lines.Values)
+    //         {
+    //             var key = rl.Kernel.InDraw ? 1 : rl.Scoring.RankWithOE;
+    //             if (!rankgroups.ContainsKey(key)) rankgroups.Add(key, new List<CountryEnum>());
+    //             rankgroups[key].Add(rl.Country);
+    //         }
+
+    //         var bnstart = 0; var bnend = 0;
+    //         foreach (var slot in rankgroups.Reverse())
+    //         {
+    //             bnend = bnstart + slot.Value.Count - 1;
+    //             double pts = 0;
+    //             for (int i = bnstart; i <= bnend; i++) pts += bonuspts[i];
+    //             pts /= slot.Value.Count;
+    //             foreach (var cc in slot.Value) Lines[cc].Scoring.Score += pts;
+    //             bnstart = bnend + 1;
+    //         }
+    //     }
+
+    //#endregion
+
+}
+
+  //#endregion

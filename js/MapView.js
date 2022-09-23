@@ -39,6 +39,7 @@ function ProcessMapData(gamedata) {
     // return;
 
     var game = new gmGame(gamedata);
+    game.ScorePhases();
 
     var board = new dbnFullBoard(dbnHere());
 
@@ -460,9 +461,9 @@ class dbnFullBoard extends dbnDiv {
         divsb.style.verticalAlign = "top";
         divsb.add(this.#Scoreboard);
 
-        divsb.add(this.#MapOptionController);
-        this.#MapOptionController.MapView = this.#MapView;
-        this.#MapOptionController.Scoreboard = this.#Scoreboard;
+        // divsb.add(this.#MapOptionController);
+        // this.#MapOptionController.MapView = this.#MapView;
+        // this.#MapOptionController.Scoreboard = this.#Scoreboard;
 
         let divmv = divRow.addDiv();
         divmv.style.display = "table-cell";
@@ -2184,10 +2185,18 @@ class dbnScoreboard extends dbnBaseTable {
             let score = "---";
 
             if (this.GamePhase && this.GamePhase.Status == GamePhaseStatusEnum.GameEnded && this.Game && this.Game.ResultSummary && country in this.Game.ResultSummary) {
-                var rl = this.Game.ResultSummary[country];
-                centercount = rl.CenterCount; score = rl.Score;
-            } else if (this.GamePhase && this.GamePhase.CenterCounts) {
-                centercount = country in this.GamePhase.CenterCounts ? this.GamePhase.CenterCounts[country] : 0;
+                let rl = this.Game.ResultSummary[country];
+                centercount = rl.CenterCount;
+                score = rl.Score;
+            } else if (this.GamePhase) {
+                if (this.GamePhase.Scoreboard && country in this.GamePhase.Scoreboard.ResultLines) {
+                    let rl = this.GamePhase.Scoreboard.ResultLines[country];
+                    console.log(rl);
+                    centercount = rl.Kernel.CenterCount;
+                    score = rl.Scoring.Score;
+                } else if (this.GamePhase.CenterCounts) {
+                    centercount = country in this.GamePhase.CenterCounts ? this.GamePhase.CenterCounts[country] : 0;
+                }
             }
             centercount = "(" + centercount + ")";
             //if (centercount.length == 3) centercount = "&nbsp;" + centercount + "&nbsp;";
