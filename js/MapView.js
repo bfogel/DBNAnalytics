@@ -1405,6 +1405,8 @@ class dbnMapView extends dbnSVG {
 
     constructor(parent = null) {
         super(parent);
+        document.addEventListener("keydown", this.#KeyDown.bind(this));
+
         //this.domelement.setAttribute("preserveAspectRatio", "none");
         super.style = "background-color: white; user-select: none;";
         //this.SetSize(800, 600);
@@ -1492,6 +1494,23 @@ class dbnMapView extends dbnSVG {
     //#endregion
 
     //#region Navigation
+
+    /**
+     * @param {KeyboardEvent} event 
+     */
+    #KeyDown(event) {
+
+        if (event.isComposing || event.code === 229) {
+            return;
+        }
+
+        //console.log(key);
+        switch (event.key.toLowerCase()) {
+            case "arrowleft": this.GoToPreviousPhase(); break;
+            case "arrowright": this.GoToNextPhase(); break;
+            default: break;
+        }
+    }
 
     #AddNavigationButtons() {
         var pt = new dbnPoint(5, 35);
