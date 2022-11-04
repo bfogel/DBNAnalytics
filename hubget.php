@@ -665,7 +665,12 @@ function GetGames($where, $params)
 
                 case 1:
                     $game["Platform"] = "Backstabbr";
-                    $game["URL"] = 'https://www.backstabbr.com/game/' . $row[$cGamePlatformIdentifier];
+                    $game["Modality"] = "Online";
+                    if (substr($row[$cGamePlatformIdentifier], 0, 1) == "S") {
+                        $game["URL"] = 'https://www.backstabbr.com/sandbox/' . substr($row[$cGamePlatformIdentifier], 1);
+                    } else {
+                        $game["URL"] = 'https://www.backstabbr.com/game/' . $row[$cGamePlatformIdentifier];
+                    }
                     break;
 
                 default:
