@@ -704,8 +704,6 @@ function GetGames_GameModel($where, $params)
             INNER JOIN Competition as C on G.Competition_CompetitionID = C.CompetitionID
             INNER JOIN CompetitionSeries as CS on C.CompetitionSeries_CompetitionSeriesID = CS.CompetitionSeriesID
             INNER JOIN GameCountryPlayer as GCP on GCP.Game_GameID = G.GameID
-            INNER JOIN GameCountryResult as GCR on GCR.Game_GameID = G.GameID AND GCP.Country_CountryID = GCR.Country_CountryID
-            INNER JOIN GameCountryComputations as GCC on GCC.Game_GameID = G.GameID AND GCP.Country_CountryID = GCC.Country_CountryID
             INNER JOIN Player as P on GCP.PlayerOfRecord_PlayerID = P.PlayerID
             INNER JOIN Country as CO on GCP.Country_CountryID = CO.CountryID
             INNER JOIN ScoringSystem as SS on G.ScoringSystem_ScoringSystemID = SS.ScoringSystemID
@@ -714,6 +712,8 @@ function GetGames_GameModel($where, $params)
             INNER JOIN GameDeadlineType as DEAD on G.DeadlineType_GameDeadlineTypeID = DEAD.GameDeadlineTypeID
             INNER JOIN GameLimitType as LIM on G.GameLimitType_GameLimitTypeID = LIM.GameLimitTypeID
             INNER JOIN GameAnonymityType as ANON on G.AnonymityType_GameAnonymityTypeID = ANON.GameAnonymityTypeID
+            LEFT JOIN GameCountryResult as GCR on GCR.Game_GameID = G.GameID AND GCP.Country_CountryID = GCR.Country_CountryID
+            LEFT JOIN GameCountryComputations as GCC on GCC.Game_GameID = G.GameID AND GCP.Country_CountryID = GCC.Country_CountryID
             WHERE {$where}
             ORDER BY G.GameID, CO.CountryName";
 

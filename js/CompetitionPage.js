@@ -124,7 +124,7 @@ function MakeGameList(games) {
         table.Generate();
 
         tablediv.addLineBreak();
-        tablediv.addText("Finished: " + (1900 + x.GameYearsCompleted) + "  (click map to view orders)");
+        tablediv.addText("Finished: " + (isNaN(x.GameYearsCompleted) ? "---" : 1900 + x.GameYearsCompleted) + "  (click map to view orders)");
 
         //Unfalse this to show final map state
         if (myDraft) {
