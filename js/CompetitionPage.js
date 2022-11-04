@@ -117,7 +117,7 @@ function MakeGameList(games) {
 
         var data = [];
         Object.values(x.ResultLines).forEach(rl => {
-            data.push([rl.Country, rl.Player.PlayerName, "(" + rl.CenterCount + ")", rl.Score]);
+            data.push([rl.Country, rl.Player.PlayerName, "(" + rl.CenterCount + ")", isNaN(rl.Score) ? "--" : rl.Score]);
         });
         table.Data = data;
         table.CountryRows = Object.keys(x.ResultLines);
