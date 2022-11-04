@@ -64,7 +64,7 @@ function MakePage() {
     // sb.BindToMapView(mv);
 
     board.Game = game;
-    var phase = game.GamePhases[19];
+    var phase = game.GamePhases[0];
     board.GamePhase = phase;
 
 }
