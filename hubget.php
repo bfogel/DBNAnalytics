@@ -793,7 +793,11 @@ function GetGames_GameModel($where, $params)
 
                 case 1:
                     $game["Modality"] = "Online";
-                    $game["URL"] = 'https://www.backstabbr.com/game/' . $row[$cGamePlatformIdentifier];
+                    if (substr($row[$cGamePlatformIdentifier], 0, 1) == "S") {
+                        $game["URL"] = 'https://www.backstabbr.com/sandbox/' . substr($row[$cGamePlatformIdentifier], 1);
+                    } else {
+                        $game["URL"] = 'https://www.backstabbr.com/game/' . $row[$cGamePlatformIdentifier];
+                    }
                     break;
 
                 default:

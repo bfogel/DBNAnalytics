@@ -2942,6 +2942,197 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
 
 //#endregion
 
+//#region CenterGraph
+
+class dbnCenterGraph extends dbnDiv {
+    constructor() {
+        super();
+        this.style.border = "2px black solid";
+        //this.style.width = "100%";
+    }
+
+    /**@type{dbnMapView} */  #MapView;
+    get MapView() { return this.#MapView; }
+    set MapView(value) { this.#MapView = value; this.BindToMapView(value); }
+
+    #MapViewGameSet() { this.Game = this.MapView.Game; }
+    #MapViewGamePhaseSet() { this.GamePhase = this.MapView.GamePhase; }
+
+    /**
+     * 
+     * @param {dbnMapView} mapview 
+     */
+    BindToMapView(mapview) {
+        mapview.OnGameSet.AddListener(this.#MapViewGameSet.bind(this));
+        mapview.OnGamePhaseSet.AddListener(this.#MapViewGamePhaseSet.bind(this));
+        this.#MapViewGameSet();
+        this.#MapViewGamePhaseSet();
+    }
+
+    /**@type{gmGame} */
+    #Game;
+    get Game() { return this.#Game; }
+    set Game(value) { this.#Game = value; this.GamePhase = null; this.#FurthestViewedInCurrentGame = 19011; }
+
+    /**@type{gmGamePhase} */
+    #GamePhase;
+    get GamePhase() { return this.#GamePhase; }
+    set GamePhase(value) {
+        this.#GamePhase = value;
+        if (this.#FurthestViewedInCurrentGame < value.Phase) this.#FurthestViewedInCurrentGame = value.Phase;
+        this.#UpdateDisplay();
+    }
+
+    #FurthestViewedInCurrentGame = 19011;
+
+    #UpdateDisplay() {
+        this.domelement.innerHTML = "";
+
+        if (!this.Game?.GamePhases) { return };
+
+        // gr.Clear(Color.White);
+
+        /**@type{Object.<string,number[]>} */
+        let centers = {};
+        Object.values(CountryEnum).forEach(cc => centers[cc] = []);
+
+        /**@type{Object.<number,number>} */
+        let years = {};
+
+        this.GamePhase.ph
+        let iCurrentYear = this.GamePhase ? this.GamePhase.PhaseYear - (this.GamePhase.PhaseSeason == 3 ? 0 : 1) : 0;
+
+        let maxc = 0;
+        let maxyear = 1904;
+        let maxphase = this.#FurthestViewedInCurrentGame;
+        this.Game.GamePhases.forEach(gp => {
+
+        });
+
+        // foreach(var ph in Game.GamePhases.Values)
+        // {
+        //     var bOk = ph.Phase <= maxphase;
+
+        //     //Commented out 2022-11-03.  Not sure why this logic was here in the first place, but it was causing improper behavior if furthest viewed is spring of one year and you go back to the previous (it would show centers up through the following year)
+        //     //if (!bOk && Map.GamePhase != null) { bOk = ph.Phase.Year == maxphase.Year && Map.GamePhase.Phase.Season == Phase.SeasonEnum.Winter; }
+
+        //     if (bOk && (ph.Phase.Season == Phase.SeasonEnum.Winter || !years.ContainsKey(ph.Phase.Year - 1))) {
+        //         var yr = ph.Phase.Year;
+        //         if (ph.Phase.Season != Phase.SeasonEnum.Winter) yr--;
+
+        //         years[yr] = centers[CountryEnum.Austria].Count;
+        //         if (maxyear < yr) maxyear = yr;
+        //         foreach(var cc in GetCountries())
+        //         {
+        //             var val = ph.Data.CenterCounts.GetValueOrDefault(cc, 0);
+        //             centers[cc].Add(val);
+        //             if (val > maxc) maxc = val;
+        //         }
+        //     }
+        // }
+        // maxc++;
+
+        // var szLabel = gr.MeasureText("00", LabelFont);
+        // var iTopAxisBuffer = Convert.ToInt32(szLabel.Height);
+        // var iRightAxisBuffer = Convert.ToInt32(szLabel.Width);
+
+        // var iLineWidth = 22;
+        // var origin = new Point(_BorderWidth + Convert.ToInt32(Math.Max(szLabel.Width / 2, iLineWidth)), Size.Height - _BorderWidth - Convert.ToInt32(Math.Max(szLabel.Height / 2, iLineWidth)));
+        // var graphsize = new Size(Size.Width - origin.X - _BorderWidth - iRightAxisBuffer, origin.Y - _BorderWidth - iTopAxisBuffer);
+
+        // var dh = graphsize.Width / Convert.ToDouble(maxyear - 1900);
+        // var dv = graphsize.Height / Convert.ToDouble(maxc);
+
+        // var lines = new Dictionary<CountryEnum, List<Point>>();
+        // foreach (var cc in Hub.Countries)
+        // {
+        //     lines[cc] = new List<Point>();
+        //     var n = 0;
+        //     foreach (var cnt in centers[cc])
+        //     {
+        //         lines[cc].Add(origin.WithOffset(Convert.ToInt32(dh * n), Convert.ToInt32(-dv * cnt)));
+        //         n++;
+        //     }
+        // }
+
+        // var gridpen = uiPen.NewSolid(Color.LightGray);
+
+        // //horizontal gridlines
+        // for (int i = 0; i <= maxc; i++)
+        // {
+        //     var v = Convert.ToInt32(-dv * i);
+        //     gr.DrawText(i.ToString(), LabelFont, Color.Black, origin.WithOffset(graphsize.Width + iRightAxisBuffer / 2, v), bfAlignmentEnum.MiddleCenter);
+        //     gr.DrawLine(gridpen, origin.WithOffset(0, v), origin.WithOffset(graphsize.Width, v));
+        // }
+
+        // //vertical gridlines
+        // for (var yr = 1900; yr <= maxyear; yr++)
+        // {
+        //     var h = Convert.ToInt32(dh * (yr - 1900));
+        //     gr.DrawText((yr - 1900).ToString("00"), LabelFont, Color.Black, origin.WithOffset(h, -2 - graphsize.Height), bfAlignmentEnum.BottomCenter);
+        //     gr.DrawLine(gridpen, origin.WithOffset(h, -graphsize.Height), origin.WithOffset(h, 0));
+
+        //     if ((iCurrentYear ?? 0) == yr)
+        //     {
+        //         var indpen = uiPen.NewSolid(Color.Gray, 12);
+        //         gr.DrawLine(indpen, origin.WithOffset(h, -graphsize.Height), origin.WithOffset(h, 0));
+        //     }
+        // }
+
+        // foreach (var item in lines)
+        // {
+        //     var path = new uiGraphicsPath();
+        //     if (item.Value.Count > 0)
+        //     {
+        //         path.AddLines(item.Value.ToArray());
+        //         var pen = uiPen.NewSolid(Hub.ColorScheme.CountryColors[item.Key], iLineWidth);
+        //         gr.DrawPath(pen, path);
+        //     }
+        // }
+
+        // var segmentgroups = new List<Dictionary<uiLineSegment, List<Color>>>();
+        // foreach (var item in lines[0]) segmentgroups.Add(new Dictionary<uiLineSegment, List<Color>>());
+        // foreach (var item in lines)
+        // {
+        //     var col = Hub.ColorScheme.CountryColors[item.Key];
+        //     for (int i = 0; i < item.Value.Count - 1; i++)
+        //     {
+        //         var seg = new uiLineSegment(item.Value[i], item.Value[i + 1]);
+        //         var segmentgroup = segmentgroups[i];
+        //         if (!segmentgroup.ContainsKey(seg)) segmentgroup.Add(seg, new List<Color>());
+        //         segmentgroup[seg].Add(col);
+        //     }
+        // }
+
+        // foreach (var sg in segmentgroups)
+        // {
+        //     foreach (var seg in sg)
+        //     {
+        //         if (seg.Value.Count > 1)
+        //         {
+        //             var n = 0;
+        //             var dlw = iLineWidth / (1.0F * seg.Value.Count);
+        //             foreach (var color in seg.Value)
+        //             {
+        //                 //var pen = uiPen.NewSolid(color, Convert.ToInt32(Math.Ceiling(1.0 * dlw)));
+        //                 var pen = uiPen.NewSolid(color, dlw);
+        //                 var ind = (n - (seg.Value.Count - 1F) / 2);
+        //                 if (ind == 0 || ind == -0.5F) gr.DrawLine(pen, seg.Key.WithNewLength(-1.5F, -1.5F));
+        //                 gr.DrawLine(pen, seg.Key.WithParallelShift(dlw * ind));
+        //                 n++;
+        //             }
+        //         }
+
+        //     }
+        // }
+
+        // gr.AntiAlias = false;
+
+    }
+}
+
+//#endregion
+
 //#region Scoreboard
 
 class dbnScoreboard extends dbnBaseTable {
