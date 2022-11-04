@@ -1321,6 +1321,7 @@ class dbnColor {
     /**@type{number} */ A;
 
     static get White() { return dbnColor.FromRGB(255, 255, 255); }
+    static get Black() { return dbnColor.FromRGB(0, 0, 0); }
 
     /**
      * @param {number} r 
@@ -1461,10 +1462,9 @@ class dbnPoint {
      * 
      * @param {number|dbnPoint} dx 
      * @param {number} dy 
-     * @returns 
      */
     WithOffset(dx, dy) {
-        if (dx instanceof dbnPoint) return this.WithOffset(dx.X, dx.Y);
+        if (dx instanceof dbnPoint) return new dbnPoint(this.X + dx.X, this.Y + dx.Y);
         return new dbnPoint(this.X + dx, this.Y + dy);
     }
 
@@ -1497,10 +1497,10 @@ class dbnSize {
     }
 
     /**@type{number} */
-    Height;
+    Width;
 
     /**@type{number} */
-    Width;
+    Height;
 
     /**
      * 
@@ -1508,7 +1508,7 @@ class dbnSize {
      * @param {number} dheight
      * @returns 
      */
-    WithAdjustment(dwidth, dheight) { return new dbnSize(this.width + dwidth, this.height + dheight); }
+    WithAdjustment(dwidth, dheight) { return new dbnSize(this.Width + dwidth, this.Height + dheight); }
 
     /**
      * 
@@ -1539,30 +1539,40 @@ class dbnRect {
     /**@type{dbnPoint} */ Location;
     /**@type{dbnSize} */ Size;
 
-    get UpperLeft() {
-        if (this.Size.Width >= 0 && this.Size.Height >= 0) return this.Location;
-        if (this.Size.Width >= 0 && this.Size.Height < 0) return new this.Location.WithOffset(0, this.Size.Height);
-        if (this.Size.Width < 0 && this.Size.Height >= 0) return new this.Location.WithOffset(this.Size.Width, 0);
-        return this.Location.WithOffset(this.Size.Width, this.Size.Height);
-    }
-    get UpperRight() {
-        if (this.Size.Width >= 0 && this.Size.Height >= 0) return this.Location.WithOffset(this.Size.Width, 0);
-        if (this.Size.Width >= 0 && this.Size.Height < 0) return this.Location.WithOffset(this.Size.Width, this.Size.Height);
-        if (this.Size.Width < 0 && this.Size.Height >= 0) return this.Location;
-        return this.Location.WithOffset(0, this.Size.Height);
-    }
-    get LowerLeft() {
-        if (this.Size.Width >= 0 && this.Size.Height >= 0) return this.Location.WithOffset(0, this.Size.Height);
-        if (this.Size.Width >= 0 && this.Size.Height < 0) return this.Location;
-        if (this.Size.Width < 0 && this.Size.Height >= 0) return this.Location.WithOffset(this.Size.Width, this.Size.Height);
-        return this.Location.WithOffset(this.Size.Width, 0);
-    }
-    get LowerRight() {
-        if (this.Size.Width >= 0 && this.Size.Height >= 0) return this.Location.WithOffset(this.Size.Width, this.Size.Height);
-        if (this.Size.Width >= 0 && this.Size.Height < 0) return this.Location.WithOffset(this.Size.Width, 0);
-        if (this.Size.Width < 0 && this.Size.Height >= 0) return this.Location.WithOffset(0, this.Size.Height);
-        return this.Location;
-    }
+    get Left() { return this.Location.X + Math.min(0, this.Size.Width); }
+    get Right() { return this.Location.X + Math.max(0, this.Size.Width); }
+    get Top() { return this.Location.Y + Math.min(0, this.Size.Height); }
+    get Bottom() { return this.Location.Y + Math.max(0, this.Size.Height); }
+
+    get UpperLeft() { return new dbnPoint(this.Left, this.Top); }
+    get UpperRight() { return new dbnPoint(this.Right, this.Top); }
+    get LowerLeft() { return new dbnPoint(this.Left, this.Bottom); }
+    get LowerRight() { return new dbnPoint(this.Right, this.Bottom); }
+
+    // get UpperLeft() {
+    //     if (this.Size.Width >= 0 && this.Size.Height >= 0) return this.Location;
+    //     if (this.Size.Width >= 0 && this.Size.Height < 0) return new this.Location.WithOffset(0, this.Size.Height);
+    //     if (this.Size.Width < 0 && this.Size.Height >= 0) return new this.Location.WithOffset(this.Size.Width, 0);
+    //     return this.Location.WithOffset(this.Size.Width, this.Size.Height);
+    // }
+    // get UpperRight() {
+    //     if (this.Size.Width >= 0 && this.Size.Height >= 0) return this.Location.WithOffset(this.Size.Width, 0);
+    //     if (this.Size.Width >= 0 && this.Size.Height < 0) return this.Location.WithOffset(this.Size.Width, this.Size.Height);
+    //     if (this.Size.Width < 0 && this.Size.Height >= 0) return this.Location;
+    //     return this.Location.WithOffset(0, this.Size.Height);
+    // }
+    // get LowerLeft() {
+    //     if (this.Size.Width >= 0 && this.Size.Height >= 0) return this.Location.WithOffset(0, this.Size.Height);
+    //     if (this.Size.Width >= 0 && this.Size.Height < 0) return this.Location;
+    //     if (this.Size.Width < 0 && this.Size.Height >= 0) return this.Location.WithOffset(this.Size.Width, this.Size.Height);
+    //     return this.Location.WithOffset(this.Size.Width, 0);
+    // }
+    // get LowerRight() {
+    //     if (this.Size.Width >= 0 && this.Size.Height >= 0) return this.Location.WithOffset(this.Size.Width, this.Size.Height);
+    //     if (this.Size.Width >= 0 && this.Size.Height < 0) return this.Location.WithOffset(this.Size.Width, 0);
+    //     if (this.Size.Width < 0 && this.Size.Height >= 0) return this.Location.WithOffset(0, this.Size.Height);
+    //     return this.Location;
+    // }
 }
 
 class dbnLineSegment {
@@ -1634,7 +1644,10 @@ class dbnLineSegment {
      * @returns 
      */
     WithParallelShift(amount) {
-        if (this.FromPoint.X == this.ToPoint.X) return new dbnLineSegment(this.FromPoint.WithOffset(amount, 0), this.ToPoint.WithOffset(amount, 0));
+        if (this.FromPoint.X == this.ToPoint.X) {
+            var sgnamount = Math.sign(this.ToPoint.Y - this.FromPoint.Y) * amount;
+            return new dbnLineSegment(this.FromPoint.WithOffset(sgnamount, 0), this.ToPoint.WithOffset(sgnamount, 0));
+        }
 
         let l = this.Length;
         let dx = amount * (this.ToPoint.Y - this.FromPoint.Y) / l;
@@ -1733,6 +1746,8 @@ class dbnPointSet {
 
 //#region SVG
 
+//#region dbnSVGElement
+
 class dbnSVGElement {
 
     /** @type {SVGElement} */
@@ -1764,12 +1779,21 @@ class dbnSVGElement {
 
     /**
      * 
+     * @param {dbnSVGElement|SVGElement} element 
+     */
+    removeChild(element) { (element instanceof dbnSVGElement ? element.domelement : element).remove(); }
+
+    /**
+     * 
      * @returns {SVGRect}
      */
     getBBox() { return this.domelement.getBBox(); }
+    GetRect() { return dbnSVGElement.GetDOMRect(this.domelement); }
 
-    get fill() { return this.domelement.fill; }
+    get fill() { return this.domelement.getAttribute("fill"); }
     set fill(value) { this.domelement.setAttribute("fill", value); }
+    get visible() { return this.domelement.style.visibility != "hidden"; }
+    set visible(value) { this.domelement.style.visibility = value ? "visible" : "hidden"; }
 
     get onclick() { return this.domelement.onclick; }
     set onclick(value) { this.domelement.onclick = value; }
@@ -1789,9 +1813,59 @@ class dbnSVGElement {
 
     /**
      * 
+     * @param {dbnSVGElement[]|null} omit 
+     * @returns 
+     */
+    GetContentsRect(omit) {
+        var x, y, r, b;
+        var bFirst = true;
+
+        var omitdoms = omit?.map(x => x.domelement);
+        this.domelement.childNodes.forEach(node => {
+            if (!omitdoms || !omitdoms.includes(node)) {
+                let rect = dbnSVGElement.GetDOMRect(node);
+                if (bFirst) {
+                    x = rect.Left;
+                    y = rect.Top;
+                    r = rect.Right;
+                    b = rect.Bottom;
+                } else {
+                    x = Math.min(x, rect.Left);
+                    y = Math.min(y, rect.Top);
+                    r = Math.max(r, rect.Right);
+                    b = Math.max(b, rect.Bottom);
+                }
+                // if (bFirst || x > rect.Location.X) x = rect.Location.X;
+                // if (bFirst || y > rect.Location.Y) y = rect.Location.Y;
+                // if (bFirst || r < rect.x + rect.width) r = rect.X + rect.width;
+                // if (bFirst || b < rect.Location.Y + rect.height) b = rect.Y + rect.height;
+                bFirst = false;
+            }
+        });
+        return new dbnRect(new dbnPoint(x, y), new dbnSize(r - x, b - y));
+    }
+
+    /**
+     * 
      * @param {dbnPoint} point 
      */
     MoveTo(point) { dbnSVGElement.MoveDOMTo(this.domelement, point); }
+
+    /**
+     * 
+     * @param {SVGElement} elm 
+     */
+    static GetDOMRect(elm) {
+        /**@type{SVGRect} */
+        let bb = elm.getBBox();
+        switch (elm.tagName) {
+            case "svg":
+                return new dbnRect(new dbnPoint(parseFloat(elm.getAttribute("x")), parseFloat(elm.getAttribute("y"))), new dbnSize(bb.width, bb.height));
+            default:
+                return new dbnRect(new dbnPoint(bb.x, bb.y), new dbnSize(bb.width, bb.height));
+        }
+    }
+
 
     /**
      * 
@@ -1802,13 +1876,13 @@ class dbnSVGElement {
         if (!elm.tagName) return;
 
         try {
-            /**@type{SVGRect} */ var rect = elm.getBBox();
-            var dx = point.X - rect.x, dy = point.Y - rect.y;
+            let rect = dbnSVGElement.GetDOMRect(elm);
+            let dx = point.X - rect.Location.X, dy = point.Y - rect.Location.Y;
 
             switch (elm.tagName) {
                 case "circle":
-                    elm.setAttribute("cx", point.X);
-                    elm.setAttribute("cy", point.Y);
+                    elm.setAttribute("cx", point.X + parseFloat(elm.getAttribute("r")));
+                    elm.setAttribute("cy", point.Y + parseFloat(elm.getAttribute("r")));
                     break;
                 case "path":
                     var d = elm.getAttribute("d");
@@ -1816,34 +1890,81 @@ class dbnSVGElement {
                     pb.Translate(dx, dy);
                     elm.setAttribute("d", pb.ToD());
                     break;
-                // case "text":
-                //     node.setAttribute("x", dx + rect.x);
-                //     node.setAttribute("y", dy + rect.y + rect.height);
-                //     break;
+
+                case "text":
+                    elm.setAttribute("x", point.X);
+                    elm.setAttribute("y", point.Y);
+                    let newtextrect = elm.getBBox();
+                    if (point.y != newtextrect.y) elm.setAttribute("y", point.Y + (point.Y - newtextrect.y));
+                    break;
+
+                case "line":
+                    elm.setAttribute("x2", parseFloat(elm.getAttribute("x2")) - parseFloat(elm.getAttribute("x1")) + point.X);
+                    elm.setAttribute("y2", parseFloat(elm.getAttribute("y2")) - parseFloat(elm.getAttribute("y1")) + point.Y);
+                    elm.setAttribute("x1", point.X);
+                    elm.setAttribute("y1", point.Y);
+
                 case "button":
                 case "a":
                     break;
+
                 default:
                     elm.setAttribute("x", point.X);
                     elm.setAttribute("y", point.Y);
+                    if (elm.tagName == "svg") return;
                     break;
             }
+
+            dbnSVGElement.#MoveDOMChildren(elm, dx, dy);
+            // elm.childNodes.forEach(node => {
+            //     if (node.tagName) {
+            //         try {
+            //             var noderect = node.getBBox();
+            //             dbnSVGElement.MoveDOMTo(node, new dbnPoint(noderect.x, noderect.y).WithOffset(dx, dy));
+            //         } catch (error) {
+            //             throw "dbnSVGElement.MoveDOMTo.node (" + node.tagName + "): " + error;
+            //         }
+            //     }
+            // });
+
+            ///**@type{SVGRect} */ let newrect = elm.getBBox();
 
         } catch (error) {
             throw "dbnSVGElement.MoveDOMTo (" + elm.tagName + "): " + error;
         }
 
+    }
+
+    /**
+     * 
+     * @param {number|dbnPoint} dx 
+     * @param {number|null} dy 
+     * @param {SVGElement[]|dbnSVGElement[]|null} omit 
+     */
+    MoveChildren(dx, dy, omit) {
+        dbnSVGElement.#MoveDOMChildren(this.domelement, dx, dy, omit);
+    }
+
+    /**
+     * 
+     * @param {SVGElement} elm 
+     * @param {number|dbnPoint} dx 
+     * @param {number|null} dy 
+     * @param {SVGElement[]|dbnSVGElement[]|null} omit 
+     */
+    static #MoveDOMChildren(elm, dx, dy, omit) {
+        var domomit = omit ? omit.map(x => x instanceof dbnSVGElement ? x.domelement : x) : null;
+        var pt = dx instanceof dbnPoint ? dx : new dbnPoint(dx, dy);
         elm.childNodes.forEach(node => {
-            if (node.tagName) {
+            if (node.tagName && (!domomit || !domomit.includes(node))) {
                 try {
-                    var noderect = node.getBBox();
-                    dbnSVGElement.MoveDOMTo(node, new dbnPoint(noderect.x, noderect.y).WithOffset(dx, dy));
+                    var noderect = dbnSVGElement.GetDOMRect(node);
+                    dbnSVGElement.MoveDOMTo(node, noderect.Location.WithOffset(pt));
                 } catch (error) {
-                    throw "dbnSVGElement.MoveDOMTo.node (" + node.tagName + "): " + error;
+                    throw "dbnSVGElement.MoveChildren.node (" + node.tagName + "): " + error;
                 }
             }
         });
-
     }
 
     //#endregion
@@ -2012,6 +2133,127 @@ class dbnSVGElement {
 
 }
 
+//#endregion
+
+//#region SVG top level
+
+class dbnSVGGroup extends dbnSVGElement {
+    constructor(parent) { super("g", parent); }
+}
+
+class dbnSVG extends dbnSVGElement {
+    constructor(parent = null) {
+        super("svg", parent);
+    }
+
+    get x() { return this.domelement.getAttribute("x"); }
+    set x(value) { this.domelement.setAttribute("x", value); }
+    get y() { return this.domelement.getAttribute("y"); }
+    set y(value) { this.domelement.setAttribute("y", value); }
+    get height() { return this.domelement.getAttribute("height"); }
+    set height(value) { this.domelement.setAttribute("height", value); }
+    get width() { return this.domelement.getAttribute("width"); }
+    set width(value) { this.domelement.setAttribute("width", value); }
+
+    Clear() {
+        this.domelement.innerHTML = "";
+        this.#defs = null;
+    }
+
+    /**@type{dbnSVGElement} */
+    #defs;
+
+    /**
+     * 
+     * @param {dbnSVGElement} def 
+     */
+    AddDef(def) {
+        if (!this.#defs) this.#defs = this.createAndAppendElement("defs");
+        this.#defs.appendChild(def);
+    }
+
+    SetSize(width, height) {
+        this.domelement.setAttribute("width", width);
+        this.domelement.setAttribute("height", height);
+    }
+
+}
+
+class dbnSVGWithBorder extends dbnSVG {
+    constructor(parent) {
+        super(parent);
+        this.SetSize(100, 100);
+        this.style.overflow = "visible";
+        this.Border = this.AddRectangle(0, 0, 40, 10, "black", 2, "none");
+        this.Border.rx = 2;
+    }
+
+    /**@type{dbnSVGRectangle} */ Border;
+
+    // /**
+    //  * @param {number|dbnPoint} dx 
+    //  * @param {number} dy 
+    //  */
+    // MoveContents(dx, dy) {
+    //     this.MoveTo
+    // }
+
+    FitToContents(topmargin = 0, rightmargin = 0, bottommargin = 0, leftmargin = 0) {
+        let rect = this.GetContentsRect([this.Border]);
+        let bw = parseFloat(this.Border.strokeWidth);
+        let pt = rect.Location.MultiplyBy(-1).WithOffset(leftmargin + bw / 2, topmargin + bw / 2);
+        this.MoveChildren(pt, null, [this.Border]);
+        this.Border.Size = rect.Size.WithAdjustment(leftmargin + rightmargin + bw, topmargin + bottommargin + bw);
+    }
+
+    /**
+     * 
+     * @param {number|dbnSize|null} width 
+     * @param {number|null} height 
+     */
+    SetSizeAndCenterContents(width, height) {
+        let size = width instanceof dbnSize ? width : new dbnSize(width, height);
+        size.Height = size.Height ?? this.Border.height;
+        size.Width = size.Width ?? this.Border.width;
+
+        this.Border.Size = size;
+
+        let rect = this.GetContentsRect([this.Border]);
+        var pt = rect.Location.MultiplyBy(-1);
+        pt = pt.WithOffset((size.Width - rect.Size.Width) / 2, (size.Height - rect.Size.Height) / 2);
+        this.MoveChildren(pt, null, [this.Border]);
+        //this.Border.Location = pt;
+    }
+}
+
+class dbnSVGPattern extends dbnSVGElement {
+    constructor(parent = null) {
+        super("pattern", parent);
+    }
+}
+
+class dbnSVGMarker extends dbnSVGElement {
+    constructor(parent = null) {
+        super("marker", parent);
+        this.Orient = "auto";
+    }
+
+    get MarkerWidth() { return this.domelement.getAttribute("markerWidth"); }
+    set MarkerWidth(value) { this.domelement.setAttribute("markerWidth", value); }
+    get MarkerHeight() { return this.domelement.getAttribute("markerHeight"); }
+    set MarkerHeight(value) { this.domelement.setAttribute("markerHeight", value); }
+
+    get RefX() { return this.domelement.getAttribute("refX"); }
+    set RefX(value) { this.domelement.setAttribute("refX", value); }
+    get RefY() { return this.domelement.getAttribute("refY"); }
+    set RefY(value) { this.domelement.setAttribute("refY", value); }
+
+    get Orient() { return this.domelement.getAttribute("orient"); }
+    set Orient(value) { this.domelement.setAttribute("orient", value); }
+}
+
+//#endregion
+
 //#region Strokable elements
 
 class dbnSVGStrokableElement extends dbnSVGElement {
@@ -2020,13 +2262,13 @@ class dbnSVGStrokableElement extends dbnSVGElement {
     get stroke() { return this.domelement.stroke; }
     set stroke(value) { this.domelement.setAttribute("stroke", value); }
 
-    get strokeWidth() { return this.domelement.domelement.getAttribute("stroke-width"); }
+    get strokeWidth() { return this.domelement.getAttribute("stroke-width"); }
     set strokeWidth(value) { this.domelement.setAttribute("stroke-width", value); }
 
     get rx() { return this.domelement.domelement.getAttribute("rx"); }
     set rx(value) { this.domelement.setAttribute("rx", value); }
 
-    get strokeDashArray() { return this.domelement.domelement.getAttribute("stroke-dasharray"); }
+    get strokeDashArray() { return this.domelement.getAttribute("stroke-dasharray"); }
     set strokeDashArray(value) { this.domelement.setAttribute("stroke-dasharray", value); }
 
     get markerEnd() { return this.domelement.getAttribute("marker-end"); }
@@ -2074,6 +2316,14 @@ class dbnSVGRectangle extends dbnSVGStrokableElement {
     set height(value) { this.domelement.setAttribute("height", value); }
     get width() { return this.domelement.getAttribute("width"); }
     set width(value) { this.domelement.setAttribute("width", value); }
+
+    get Location() { return new dbnPoint(parseFloat(this.x), parseFloat(this.y)); }
+    set Location(value) { this.x = value.X; this.y = value.Y; }
+    get Size() { return new dbnSize(parseFloat(this.width), parseFloat(this.height)); }
+    set Size(value) { this.width = value.Width; this.height = value.Height; }
+    get Rect() { return new dbnRect(this.Location, this.Size); }
+    set Rect(value) { this.Location = value.Location; this.Size = value.Size; }
+
 }
 
 class dbnSVGArrowPath extends dbnSVGPath {
@@ -2262,104 +2512,7 @@ class dbnSVGPathBuilder {
 
 //#endregion
 
-//#region Link and Button
-
-class dbnSVGLink extends dbnSVGElement {
-    constructor(parent = null) { super("a", parent); }
-
-    get href() { return this.domelement.getAttribute("href"); }
-    set href(value) { this.domelement.setAttribute("href", value); }
-}
-
-class dbnSVGButton extends dbnSVGLink {
-    constructor(parent) {
-        super(parent);
-
-        this.Border = this.AddRectangle(0, 0, 40, 10, "black", 2, this.#BackColor);
-        this.Border.rx = 2;
-
-        this.onmouseenter = this.#MouseEnter.bind(this);
-        this.onmouseleave = this.#MouseLeave.bind(this);
-    }
-
-    /**@type{dbnSVGRectangle} */ Border;
-
-    /**@type{string} */ #BackColor = "green";
-    get BackColor() { return this.#BackColor };
-    set BackColor(value) { this.#BackColor = value; if (!this.#IsHovering) this.Border.style.fill = this.#BackColor; }
-
-    /**@type{string} */ #BackColorHover = "red";
-    get BackColorHover() { return this.#BackColorHover };
-    set BackColorHover(value) { this.#BackColorHover = value; if (this.#IsHovering) this.Border.style.fill = this.#BackColorHover; }
-
-    #IsHovering = false;
-
-    #MouseEnter() {
-        this.#IsHovering = true;
-        this.Border.style.fill = this.BackColorHover;
-        this.domelement.childNodes.forEach(node => node.style.cursor = "pointer");
-    }
-    #MouseLeave() {
-        this.#IsHovering = false;
-        this.Border.style.fill = this.BackColor;
-        this.domelement.childNodes.forEach(node => node.style.cursor = "default");
-    }
-
-    // /**
-    //  * 
-    //  * @param {dbnPoint} point 
-    //  */
-    // MoveTo(point) {
-    // /**@type{SVGRect} */ var rect = this.Border.getBBox();
-    //     var dx = point.X - rect.x, dy = point.Y - rect.y;
-    //     this.domelement.childNodes.forEach(node => {
-    //         rect = node.getBBox();
-
-    //         switch (node.tagName) {
-    //             case "circle":
-    //                 node.setAttribute("cx", dx + rect.x);
-    //                 node.setAttribute("cy", dy + rect.y);
-    //                 break;
-    //             case "path":
-    //                 var d = node.getAttribute("d");
-    //                 var pb = dbnSVGPathBuilder.FromD(d);
-    //                 pb.Translate(dx, dy);
-    //                 node.setAttribute("d", pb.ToD());
-    //                 break;
-    //             // case "text":
-    //             //     node.setAttribute("x", dx + rect.x);
-    //             //     node.setAttribute("y", dy + rect.y + rect.height);
-    //             //     break;
-    //             default:
-    //                 node.setAttribute("x", dx + rect.x);
-    //                 node.setAttribute("y", dy + rect.y);
-    //                 break;
-    //         }
-    //     });
-    // }
-
-    FitToContents(topmargin = 0, rightmargin = 0, bottommargin = 0, leftmargin = 0) {
-        var x, y, r, b;
-        var bFirst = true;
-
-        this.domelement.childNodes.forEach(node => {
-            if (node != this.Border.domelement) {
-
-                /**@type{SVGRect} */
-                var rect = node.getBBox();
-                if (bFirst || x > rect.x) x = rect.x;
-                if (bFirst || y > rect.y) y = rect.y;
-                if (bFirst || r < rect.x + rect.width) r = rect.x + rect.width;
-                if (bFirst || b < rect.y + rect.height) b = rect.y + rect.height;
-                bFirst = false;
-            }
-
-        });
-        this.Border.x = x - leftmargin; this.Border.y = y - topmargin; this.Border.height = b - y + topmargin + bottommargin; this.Border.width = r - x + leftmargin + rightmargin;
-    }
-}
-
-//#endregion
+//#region Text
 
 class dbnSVGText extends dbnSVGStrokableElement {
     constructor(parent) {
@@ -2387,63 +2540,102 @@ class dbnSVGText extends dbnSVGStrokableElement {
     SetVerticalAlignAuto() { this.dominantBaseline = "auto"; }
 }
 
+//#endregion
 
-class dbnSVGGroup extends dbnSVGElement {
-    constructor(parent) { super("g", parent); }
+//#region Link and Button
+
+class dbnSVGLink extends dbnSVGElement {
+    constructor(parent = null) { super("a", parent); }
+
+    get href() { return this.domelement.getAttribute("href"); }
+    set href(value) { this.domelement.setAttribute("href", value); }
 }
 
-class dbnSVG extends dbnSVGElement {
-    constructor(parent = null) {
-        super("svg", parent);
+class dbnSVGButton extends dbnSVGWithBorder {
+    constructor(parent) {
+        super(parent);
+        this.onmouseenter = this.#MouseEnter.bind(this);
+        this.onmouseleave = this.#MouseLeave.bind(this);
     }
 
-    Clear() {
-        this.domelement.innerHTML = "";
-        this.#defs = null;
+    /**@type{string} */ #BackColor = "green";
+    get BackColor() { return this.#BackColor };
+    set BackColor(value) { this.#BackColor = value; if (!this.#IsHovering) this.Border.style.fill = this.#BackColor; }
+
+    /**@type{string} */ #BackColorHover = "red";
+    get BackColorHover() { return this.#BackColorHover };
+    set BackColorHover(value) { this.#BackColorHover = value; if (this.#IsHovering) this.Border.style.fill = this.#BackColorHover; }
+
+    #IsHovering = false;
+
+    #MouseEnter() {
+        this.#IsHovering = true;
+        this.Border.style.fill = this.BackColorHover;
+        this.domelement.childNodes.forEach(node => node.style.cursor = "pointer");
     }
-
-    /**@type{dbnSVGElement} */
-    #defs;
-
-    /**
-     * 
-     * @param {dbnSVGElement} def 
-     */
-    AddDef(def) {
-        if (!this.#defs) this.#defs = this.createAndAppendElement("defs");
-        this.#defs.appendChild(def);
-    }
-
-    SetSize(width, height) {
-        this.domelement.setAttribute("width", width);
-        this.domelement.setAttribute("height", height);
+    #MouseLeave() {
+        this.#IsHovering = false;
+        this.Border.style.fill = this.BackColor;
+        this.domelement.childNodes.forEach(node => node.style.cursor = "default");
     }
 
 }
 
-class dbnSVGPattern extends dbnSVGElement {
-    constructor(parent = null) {
-        super("pattern", parent);
-    }
-}
-
-class dbnSVGMarker extends dbnSVGElement {
-    constructor(parent = null) {
-        super("marker", parent);
-        this.Orient = "auto";
+class dbnSVGButtonWithText extends dbnSVGButton {
+    constructor(parent) {
+        super(parent);
+        this.TextElement = this.AddText("text", 0, 0, "black");
     }
 
-    get MarkerWidth() { return this.domelement.getAttribute("markerWidth"); }
-    set MarkerWidth(value) { this.domelement.setAttribute("markerWidth", value); }
-    get MarkerHeight() { return this.domelement.getAttribute("markerHeight"); }
-    set MarkerHeight(value) { this.domelement.setAttribute("markerHeight", value); }
+    /**@type{dbnSVGText} */
+    TextElement;
 
-    get RefX() { return this.domelement.getAttribute("refX"); }
-    set RefX(value) { this.domelement.setAttribute("refX", value); }
-    get RefY() { return this.domelement.getAttribute("refY"); }
-    set RefY(value) { this.domelement.setAttribute("refY", value); }
+    get textContent() { return this.TextElement.textContent; }
+    set textContent(value) { this.TextElement.textContent = value; if (this.#AutoSize) this.#AutoFit(); }
 
-    get Orient() { return this.domelement.getAttribute("orient"); }
-    set Orient(value) { this.domelement.setAttribute("orient", value); }
+    #AutoSize = false;
+    get AutoSize() { return this.#AutoSize; }
+    set AutoSize(value) { this.#AutoSize = value; if (value) this.#AutoFit(); }
+
+    #AutoFit() { this.FitToContents(this.#MarginTop, this.#MarginRight, this.#MarginBottom, this.#MarginLeft); }
+
+    SetMarginAll(margin) {
+        this.#MarginTop = margin;
+        this.#MarginBottom = margin;
+        this.#MarginLeft = margin;
+        this.MarginRight = margin;
+    }
+    SetMarginTBandLR(topAndBottomMargin, leftAndRightMargin) {
+        this.#MarginTop = topAndBottomMargin;
+        this.#MarginBottom = topAndBottomMargin;
+        this.#MarginLeft = leftAndRightMargin;
+        this.MarginRight = leftAndRightMargin;
+    }
+    SetMarginTBLR(topMargin, bottomMargin, leftMargin, rightMargin) {
+        this.#MarginTop = topMargin;
+        this.#MarginBottom = bottomMargin;
+        this.#MarginLeft = leftMargin;
+        this.MarginRight = rightMargin;
+    }
+
+    #MarginTop = 2;
+    get MarginTop() { return this.#MarginTop; }
+    set MarginTop(value) { this.#MarginTop = value; if (this.#AutoSize) this.#AutoFit(); }
+
+    #MarginLeft = 2;
+    get MarginLeft() { return this.#MarginLeft; }
+    set MarginLeft(value) { this.#MarginLeft = value; if (this.#AutoSize) this.#AutoFit(); }
+
+    #MarginRight = 2;
+    get MarginRight() { return this.#MarginRight; }
+    set MarginRight(value) { this.#MarginRight = value; if (this.#AutoSize) this.#AutoFit(); }
+
+    #MarginBottom = 2;
+    get MarginBottom() { return this.#MarginBottom; }
+    set MarginBottom(value) { this.#MarginBottom = value; if (this.#AutoSize) this.#AutoFit(); }
+
 }
+
+//#endregion
+
 //#endregion
