@@ -77,7 +77,9 @@ function MakePage() {
     if (reqPlayerSummary.CompiledTable) divStats.add(reqPlayerSummary.MakeUITable());
     tabs.addTab("Statistics", divStats);
 
-    tabs.addTab("Games", MakeGameList(reqGames.ResponseToObjects()));
+    let games = reqGames.ResponseToObjects();
+    games.sort((a, b) => a.Label.localeCompare(b.Label));
+    tabs.addTab("Games", MakeGameList(games));
 
     tabs.SelectTabByIndex(0);
 

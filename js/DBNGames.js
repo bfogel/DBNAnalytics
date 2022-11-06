@@ -897,6 +897,8 @@ class dbnGameResultLineGM extends gmResultLine {
 class dbnGame {
 
   GameID = null;
+
+  /**@type{string} */
   Label = null;
   EndDate = null;
   DrawSize = null;
