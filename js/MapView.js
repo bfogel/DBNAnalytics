@@ -38,7 +38,7 @@ var myBoard;
 function ProcessMapData(gamedata) {
 
     //yHub.ColorScheme.ConsoleLogRGBValues();
-    myHub.ColorScheme.ConsoleLogMagicLink();
+    //myHub.ColorScheme.ConsoleLogMagicLink();
     // return;
 
     var game = new gmGame(gamedata);
@@ -579,6 +579,9 @@ class dbnFullBoard extends dbnDiv {
     #ShowOrderList = false;
     get ShowOrderList() { return this.#ShowOrderList; }
 
+    #ShowCenterChart = false;
+    get ShowCenterChart() { return this.#ShowCenterChart; }
+
     constructor(parent) {
         super(parent);
 
@@ -602,6 +605,10 @@ class dbnFullBoard extends dbnDiv {
             divsb.add(this.#OrderListView);
             this.#OrderListView.MapView = this.#MapView;
         }
+        if (this.ShowCenterChart) {
+            divsb.add(this.#CenterChart);
+            this.#CenterChart.MapView = this.#MapView;
+        }
 
         let divmv = divRow.addDiv();
         divmv.style.display = "table-cell";
@@ -619,6 +626,7 @@ class dbnFullBoard extends dbnDiv {
 
     #MapOptionController = new dbnMapOptionController();
     #OrderListView = new dbnMapOrderListView();
+    #CenterChart = new dbnCenterGraph();
     #Scoreboard = new dbnScoreboard();
 
     #OrderWriter = new dbnOrderWriter();
@@ -2944,7 +2952,7 @@ class dbnMapStyle_DBN_2022_2 extends dbnMapStyle {
 
 //#region CenterGraph
 
-class dbnCenterGraph extends dbnDiv {
+class dbnCenterGraph extends dbnSVG {
     constructor() {
         super();
         this.style.border = "2px black solid";
@@ -2979,13 +2987,14 @@ class dbnCenterGraph extends dbnDiv {
     get GamePhase() { return this.#GamePhase; }
     set GamePhase(value) {
         this.#GamePhase = value;
-        if (this.#FurthestViewedInCurrentGame < value.Phase) this.#FurthestViewedInCurrentGame = value.Phase;
+        if (value && this.#FurthestViewedInCurrentGame < value.Phase) this.#FurthestViewedInCurrentGame = value.Phase;
         this.#UpdateDisplay();
     }
 
     #FurthestViewedInCurrentGame = 19011;
 
     #UpdateDisplay() {
+
         this.domelement.innerHTML = "";
 
         if (!this.Game?.GamePhases) { return };
@@ -2999,46 +3008,45 @@ class dbnCenterGraph extends dbnDiv {
         /**@type{Object.<number,number>} */
         let years = {};
 
-        this.GamePhase.ph
+        //this.GamePhase.ph
         let iCurrentYear = this.GamePhase ? this.GamePhase.PhaseYear - (this.GamePhase.PhaseSeason == 3 ? 0 : 1) : 0;
 
         let maxc = 0;
         let maxyear = 1904;
         let maxphase = this.#FurthestViewedInCurrentGame;
         this.Game.GamePhases.forEach(gp => {
+            let bOk = gp.Phase <= maxphase;
+            if (bOk && (gp.PhaseSeason == 3 || !((gp.PhaseYear - 1) in years))) {
+                let yr = gp.PhaseYear;
+                if (gp.PhaseSeason != 3) yr--;
+
+                years[yr] = centers[CountryEnum.Austria].length;
+                if (maxyear < yr) maxyear = yr;
+                Object.values(CountryEnum).forEach(country => {
+                    let val = gp.CenterCounts[country] ?? 0;
+                    centers[country].push(val);
+                    if (val > maxc) maxc = val;
+                });
+            }
 
         });
 
-        // foreach(var ph in Game.GamePhases.Values)
-        // {
-        //     var bOk = ph.Phase <= maxphase;
+        let labelFontSize = 15;
+        let label = this.AddText("00", 0, 0, "black", "font-size: " + labelFontSize);
+        label.style.fontSize = 15;
+        label.style.fontWeight = "bold";
 
-        //     //Commented out 2022-11-03.  Not sure why this logic was here in the first place, but it was causing improper behavior if furthest viewed is spring of one year and you go back to the previous (it would show centers up through the following year)
-        //     //if (!bOk && Map.GamePhase != null) { bOk = ph.Phase.Year == maxphase.Year && Map.GamePhase.Phase.Season == Phase.SeasonEnum.Winter; }
+        let szLabel = label.GetRect().Size;
+        let iTopAxisBuffer = szLabel.Height;
+        let iRightAxisBuffer = szLabel.Width;
 
-        //     if (bOk && (ph.Phase.Season == Phase.SeasonEnum.Winter || !years.ContainsKey(ph.Phase.Year - 1))) {
-        //         var yr = ph.Phase.Year;
-        //         if (ph.Phase.Season != Phase.SeasonEnum.Winter) yr--;
+        let iLineWidth = 22;
+        let size = this.GetRect().Size;
+        let borderwidth = parseInt(this.style.borderWidth);
+        let origin = new dbnPoint(borderwidth + Math.max(szLabel.Width / 2, iLineWidth), size.Height - borderwidth - Math.max(szLabel.Height / 2, iLineWidth));
+        let graphsize = new dbnSize(size.Width - origin.X - borderwidth - iRightAxisBuffer, origin.Y - borderwidth - iTopAxisBuffer);
 
-        //         years[yr] = centers[CountryEnum.Austria].Count;
-        //         if (maxyear < yr) maxyear = yr;
-        //         foreach(var cc in GetCountries())
-        //         {
-        //             var val = ph.Data.CenterCounts.GetValueOrDefault(cc, 0);
-        //             centers[cc].Add(val);
-        //             if (val > maxc) maxc = val;
-        //         }
-        //     }
-        // }
-        // maxc++;
-
-        // var szLabel = gr.MeasureText("00", LabelFont);
-        // var iTopAxisBuffer = Convert.ToInt32(szLabel.Height);
-        // var iRightAxisBuffer = Convert.ToInt32(szLabel.Width);
-
-        // var iLineWidth = 22;
-        // var origin = new Point(_BorderWidth + Convert.ToInt32(Math.Max(szLabel.Width / 2, iLineWidth)), Size.Height - _BorderWidth - Convert.ToInt32(Math.Max(szLabel.Height / 2, iLineWidth)));
-        // var graphsize = new Size(Size.Width - origin.X - _BorderWidth - iRightAxisBuffer, origin.Y - _BorderWidth - iTopAxisBuffer);
+        console.log(szLabel, size, borderwidth, origin, graphsize);
 
         // var dh = graphsize.Width / Convert.ToDouble(maxyear - 1900);
         // var dv = graphsize.Height / Convert.ToDouble(maxc);

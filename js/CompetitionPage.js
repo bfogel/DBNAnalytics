@@ -78,7 +78,7 @@ function MakePage() {
     tabs.addTab("Statistics", divStats);
 
     let games = reqGames.ResponseToObjects();
-    games.sort((a, b) => a.Label.localeCompare(b.Label));
+    games.sort((a, b) => a.EndDate < b.EndDate ? -1 : (a.EndDate > b.EndDate ? 1 : a.Label.localeCompare(b.Label)));
     tabs.addTab("Games", MakeGameList(games));
 
     tabs.SelectTabByIndex(0);
