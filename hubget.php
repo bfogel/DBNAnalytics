@@ -310,7 +310,7 @@ function HandleRequest($request)
                 }
 
                 $ret = $games[0];
-                if (array_count_values($rs->data) > 0) $ret["GamePhases"] = json_decode($rs->data[0][1]);
+                if (count($rs->data) > 0) $ret["GamePhases"] = json_decode($rs->data[0][1]);
                 return MakeQuerySuccessResponse($ret);
             }
 
