@@ -39,15 +39,19 @@ add_action('rest_api_init', function () {
 
 function hubget_respond($data)
 {
-    $myrequests = stripcslashes($_POST['requests']);
+    try {
+        $myrequests = stripcslashes($_POST['requests']);
 
-    if ($myrequests != "") {
-        $list = json_decode($myrequests, true);
-        $ret = [];
-        foreach ($list as $item) {
-            array_push($ret, HandleRequest($item));
+        if ($myrequests != "") {
+            $list = json_decode($myrequests, true);
+            $ret = [];
+            foreach ($list as $item) {
+                array_push($ret, HandleRequest($item));
+            }
+            return $ret;
         }
-        return $ret;
+    } catch (\Throwable $th) {
+        return $th;
     }
     return "";
 }

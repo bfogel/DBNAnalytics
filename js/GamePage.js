@@ -7,7 +7,6 @@
  * @typedef {import('./MapView.js')}
  */
 
-
 function MakePage() {
 
     var urlparams = new URLSearchParams(window.location.search);
