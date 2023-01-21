@@ -32,7 +32,7 @@ function dbn_GetHTMLWithConn($conn, $category, $id)
 
 class dbnResponder
 {
-    public $Version = 116;
+    public $Version = 117;
 
     public $HubParameters = null;
 

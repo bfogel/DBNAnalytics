@@ -2042,7 +2042,7 @@ class dbnMapView extends dbnSVG {
             var firstorder = firstorders && firstorders.length > 0 ? firstorders[0] : null;
 
             if (!firstorder || !(firstorder.Order instanceof gmOrderMove) || (firstorder.Order.ToLocation.ProvinceCoast ?? ProvinceCoastEnum.None) == ProvinceCoastEnum.None) {
-                uwlTo = order.ToLocation.ToUnitWithLocation(GameModel.UnitTypeEnum.A);
+                uwlTo = order.ToLocation.ToUnitWithLocation(UnitTypeEnum.A);
             }
             else {
                 uwlTo = new gmUnitWithLocation(UnitTypeEnum.F, firstorder.Order.ToLocation);
