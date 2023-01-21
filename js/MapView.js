@@ -2027,7 +2027,29 @@ class dbnMapView extends dbnSVG {
         var uwlThis = this.GamePhase.GetUnitWithLocation(oar.Province) ?? pdThis.GetDefaultUnitWithLocation();
         var ptThis = dbnPoint.FromNumberArray(pdThis.GetLocationForUnit(uwlThis));
 
-        var moveline = this.#GetMoveSegment(order.FromLocation.Province, order.ToLocation);
+        //Check for coast if needed
+        var pdFrom = this.MapData.ProvinceData[order.FromLocation.Province];
+        var uwlFrom = this.GamePhase.GetUnitWithLocation(order.FromLocation.Province) ?? pdFrom.GetDefaultUnitWithLocation();
+        var uwlTo = order.ToLocation.ToUnitWithLocation(uwlFrom.Unit);
+
+        if (oar.Province == ProvinceEnum.Nwy) console.log(country, oar);
+
+        //Check for coast if needed
+        if (uwlTo.UnitType == UnitTypeEnum.F && myGameModel.DualCoastProvinces.includes(uwlTo.Location.Province) && (uwlTo.Location.ProvinceCoast ?? ProvinceCoastEnum.None) == ProvinceCoastEnum.None) {
+            var cao = this.GamePhase.GetOrdersForProvince(uwlFrom.Location.Province);
+            var caos = Object.entries(cao);
+            var firstorders = caos.length == 0 ? null : caos[0][1];
+            var firstorder = firstorders && firstorders.length > 0 ? firstorders[0] : null;
+
+            if (!firstorder || !(firstorder.Order instanceof gmOrderMove) || (firstorder.Order.ToLocation.ProvinceCoast ?? ProvinceCoastEnum.None) == ProvinceCoastEnum.None) {
+                uwlTo = order.ToLocation.ToUnitWithLocation(GameModel.UnitTypeEnum.A);
+            }
+            else {
+                uwlTo = new gmUnitWithLocation(UnitTypeEnum.F, firstorder.Order.ToLocation);
+            }
+        }
+
+        var moveline = this.#GetMoveSegment(order.FromLocation.Province, uwlTo.Location);
         if (moveline.Length == 0) { moveline.ToPoint = moveline.FromPoint.WithOffset(5, 5); }
 
         this.MapStyle.DrawSupportMove(country, ptThis, moveline, oar.Result?.Succeeded);

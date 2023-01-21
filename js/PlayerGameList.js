@@ -251,7 +251,8 @@ function MakeGameList(players, games) {
 
         if (game.URL != null) {
             var link = new dbnLink();
-            link.href = game.URL;
+            //link.href = game.URL;
+            link = "/game/?GameID=" + game.GameID;
             link.addText("View game");
             link.checkForExternal();
             dg.appendChild(link);
