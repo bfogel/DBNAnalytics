@@ -88,9 +88,10 @@ function MakePage() {
     var reqStandings = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "Standings" + (draft ? "D" : ""));
     var reqCompetitions = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "CompetitionList" + (draft ? "D" : ""));
     var reqStatistics = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "Statistics" + (draft ? "D" : ""));
+    var reqIneligibles = new dbnHubRequest_CompiledTable(myGroupInfo.Entity, myGroupInfo.ItemID, "Ineligibles" + (draft ? "D" : ""));
 
     if (myGroupInfo.InfoRequest) reqs.addRequest(myGroupInfo.InfoRequest);
-    reqs.addRequest([reqStandings, reqCompetitions, reqStatistics]);
+    reqs.addRequest([reqStandings, reqCompetitions, reqStatistics, reqIneligibles]);
 
     var div = dbnHere().addDiv();
     //div.addText(entity + " " + myGroupID);
@@ -113,6 +114,7 @@ function MakePage() {
     if (reqCompetitions.CompiledTable) tabs.addTab("Competitions", reqCompetitions.MakeUITable());
     if (reqStandings.CompiledTable) tabs.addTab("Standings", reqStandings.MakeUITable());
     if (reqStatistics.CompiledTable) tabs.addTab("Statistics", reqStatistics.MakeUITable());
+    if (reqIneligibles.CompiledTable) tabs.addTab("Ineligibles", reqIneligibles.MakeUITable());
 
     tabs.SelectTabByIndex(0);
 
