@@ -20,7 +20,7 @@ function MakePage() {
     if ("competitionid" in myHub.Parameters) myCompetitionID = Number.parseInt(myHub.Parameters["competitionid"]);
 
     //MASSIVE KLUGE because 302 redirects weren't working
-    if (myCompetitionID == 6089) window.location.href = "https://diplobn.com/gdbcompetition-x/?compid=SilentButDeadlyXII";
+    //if (myCompetitionID == 6089) window.location.href = "https://diplobn.com/gdbcompetition-x/?compid=SilentButDeadlyXII";
     //------------
 
     if (urlparams.has("Draft")) myDraft = urlparams.get("Draft") == "true";
