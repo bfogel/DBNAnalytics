@@ -389,3 +389,29 @@ function CalculateOpenMindTheGap() {
     return ret;
 }
 
+function CalculateApex() {
+    var soli = FindSoloist();
+    if (soli != 0) return mCenterCounts.map(x => (x == soli) ? 340 : 0);
+
+    var topcenters = Math.max(...mCenterCounts);
+    var toppers = mCenterCounts.map((x, i) => (x == topcenters) ? i : -1);
+    toppers = toppers.filter(x => x >= 0);
+
+    var ret = mCenterCounts.map(x => {
+        var score = 3 * x + ((x > 0) ? 30 : 0);
+        return score;
+    });
+
+    switch (toppers.length) {
+        case 1:
+            ret[topppers[0]] = 10 * mCenterCounts[toppers[0]];
+            break;
+        case 2:
+            toppers.forEach(x => ret[x] += 10);
+            break;
+        default:
+            break;
+    }
+
+    return ret;
+}
