@@ -9,8 +9,8 @@ add_shortcode( 'dbnScoringCalculator', 'dbnScoringCalculator_Create' );
 function dbnScoringCalculator_Create() {
     $ret = "<link rel = 'stylesheet' href = '/wp-content/plugins/DBNAnalytics/css/ScoringCalculator.css'>";
     $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/GameScraper.js'></script>";
-    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/ScoringFunctions.js?x=2'></script>";
-    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/ScoringCalculator.js?x=2'></script>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/ScoringFunctions.js?x=3'></script>";
+    $ret .= "<script src = '/wp-content/plugins/DBNAnalytics/js/ScoringCalculator.js?x=3'></script>";
     $ret .= "<div id = 'ScoringCalculator'></div>";
     $ret .= "<script>CreateCalculator('ScoringCalculator');</script>";
 
