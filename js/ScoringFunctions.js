@@ -407,7 +407,7 @@ function CalculateApex() {
             ret[toppers[0]] = 10 * mCenterCounts[toppers[0]];
             break;
         case 2:
-            toppers.forEach(x => ret[x] += 10);
+            toppers.forEach(x => ret[x] += mCenterCounts[x]);
             break;
         default:
             break;
