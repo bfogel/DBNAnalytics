@@ -343,7 +343,7 @@ function CalculateOpenTribute(pC, pShareType, pSpoilVanquished) {
         }
     }
     tribute /= toppers.length;
-    toppers.forEach(i => ret[i] += tribute);
+    toppers.forEach(i => ret[i] += Math.trunc(tribute));
 
     return ret;
 }
